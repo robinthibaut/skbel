@@ -260,7 +260,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Make predictions, in the BEL fashion.
         """
         self.X_obs = X_obs  # Save dataframe with name
-        X_obs = check_array(self.X_obs)
+        try:
+            X_obs = check_array(self.X_obs)
+        except ValueError:
+            X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : self.X_n_pc]

@@ -87,36 +87,11 @@ def reload_trained_model(base_dir: str, root: str, well: str):
     return bel
 
 
-def vertices_vtp(folder, vertices):
-    vdir = folder
-    utils.dirmaker(vdir)
-    for i, v in enumerate(vertices):
-        nv = len(v)
-        points = vtk.vtkPoints()
-        [points.InsertNextPoint(np.insert(c, 2, 0)) for c in v]
-        # Create a polydata to store everything in
-        poly_data = vtk.vtkPolyData()
-        # Add the points to the dataset
-        poly_data.SetPoints(points)
-        # Create a cell array to store the lines in and add the lines to it
-        cells = vtk.vtkCellArray()
-        cells.InsertNextCell(nv)
-        [cells.InsertCellPoint(k) for k in range(nv)]
-        # Add the lines to the dataset
-        poly_data.SetLines(cells)
-        # Export
-        writer = vtk.vtkXMLPolyDataWriter()
-        writer.SetInputData(poly_data)
-
-        writer.SetFileName(jp(vdir, f"forecast_posterior_{i}.vtp"))
-        writer.Write()
-
-
 def pca_scores(
     training: np.array,
     prediction: np.array,
     n_comp: int,
-    annotation: list,
+    annotation: list = None,
     fig_file: str = None,
     labels: bool = True,
     show: bool = False,
@@ -132,6 +107,8 @@ def pca_scores(
     :param show:
     :return:
     """
+    if annotation is None:
+        annotation = []
     # Scores plot
     # Grid
     plt.grid(alpha=0.2)
@@ -488,6 +465,10 @@ def plot_results(
     :param folder: str: Well combination. '123456', '1'...
     :return:
     """
+    if root is None:
+        root = ""
+    if folder is None:
+        folder = ""
     # Directory
     md = jp(base_dir, root, folder)
     # Wells
@@ -501,7 +482,10 @@ def plot_results(
         sdir = jp(md, "data")
 
         X = check_array(bel.X)
-        X_obs = check_array(bel.X_obs)
+        try:
+            X_obs = check_array(bel.X_obs)
+        except ValueError:
+            X_obs = check_array(bel.X_obs.to_numpy().reshape(1, -1))
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
@@ -551,8 +535,12 @@ def plot_results(
     if h:
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
-        ff = jp(fig_dir, f"{root}.pdf")  # figure name
-        Y, Y_obs = check_array(bel.Y), check_array(bel.Y_obs)
+        ff = jp(fig_dir, "whpa.pdf")  # figure name
+        Y = check_array(bel.Y)
+        try:
+            Y_obs = check_array(bel.Y_obs)
+        except ValueError:
+            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction
@@ -568,7 +556,7 @@ def plot_results(
         )
         colors = ["blue", "red"]
         labels = ["Training", "Test"]
-        legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
+        legend = _proxy_annotate(annotation=[], loc=2, fz=14)
         _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
         plt.close()
 
@@ -630,35 +618,6 @@ def plot_results(
             labels=labels,
             fig_file=ff,
         )
-
-
-def plot_K_field(
-    root: str = None, base_dir: str = None, wells=None, deprecated: bool = True
-):
-    if wells is None:
-        wells = Setup.Wells
-
-    matrix = np.load(jp(Setup.Directories.hydro_res_dir, root, "hk0.npy"))
-    grid_dim = Setup.GridDimensions
-    extent = (grid_dim.xo, grid_dim.x_lim, grid_dim.yo, grid_dim.y_lim)
-
-    hkf = jp(base_dir, root, "k_field.png")
-
-    if deprecated:
-        # HK field
-        plt.figure()
-        ax = plt.gca()
-        im = ax.imshow(np.log10(matrix), cmap="coolwarm", extent=extent)
-        plt.xlabel("X(m)", fontsize=11)
-        plt.ylabel("Y(m)", fontsize=11)
-        plot_wells(wells, markersize=3.5)
-        well_legend = plt.legend(fontsize=11, loc=2, framealpha=0.6)
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
-        cb = plt.colorbar(im, cax=cax)
-        cb.ax.set_title("$Log_{10} m/d$")
-        plt.savefig(hkf, bbox_inches="tight", dpi=300, transparent=True)
-        plt.close()
 
 
 def mode_histo(
@@ -960,7 +919,7 @@ def plot_pc_ba(
         h_pca_inverse_plot(bel, fig_dir=os.path.join(subdir, w, "pca"))
 
 
-def plot_whpa(bel, base_dir, root):
+def plot_whpa(bel, base_dir):
     """
     Loads target pickle and plots all training WHPA
     :return:
@@ -972,27 +931,26 @@ def plot_whpa(bel, base_dir, root):
         whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5
     )
 
-    if root is not None:
-        h_pred = bel.Y_obs.reshape(bel.Y_shape)
-        whpa_plot(
-            whpa=h_pred,
-            color="darkred",
-            lw=1,
-            alpha=1,
-            annotation=["C"],
-            xlabel="X(m)",
-            ylabel="Y(m)",
-            labelsize=11,
-        )
+    h_pred = bel.Y_obs.reshape(bel.Y_shape)
+    whpa_plot(
+        whpa=h_pred,
+        color="darkred",
+        lw=1,
+        alpha=1,
+        annotation=[],
+        xlabel="X(m)",
+        ylabel="Y(m)",
+        labelsize=11,
+    )
 
-        labels = ["Training", "Test"]
-        legend = _proxy_annotate(annotation=["C"], loc=2, fz=14)
-        _proxy_legend(
-            legend1=legend,
-            colors=["darkblue", "darkred"],
-            labels=labels,
-            fig_file=os.path.join(base_dir, root, "whpa_training.pdf"),
-        )
+    labels = ["Training", "Test"]
+    legend = _proxy_annotate(annotation=[], loc=2, fz=14)
+    _proxy_legend(
+        legend1=legend,
+        colors=["darkblue", "darkred"],
+        labels=labels,
+        fig_file=os.path.join(base_dir, "whpa_training.pdf"),
+    )
 
 
 def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
@@ -1073,7 +1031,7 @@ def pca_vision(
     bel,
     root: str or list,
     base_dir: str,
-    w: str,
+    w: str = None,
     d: bool = True,
     h: bool = True,
     scores: bool = True,
@@ -1099,6 +1057,9 @@ def pca_vision(
             return
         else:
             root = root[0]
+
+    if w is None:
+        w = ""
 
     subdir = jp(base_dir, root, w, "pca")
 

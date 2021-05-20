@@ -124,7 +124,8 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
     """
     if obj is None:
         obj = plt
-
+    if annotation is None:
+        annotation = []
     legend_a = obj.legend(
         plt.plot([], linestyle=None, color="w", alpha=0, markeredgecolor=None),
         annotation,
