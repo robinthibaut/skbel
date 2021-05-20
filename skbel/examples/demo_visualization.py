@@ -984,7 +984,6 @@ def cca_vision(bel, base_dir: str = None, root: str = None, folders: list = None
 
     res_dir = os.path.join(subdir, "obj")
 
-
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
         offset=bel.cca.n_components
@@ -1002,9 +1001,7 @@ def cca_vision(bel, base_dir: str = None, root: str = None, folders: list = None
     cb = plt.colorbar()
     cb.ax.set_title(r"$\it{" + "r" + "}$")
     plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-    plt.xticks(
-        np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
-    )
+    plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
     plt.tick_params(labelsize=5)
     plt.yticks([])
     # plt.title('Decrease of CCA correlation coefficient with component number')
