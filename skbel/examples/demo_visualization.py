@@ -1077,11 +1077,11 @@ def pca_vision(
     base_dir: str,
     w: str,
     d: bool = True,
-    h: bool = False,
+    h: bool = True,
     scores: bool = True,
     exvar: bool = True,
     before_after=True,
-    labels: bool = False,
+    labels: bool = True,
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -1111,7 +1111,7 @@ def pca_vision(
                 training=bel.X_pc,
                 prediction=bel.X_obs_pc,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
-                annotation=["C"],
+                # annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
             )
@@ -1138,7 +1138,7 @@ def pca_vision(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
                 n_comp=Setup.HyperParameters.n_pc_target,
-                annotation=["D"],
+                # annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
             )
@@ -1149,7 +1149,7 @@ def pca_vision(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_target,
                 thr=0.8,
-                annotation=["F"],
+                # annotation=["F"],
                 fig_file=fig_file,
             )
         if before_after:

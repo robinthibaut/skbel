@@ -6,8 +6,9 @@ from os.path import join as jp
 import joblib
 from loguru import logger
 
-import numpy as np
 import pandas as pd
+
+import demo_visualization as myvis
 
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
@@ -67,9 +68,9 @@ def init_bel():
     return bel_model
 
 
-def bel_training(bel, *, X_train_, x_test_, y_train_, y_test_, directory):
+def bel_training(bel_, *, X_train_, x_test_, y_train_, y_test_, directory):
     """
-    :param bel:
+    :param bel_:
     :param X_train_:
     :param x_test_:
     :param y_train_:
@@ -101,16 +102,16 @@ def bel_training(bel, *, X_train_, x_test_, y_train_, y_test_, directory):
     ]
 
     # %% Fit
-    bel.Y_obs = y_test_
-    bel.fit(X=X_train_, Y=y_train_)
+    bel_.Y_obs = y_test_
+    bel_.fit(X=X_train_, Y=y_train_)
 
     # %% Sample
     # Extract n random sample (target pc's).
     # The posterior distribution is computed within the method below.
-    bel.predict(x_test_)
+    bel_.predict(x_test_)
 
     # Save the fitted BEL model
-    joblib.dump(bel, jp(obj_dir, "bel.pkl"))
+    joblib.dump(bel_, jp(obj_dir, "bel.pkl"))
     msg = f"model trained and saved in {obj_dir}"
     logger.info(msg)
 
@@ -131,7 +132,7 @@ if __name__ == "__main__":
 
     # Train model
     bel_training(
-        bel=model,
+        bel_=model,
         X_train_=X_train,
         x_test_=X_test,
         y_train_=y_train,
@@ -144,24 +145,13 @@ if __name__ == "__main__":
 
     myvis.plot_results(
         bel,
-        base_dir=base_dir,
-        root=sample,
-        folder=w,
-        annotation=annotation,
-        d=False,
+        base_dir=output_dir,
     )
 
     myvis.pca_vision(
         bel,
-        base_dir=base_dir,
-        w=w,
-        root=sample,
-        d=True,
-        h=True,
-        exvar=True,
-        before_after=True,
-        labels=True,
-        scores=True,
+        base_dir=output_dir,
+        root="demo",
     )
 
-    myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)
+    myvis.cca_vision(base_dir=output_dir)
