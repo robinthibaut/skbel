@@ -139,15 +139,14 @@ if __name__ == "__main__":
     # Plot the results
     bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
 
-    myvis.plot_results(
-        bel,
-        base_dir=output_dir,
-    )
+    # myvis.plot_results(
+    #     bel,
+    #     base_dir=output_dir,
+    # )
 
     myvis.pca_vision(
         bel,
         base_dir=output_dir,
-        root="demo",
     )
 
     myvis.cca_vision(base_dir=output_dir)

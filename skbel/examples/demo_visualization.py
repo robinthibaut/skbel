@@ -79,7 +79,12 @@ def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.
     return big_sum
 
 
-def reload_trained_model(base_dir: str, root: str, well: str):
+def reload_trained_model(base_dir: str, root: str = None, well: str = None):
+    if root is None:
+        root = ""
+    if well is None:
+        well = ""
+
     res_dir = jp(base_dir, root, well, "obj")
 
     bel = joblib.load(jp(res_dir, "bel.pkl"))
@@ -397,7 +402,11 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     if bel.Y_obs_pc is not None:
         v_pc = check_array(bel.Y_obs_pc.reshape(1, -1))
     else:
-        Y_obs = check_array(bel.Y_obs)
+        try:
+            Y_obs = check_array(bel.Y_obs)
+        except ValueError:
+            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+
         v_pc = bel.Y_pre_processing.transform(Y_obs)[
             :, : Setup.HyperParameters.n_pc_target
         ]
@@ -956,6 +965,7 @@ def plot_whpa(bel, base_dir):
 def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
     """
     Loads CCA pickles and plots components for all folders
+    :param base_dir
     :param root:
     :param folders:
     :return:
@@ -967,70 +977,62 @@ def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
             return
         else:
             root = root[0]
+    elif root is None:
+        root = ""
 
     subdir = os.path.join(base_dir, root)
 
-    if folders is None:
-        listme = os.listdir(subdir)
-        folders = list(filter(lambda d: os.path.isdir(os.path.join(subdir, d)), listme))
-    else:
-        if not isinstance(folders, (list, tuple)):
-            folders = [folders]
-        else:
-            pass
+    res_dir = os.path.join(subdir, "obj")
 
-    for f in folders:
-        res_dir = os.path.join(subdir, f, "obj")
+    # Load objects
+    bel = reload_trained_model(base_dir=base_dir, root=root)
 
-        # Load objects
-        bel = reload_trained_model(base_dir=base_dir, root=root, well=f)
+    # CCA coefficient plot
+    cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
+        offset=bel.cca.n_components
+    )  # Gets correlation coefficient
+    plt.plot(cca_coefficient, "lightblue", zorder=1)
+    plt.scatter(
+        x=np.arange(len(cca_coefficient)),
+        y=cca_coefficient,
+        c=cca_coefficient,
+        alpha=1,
+        s=50,
+        cmap="coolwarm",
+        zorder=2,
+    )
+    cb = plt.colorbar()
+    cb.ax.set_title(r"$\it{" + "r" + "}$")
+    plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
+    plt.xticks(
+        np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
+    )
+    plt.tick_params(labelsize=5)
+    plt.yticks([])
+    # plt.title('Decrease of CCA correlation coefficient with component number')
+    plt.ylabel("Correlation coefficient")
+    plt.xlabel("Component number")
 
-        # CCA coefficient plot
-        cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
-            offset=bel.cca.n_components
-        )  # Gets correlation coefficient
-        plt.plot(cca_coefficient, "lightblue", zorder=1)
-        plt.scatter(
-            x=np.arange(len(cca_coefficient)),
-            y=cca_coefficient,
-            c=cca_coefficient,
-            alpha=1,
-            s=50,
-            cmap="coolwarm",
-            zorder=2,
-        )
-        cb = plt.colorbar()
-        cb.ax.set_title(r"$\it{" + "r" + "}$")
-        plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-        plt.xticks(
-            np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
-        )
-        plt.tick_params(labelsize=5)
-        plt.yticks([])
-        # plt.title('Decrease of CCA correlation coefficient with component number')
-        plt.ylabel("Correlation coefficient")
-        plt.xlabel("Component number")
+    # Add annotation
+    legend = _proxy_annotate(annotation=["D"], fz=14, loc=1)
+    plt.gca().add_artist(legend)
 
-        # Add annotation
-        legend = _proxy_annotate(annotation=["D"], fz=14, loc=1)
-        plt.gca().add_artist(legend)
+    plt.savefig(
+        os.path.join(os.path.dirname(res_dir), "cca", "coefs.pdf"),
+        bbox_inches="tight",
+        dpi=300,
+        transparent=True,
+    )
+    plt.close()
 
-        plt.savefig(
-            os.path.join(os.path.dirname(res_dir), "cca", "coefs.pdf"),
-            bbox_inches="tight",
-            dpi=300,
-            transparent=True,
-        )
-        plt.close()
-
-        # KDE plots which consume a lot of time.
-        _kde_cca(bel, sdir=os.path.join(subdir, f, "cca"))
+    # KDE plots which consume a lot of time.
+    _kde_cca(bel, sdir=os.path.join(subdir, "cca"))
 
 
 def pca_vision(
     bel,
-    root: str or list,
     base_dir: str,
+    root: str or list = None,
     w: str = None,
     d: bool = True,
     h: bool = True,
@@ -1051,13 +1053,8 @@ def pca_vision(
     :return:
     """
 
-    if isinstance(root, (list, tuple)):
-        if len(root) > 1:
-            logger.error("Input error")
-            return
-        else:
-            root = root[0]
-
+    if root is None:
+        root = ""
     if w is None:
         w = ""
 
@@ -1081,7 +1078,7 @@ def pca_vision(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
                 thr=0.8,
-                annotation=["E"],
+                # annotation=["E"],
                 fig_file=fig_file,
             )
         if before_after:
@@ -1089,7 +1086,11 @@ def pca_vision(
     if h:
         # Transform and split
         h_pc_training = bel.Y_pc
-        h_pc_prediction = bel.Y_pre_processing.transform(bel.Y_obs)
+        try:
+            Y_obs = check_array(bel.Y_obs)
+        except ValueError:
+            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+        h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.pdf")
         if scores:
