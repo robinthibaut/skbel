@@ -42,4 +42,3 @@ def modified_hausdorff(a: np.array, b: np.array) -> float:
     rhd = np.mean(np.min(d, axis=1))  # Mean of minimum values along columns
 
     return max(fhd, rhd)
-

@@ -16,13 +16,12 @@ from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 from skbel.learning.bel import BEL
 
-from .. import utils
+from skbel import utils
 
 
 def init_bel():
     """
     Set all BEL pipelines
-    :return:
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -40,10 +39,8 @@ def init_bel():
 
     # Canonical Correlation Analysis
     # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = (
-        50,
-        30,
-    )
+    n_pc_pred, n_pc_targ = 50, 30
+
     cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
 
     # Pipeline after CCA
@@ -95,12 +92,12 @@ def bel_training(bel, *, X_train_, x_test_, y_train_, y_test_, directory):
     [
         utils.dirmaker(f, erase=True)
         for f in [
-        obj_dir,
-        fig_data_dir,
-        fig_pca_dir,
-        fig_cca_dir,
-        fig_pred_dir,
-    ]
+            obj_dir,
+            fig_data_dir,
+            fig_pca_dir,
+            fig_cca_dir,
+            fig_pred_dir,
+        ]
     ]
 
     # %% Fit
@@ -127,10 +124,10 @@ if __name__ == "__main__":
     output_dir = jp(os.getcwd(), "results")
 
     # Load dataset
-    X_train = pd.read_pickle(jp(data_dir, "X_train.plk"))
-    X_test = pd.read_pickle(jp(data_dir, "X_test.plk"))
-    y_train = pd.read_pickle(jp(data_dir, "y_train.plk"))
-    y_test = pd.read_pickle(jp(data_dir, "y_test.plk"))
+    X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
+    X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
+    y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
+    y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
 
     # Train model
     bel_training(
@@ -141,3 +138,30 @@ if __name__ == "__main__":
         y_test_=y_test,
         directory=output_dir,
     )
+
+    # Plot the results
+    bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
+
+    myvis.plot_results(
+        bel,
+        base_dir=base_dir,
+        root=sample,
+        folder=w,
+        annotation=annotation,
+        d=False,
+    )
+
+    myvis.pca_vision(
+        bel,
+        base_dir=base_dir,
+        w=w,
+        root=sample,
+        d=True,
+        h=True,
+        exvar=True,
+        before_after=True,
+        labels=True,
+        scores=True,
+    )
+
+    myvis.cca_vision(base_dir=base_dir, root=sample, folders=wells)

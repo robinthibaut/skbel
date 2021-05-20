@@ -15,14 +15,16 @@ from scipy.interpolate import BSpline, make_interp_spline
 import skbel.utils
 from skbel.algorithms import KDE, kde_params, posterior_conditional
 
-__all__ = ["_my_alphabet",
-           "_proxy_legend",
-           "_proxy_annotate",
-           "explained_variance",
-           "pca_scores",
-           "cca_plot",
-           "_despine",
-           "_kde_cca"]
+__all__ = [
+    "_my_alphabet",
+    "_proxy_legend",
+    "_proxy_annotate",
+    "explained_variance",
+    "pca_scores",
+    "cca_plot",
+    "_despine",
+    "_kde_cca",
+]
 
 
 def _my_alphabet(az: int):
