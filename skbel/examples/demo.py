@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
+from demo_config import Setup
 from skbel import utils
 from skbel.learning.bel import BEL
 
@@ -138,15 +139,16 @@ if __name__ == "__main__":
 
     # Plot the results
     bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
+    bel.n_posts = Setup.HyperParameters.n_posts
 
     # myvis.plot_results(
     #     bel,
     #     base_dir=output_dir,
     # )
 
-    myvis.pca_vision(
-        bel,
-        base_dir=output_dir,
-    )
+    # myvis.pca_vision(
+    #     bel,
+    #     base_dir=output_dir,
+    # )
 
-    myvis.cca_vision(base_dir=output_dir)
+    myvis.cca_vision(bel=bel, base_dir=output_dir)

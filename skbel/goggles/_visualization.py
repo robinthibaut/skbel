@@ -13,6 +13,7 @@ from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 
 import skbel.utils
+from sklearn.utils import check_array
 from skbel.algorithms import KDE, kde_params, posterior_conditional
 
 __all__ = [
@@ -542,8 +543,13 @@ def _kde_cca(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
 
+    try:
+        Y_obs = check_array(bel.Y_obs)
+    except ValueError:
+        Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+
     # Transform Y obs
-    bel.Y_obs_f = bel.transform(Y=bel.Y_obs)
+    bel.Y_obs_f = bel.transform(Y=Y_obs)
 
     # load prediction object
     post_test = bel.random_sample(n_posts=bel._n_posts)

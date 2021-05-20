@@ -962,7 +962,7 @@ def plot_whpa(bel, base_dir):
     )
 
 
-def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
+def cca_vision(bel, base_dir: str = None, root: str = None, folders: list = None):
     """
     Loads CCA pickles and plots components for all folders
     :param base_dir
@@ -984,8 +984,6 @@ def cca_vision(base_dir: str = None, root: str = None, folders: list = None):
 
     res_dir = os.path.join(subdir, "obj")
 
-    # Load objects
-    bel = reload_trained_model(base_dir=base_dir, root=root)
 
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
