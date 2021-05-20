@@ -4,20 +4,16 @@ import os
 from os.path import join as jp
 
 import joblib
-from loguru import logger
-
 import pandas as pd
-
-import demo_visualization as myvis
-
+from loguru import logger
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
-from skbel.learning.bel import BEL
-
+import demo_visualization as myvis
 from skbel import utils
+from skbel.learning.bel import BEL
 
 
 def init_bel():
@@ -80,7 +76,7 @@ def bel_training(bel_, *, X_train_, x_test_, y_train_, y_test_, directory):
     """
     # Directories
     # Directory in which to load forecasts
-    sub_dir = jp(directory, "results")
+    sub_dir = directory
 
     # %% Folders
     obj_dir = jp(sub_dir, "obj")

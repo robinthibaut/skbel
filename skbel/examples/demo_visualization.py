@@ -8,25 +8,23 @@ import joblib
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import vtk
 from loguru import logger
-from matplotlib.patches import Polygon
-
 from matplotlib import pyplot as plt
+from matplotlib.patches import Polygon
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import BSpline, make_interp_spline
-from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
-from skbel.spatial import (
-    contours_vertices,
-    grid_parameters,
-    refine_machine,
-)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
 
 from demo_config import Setup
 from skbel import utils
+from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
+from skbel.spatial import (
+    contours_vertices,
+    grid_parameters,
+    refine_machine,
+)
 
 
 def binary_polygon(
