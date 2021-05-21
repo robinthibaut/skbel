@@ -43,7 +43,8 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
  
 Example
 -----------------------------------------------------------------------------------------
-
+The details of the example can be found in arXiv:2105.05539.
+  
 <p align="center">
 <img src="/docs/img/data/curves.png" height="500">
 </p>
