@@ -1,0 +1,11 @@
+include skbel/algorithms/*
+include skbel/examples/*
+include skbel/goggles/*
+include skbel/learning/*
+include skbel/preprocessing/*
+include skbel/spatial/*
+include skbel/testing/*
+
+include skbel/examples/*.py
+
+include skbel/examples/dataset/*.pkl

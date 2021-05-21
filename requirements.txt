@@ -7,5 +7,3 @@ pandas>=1.2.2
 seaborn>=0.11.1
 dataclasses>=0.6
 loguru>=0.5.3
-scikit-image>=0.18.1
-scikit-fmm>=2021.2.2
