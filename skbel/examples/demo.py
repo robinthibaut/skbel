@@ -65,13 +65,15 @@ def init_bel():
     return bel_model
 
 
-def bel_training(bel_,
-                 *,
-                 X_train_: pd.DataFrame,
-                 x_test_: pd.DataFrame,
-                 y_train_: pd.DataFrame,
-                 y_test_: pd.DataFrame = None,
-                 directory: str = None):
+def bel_training(
+    bel_,
+    *,
+    X_train_: pd.DataFrame,
+    x_test_: pd.DataFrame,
+    y_train_: pd.DataFrame,
+    y_test_: pd.DataFrame = None,
+    directory: str = None,
+):
     """
     :param bel_: BEL model
     :param X_train_: Predictor set for training
@@ -150,10 +152,7 @@ if __name__ == "__main__":
     bel.n_posts = Setup.HyperParameters.n_posts
 
     # Plot raw data
-    myvis.plot_results(
-        bel,
-        base_dir=output_dir
-    )
+    myvis.plot_results(bel, base_dir=output_dir)
 
     # Plot PCA
     myvis.pca_vision(
