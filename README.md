@@ -21,10 +21,14 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
 
 #### Forward modeling
 - Examples of both `d` and `h` are generated through forward modeling from the same model `m`. Target and predictor are real, multi-dimensional random variables.
+#### Pre-processing
+- Specific pre-processing is applied to the data if necessary.
 #### Dimensionality reduction
 - Principal Component Analysis (PCA) is applied to both target and predictor to aggregate the correlated variables into a few independent Principal Components (PC’s).
 #### Learning
-- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each another. 
+- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each another.
+#### Post-processing
+- Specific post-processing is applied to the CV's if necessary (such as CV normalization).
 #### Posterior distribution inference
 - The mean `μ` and covariance `Σ` of the posterior distribution of an unknown target given an observed `d*` can be directly estimated from the CV's distribution.
 #### Sampling and back-transformation to the original space
@@ -37,7 +41,7 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
   Figure 2: Typical BEL worflow.
 <p align="center">
  
-User Guide
+Example
 -----------------------------------------------------------------------------------------
-  
+
 
