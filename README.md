@@ -1,5 +1,6 @@
 SKBEL
 ==========
+SKBEL is a Python package built on top of scikit-learn to implement the Bayesian Evidential Learning framework as described in Scheidt et al. (2018).
 
 Bayesian Evidential Learning - A Prediction-Focused Approach
 -----------------------------------------------------------------------------------------
@@ -278,3 +279,9 @@ if __name__ == "__main__":
   Figure 7: BEL-derived posterior predictions. The red domain corresponds to the envelope of predictions. The uncertainty reduces around the data sources (injection wells)
 <p align="center">
  
+  
+### References
+  
+[Hermans, T., Oware, E., Caers, J., 2016. Direct prediction of spatially and temporally varying physical properties from time-lapse electrical resistance data. Water Resour. Res. 52, 7262–7283.](https://doi.org/10.1002/2016WR019126)
+
+[Scheidt, C., Li, L., Caers, J., 2018. Quantifying Uncertainty in Subsurface Systems, Geophysical Monograph Series. John Wiley & Sons, Inc., Hoboken, NJ, USA.](https://doi.org/10.1002/9781119325888)
