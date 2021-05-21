@@ -1,5 +1,8 @@
 SKBEL
 ==========
+SKBEL is a Python package built on top of scikit-learn to implement the Bayesian Evidential Learning framework as described in Scheidt et al. (2018).
+
+[Scheidt, C., Li, L., Caers, J., 2018. Quantifying Uncertainty in Subsurface Systems, Geophysical Monograph Series. John Wiley & Sons, Inc., Hoboken, NJ, USA.](https://doi.org/10.1002/9781119325888)
 
 Bayesian Evidential Learning - A Prediction-Focused Approach
 -----------------------------------------------------------------------------------------
