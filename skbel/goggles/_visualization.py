@@ -111,7 +111,7 @@ def _proxy_legend(
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=True)
+        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=False)
         plt.close()
 
 
@@ -209,7 +209,7 @@ def explained_variance(
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=True)
+        plt.savefig(fig_file, dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -287,7 +287,7 @@ def pca_scores(
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=True)
+        plt.savefig(fig_file, dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -342,7 +342,7 @@ def cca_plot(
                 jp(sdir, "cca{}.png".format(i)),
                 bbox_inches="tight",
                 dpi=300,
-                transparent=True,
+                transparent=False,
             )
             plt.close()
         if show:
@@ -711,7 +711,7 @@ def _kde_cca(
                 jp(sdir, f"cca_kde_{comp_n}.png"),
                 bbox_inches="tight",
                 dpi=300,
-                transparent=True,
+                transparent=False,
             )
             plt.close()
         if show:
@@ -771,7 +771,7 @@ def _kde_cca(
                     jp(sdir, f"cca_prior_post_{comp_n}.png"),
                     bbox_inches="tight",
                     dpi=300,
-                    transparent=True,
+                    transparent=False,
                 )
                 plt.close()
             if show:

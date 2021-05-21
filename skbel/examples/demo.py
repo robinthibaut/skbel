@@ -135,31 +135,31 @@ if __name__ == "__main__":
     y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
     y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
 
-    # # Train model
-    # bel_training(
-    #     bel_=model,
-    #     X_train_=X_train,
-    #     x_test_=X_test,
-    #     y_train_=y_train,
-    #     y_test_=y_test,
-    #     directory=output_dir,
-    # )
-    #
-    # # Plot the results
+    # Train model
+    bel_training(
+        bel_=model,
+        X_train_=X_train,
+        x_test_=X_test,
+        y_train_=y_train,
+        y_test_=y_test,
+        directory=output_dir,
+    )
+
+    # Plot the results
     bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
     bel.n_posts = Setup.HyperParameters.n_posts
-    #
-    # # Plot raw data
-    # myvis.plot_results(
-    #     bel,
-    #     base_dir=output_dir
-    # )
-    #
-    # # Plot PCA
-    # myvis.pca_vision(
-    #     bel,
-    #     base_dir=output_dir,
-    # )
+
+    # Plot raw data
+    myvis.plot_results(
+        bel,
+        base_dir=output_dir
+    )
+
+    # Plot PCA
+    myvis.pca_vision(
+        bel,
+        base_dir=output_dir,
+    )
 
     # Plot CCA
     myvis.cca_vision(bel=bel, base_dir=output_dir)

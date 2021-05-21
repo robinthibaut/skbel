@@ -164,7 +164,7 @@ def pca_scores(
 
     if fig_file:
         utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=True)
+        plt.savefig(fig_file, dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -339,7 +339,7 @@ def whpa_plot(
 
     if fig_file:
         utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=True)
+        plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -380,7 +380,7 @@ def post_examination(
     # plt.gca().add_artist(legend)
 
     plt.savefig(
-        jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=True
+        jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=False
     )
     if show:
         plt.show()
@@ -446,7 +446,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
         plt.savefig(
-            jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=True
+            jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=False
         )
         plt.close()
 
@@ -684,7 +684,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_mode.png"),
         dpi=300,
-        transparent=True,
+        transparent=False,
     )
     plt.close()
 
@@ -717,7 +717,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
-        transparent=True,
+        transparent=False,
     )
     plt.close()
 
@@ -738,7 +738,7 @@ def mode_histo(
     plt.savefig(
         os.path.join(directory, f"{fig_name}_hist.png"),
         dpi=300,
-        transparent=True,
+        transparent=False,
     )
     plt.close()
 
@@ -791,7 +791,7 @@ def curves(
     plt.tick_params(labelsize=labelsize)
     if sdir:
         utils.dirmaker(sdir)
-        plt.savefig(jp(sdir, f"{title}.png"), dpi=300, transparent=True)
+        plt.savefig(jp(sdir, f"{title}.png"), dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
@@ -848,7 +848,7 @@ def curves_i(
         plt.ylabel(ylabel)
         if sdir:
             utils.dirmaker(sdir)
-            plt.savefig(jp(sdir, f"{title}_{t + 1}.png"), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f"{title}_{t + 1}.png"), dpi=300, transparent=False)
             plt.close()
         if show:
             plt.show()
@@ -1016,7 +1016,7 @@ def cca_vision(bel, base_dir: str = None, root: str = None):
         os.path.join(os.path.dirname(res_dir), "cca", "coefs.png"),
         bbox_inches="tight",
         dpi=300,
-        transparent=True,
+        transparent=False,
     )
     plt.close()
 
@@ -1171,7 +1171,7 @@ def d_pca_inverse_plot(
 
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
-        plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=True)
+        plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=False)
         plt.close()
     if show:
         plt.show()
