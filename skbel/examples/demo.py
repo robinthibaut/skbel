@@ -75,18 +75,17 @@ def bel_training(bel_, *, X_train_, x_test_, y_train_, y_test_, directory):
     :param directory:
     :return:
     """
-    # Directories
-    # Directory in which to load forecasts
+    #%% Directory in which to load forecasts
     sub_dir = directory
 
-    # %% Folders
-    obj_dir = jp(sub_dir, "obj")
-    fig_data_dir = jp(sub_dir, "data")
-    fig_pca_dir = jp(sub_dir, "pca")
-    fig_cca_dir = jp(sub_dir, "cca")
-    fig_pred_dir = jp(sub_dir, "uq")
+    # Folders
+    obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
+    fig_data_dir = jp(sub_dir, "data")  # Location to save the raw data figures
+    fig_pca_dir = jp(sub_dir, "pca")  # Location to save the PCA figures
+    fig_cca_dir = jp(sub_dir, "cca")  # Location to save the CCA figures
+    fig_pred_dir = jp(sub_dir, "uq")  # Location to save the prediction figures
 
-    # %% Creates directories
+    # Creates directories
     [
         utils.dirmaker(f, erase=True)
         for f in [
@@ -98,11 +97,11 @@ def bel_training(bel_, *, X_train_, x_test_, y_train_, y_test_, directory):
         ]
     ]
 
-    # %% Fit
+    # %% Fit BEL model
     bel_.Y_obs = y_test_
     bel_.fit(X=X_train_, Y=y_train_)
 
-    # %% Sample
+    # %% Sample for the observation
     # Extract n random sample (target pc's).
     # The posterior distribution is computed within the method below.
     bel_.predict(x_test_)
@@ -141,14 +140,17 @@ if __name__ == "__main__":
     bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
     bel.n_posts = Setup.HyperParameters.n_posts
 
-    # myvis.plot_results(
-    #     bel,
-    #     base_dir=output_dir,
-    # )
+    # Plot raw data
+    myvis.plot_results(
+        bel,
+        base_dir=output_dir
+    )
 
-    # myvis.pca_vision(
-    #     bel,
-    #     base_dir=output_dir,
-    # )
+    # Plot PCA
+    myvis.pca_vision(
+        bel,
+        base_dir=output_dir,
+    )
 
+    # Plot CCA
     myvis.cca_vision(bel=bel, base_dir=output_dir)

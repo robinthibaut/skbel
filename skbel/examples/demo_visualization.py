@@ -11,7 +11,6 @@ import seaborn as sns
 from loguru import logger
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import BSpline, make_interp_spline
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -391,7 +390,7 @@ def post_examination(
 def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
-    :param bel
+    :param bel: BEL model
     :param fig_dir: str:
     :param show: bool:
     :return:
@@ -467,6 +466,7 @@ def plot_results(
 ):
     """
     Plots forecasts results in the 'uq' folder
+    :param bel: BEL model
     :param annotation: List of annotations
     :param h: Boolean to plot target or not
     :param d: Boolean to plot predictor or not
@@ -962,12 +962,12 @@ def plot_whpa(bel, base_dir):
     )
 
 
-def cca_vision(bel, base_dir: str = None, root: str = None, folders: list = None):
+def cca_vision(bel, base_dir: str = None, root: str = None):
     """
     Loads CCA pickles and plots components for all folders
+    :param bel: BEL model
     :param base_dir
     :param root:
-    :param folders:
     :return:
     """
 
@@ -1038,6 +1038,7 @@ def pca_vision(
 ):
     """
     Loads PCA pickles and plot scores for all folders
+    :param bel: BEL model
     :param w:
     :param labels:
     :param root: str:
@@ -1123,6 +1124,7 @@ def d_pca_inverse_plot(
 ):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation.
+    :param bel: BEL model
     :param xlabel:
     :param ylabel:
     :param labelsize:
