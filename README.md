@@ -255,9 +255,22 @@ if __name__ == "__main__":
 #### Visualization
 ##### PC's
   <p align="center">
-<img src="/docs/img/pca/d_scores.png" height="500" background-color: white>
+<img src="/docs/img/pca_plot1-01.png" height="800" background-color: white>
 </p>
 <p align="center">
-  Figure 5: Principal Components of the predictor.
+  Figure 5: A. The full predictor of the test set is the concatenation of all breakthrough curves (thick curves on Figure 3). PCA decomposition with 50 PC’s allows to recover the original curves while smoothing out some noise present in the original dataset. B. Original test target compared to test target projected then back-transformed with its 30 Principal Components. C. Principal Components of the predictor training set and projected test set. D. Principal Components of the target training set and the projected test set. E. Cumulative explained variance for the Principal Components of the predictor training set. F. Cumulative explained variance for the Principal Components of the target training set.
+<p align="center">
+
+##### CV's
+
+  <p align="center">
+<img src="/docs/img/cca_joint_new-01.png" height="700" background-color: white>
+</p>
+<p align="center">
+  Figure 6: A, B, C. Canonical Variates bivariate distribution plots for the 4 firsts pairs of the training set, and the projection in the canonical space of the selected test predictor and associated test target (see notches). The posterior distribution of h^ccomputed according to BEL and KDE can be compared on the y marginal plot. D. Decrease of the Canonical Correlation Coefficient r with the number of CV pairs for the training set.
 <p align="center">
   
+##### Prediction
+  <p align="center">
+<img src="/docs/img/uq/_cca_30.png" height="500" background-color: white>
+</p>
