@@ -44,4 +44,9 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
 Example
 -----------------------------------------------------------------------------------------
 
-
+<p align="center">
+<img src="/docs/img/data/curves.png" height="500">
+</p>
+<p align="center">
+  Figure 2: Typical BEL worflow.
+<p align="center">
