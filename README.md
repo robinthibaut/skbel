@@ -207,7 +207,7 @@ def bel_training(bel_,
   ```
 
 #### Load the dataset and run everything
-  
+The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
   ```python
 if __name__ == "__main__":
     # Initiate BEL model
@@ -252,3 +252,12 @@ if __name__ == "__main__":
     # Plot CCA
     myvis.cca_vision(bel=bel, base_dir=output_dir)
   ```
+#### Visualization
+##### PC's
+  <p align="center">
+<img src="/docs/img/pca/d_scores.png" height="500" background-color: white>
+</p>
+<p align="center">
+  Figure 5: Principal Components of the predictor.
+<p align="center">
+  
