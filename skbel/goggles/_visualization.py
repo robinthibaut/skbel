@@ -339,7 +339,7 @@ def cca_plot(
         if sdir:
             skbel.utils.dirmaker(sdir)
             plt.savefig(
-                jp(sdir, "cca{}.pdf".format(i)),
+                jp(sdir, "cca{}.png".format(i)),
                 bbox_inches="tight",
                 dpi=300,
                 transparent=True,
@@ -708,7 +708,7 @@ def _kde_cca(
         if sdir:
             skbel.utils.dirmaker(sdir)
             plt.savefig(
-                jp(sdir, f"cca_kde_{comp_n}.pdf"),
+                jp(sdir, f"cca_kde_{comp_n}.png"),
                 bbox_inches="tight",
                 dpi=300,
                 transparent=True,
@@ -768,7 +768,7 @@ def _kde_cca(
             if sdir:
                 skbel.utils.dirmaker(sdir)
                 plt.savefig(
-                    jp(sdir, f"cca_prior_post_{comp_n}.pdf"),
+                    jp(sdir, f"cca_prior_post_{comp_n}.png"),
                     bbox_inches="tight",
                     dpi=300,
                     transparent=True,
