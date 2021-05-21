@@ -1,7 +1,7 @@
 SKBEL
 ==========
 
-Bayesian Eviential Learning - A Prediction-Focused Approach
+Bayesian Evidential Learning - A Prediction-Focused Approach
 -----------------------------------------------------------------------------------------
 ### Introduction
 
@@ -22,7 +22,7 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
 #### Forward modeling
 - Examples of both `d` and `h` are generated through forward modeling from the same model `m`. Target and predictor are real, multi-dimensional random variables.
 #### Pre-processing
-- Specific pre-processing is applied to the data if necessary.
+- Specific pre-processing is applied to the data if necessary (such as scaling).
 #### Dimensionality reduction
 - Principal Component Analysis (PCA) is applied to both target and predictor to aggregate the correlated variables into a few independent Principal Components (PC’s).
 #### Learning
@@ -43,11 +43,106 @@ Bayesian Eviential Learning - A Prediction-Focused Approach
  
 Example
 -----------------------------------------------------------------------------------------
-The details of the example can be found in arXiv:2105.05539.
+- All the details about the example can be found in [arXiv:2105.05539](https://arxiv.org/abs/2105.05539), and the code in `skbel/examples/demo.py`.
+- It concerns a hydrogeological experiment consisting of predicting the wellhead protection area (WHPA) around a pumping well from measured breakthrough curves at said pumping well. 
+- Predictor and target are generated through forward modeling from a set of hydrogeological model with different hydraulic conductivity fields (not shown).
+- The predictor is the set of breakthrough curves coming from 6 different injection wells around the pumping well (Figure 3).
+- The target is the WHPA (Figure 4).
+  
+For this example, the data is already pre-processed. We are working with 400 exmples of both `d` and `h` and consider one extra pair to be predicted. See details in the reference.
   
 <p align="center">
-<img src="/docs/img/data/curves.png" height="500">
+<img src="/docs/img/data/curves.png" height="500" background-color: white>
 </p>
 <p align="center">
-  Figure 2: Typical BEL worflow.
+  Figure 3: Predictor set. Prior in the background and test data in thick lines.
 <p align="center">
+
+  <p align="center">
+<img src="/docs/img/whpa.png" height="500" background-color: white>
+</p>
+<p align="center">
+  Figure 4: Target set. Prior in the background (blue) and test data to predict in red.
+<p align="center">
+  
+#### Building the BEL model
+In this package, a BEL model consists of a succession of Pipelines (imported from scikit-learn).
+  
+```python
+import os
+from os.path import join as jp
+
+import joblib
+import pandas as pd
+from loguru import logger
+from sklearn.cross_decomposition import CCA
+from sklearn.decomposition import PCA
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, PowerTransformer
+
+import demo_visualization as myvis
+from demo_config import Setup
+from skbel import utils
+from skbel.learning.bel import BEL
+
+  ```
+We can then define a function that returns our desired BEL model :
+
+```python
+def init_bel():
+    """
+    Set all BEL pipelines
+    """
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("scaler", StandardScaler(with_mean=False)),
+            ("pca", PCA()),
+        ]
+    )
+
+    # Canonical Correlation Analysis
+    # Number of CCA components is chosen as the min number of PC
+    n_pc_pred, n_pc_targ = 50, 30
+
+    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
+
+    # Pipeline after CCA
+    X_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+    Y_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+
+    # Initiate BEL object
+    bel_model = BEL(
+        X_pre_processing=X_pre_processing,
+        X_post_processing=X_post_processing,
+        Y_pre_processing=Y_pre_processing,
+        Y_post_processing=Y_post_processing,
+        cca=cca,
+    )
+
+    # Set PC cut
+    bel_model.X_n_pc = n_pc_pred
+    bel_model.Y_n_pc = n_pc_targ
+
+    return bel_model
+  ```
+  
+- The ```X_pre_processing``` and ```Y_pre_processing``` objects are pipelines which will first scale the data for predictor and target, then apply the dimension reduction through PCA.
+
+- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
+
+- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
+
+- The ```X_post_processing``` and ```Y_post_processing``` objects are pipelines which will normalize predictor and target CV's.
+  
+- Finally, the BEL model is constructed by passing as arguments all these pipelines in the `BEL` object.
