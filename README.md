@@ -146,3 +146,118 @@ def init_bel():
 - The ```X_post_processing``` and ```Y_post_processing``` objects are pipelines which will normalize predictor and target CV's.
   
 - Finally, the BEL model is constructed by passing as arguments all these pipelines in the `BEL` object.
+  
+#### Training the BEL model
+A simple function can be defined to train our model.
+  ```python
+def bel_training(bel_,
+                 *,
+                 X_train_: pd.DataFrame,
+                 x_test_: pd.DataFrame,
+                 y_train_: pd.DataFrame,
+                 y_test_: pd.DataFrame = None,
+                 directory: str = None):
+    """
+    :param bel_: BEL model
+    :param X_train_: Predictor set for training
+    :param x_test_: Predictor "test"
+    :param y_train_: Target set for training
+    :param y_test_: "True" target (optional)
+    :param directory: Path to the directory in which to unload the results
+    :return:
+    """
+    #%% Directory in which to load forecasts
+    if directory is None:
+        sub_dir = os.getcwd()
+    else:
+        sub_dir = directory
+
+    # Folders
+    obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
+    fig_data_dir = jp(sub_dir, "data")  # Location to save the raw data figures
+    fig_pca_dir = jp(sub_dir, "pca")  # Location to save the PCA figures
+    fig_cca_dir = jp(sub_dir, "cca")  # Location to save the CCA figures
+    fig_pred_dir = jp(sub_dir, "uq")  # Location to save the prediction figures
+
+    # Creates directories
+    [
+        utils.dirmaker(f, erase=True)
+        for f in [
+            obj_dir,
+            fig_data_dir,
+            fig_pca_dir,
+            fig_cca_dir,
+            fig_pred_dir,
+        ]
+    ]
+
+    # %% Fit BEL model
+    bel_.Y_obs = y_test_
+    bel_.fit(X=X_train_, Y=y_train_)
+
+    # %% Sample for the observation
+    # Extract n random sample (target pc's).
+    # The posterior distribution is computed within the method below.
+    bel_.predict(x_test_)
+
+    # Save the fitted BEL model
+    joblib.dump(bel_, jp(obj_dir, "bel.pkl"))
+    msg = f"model trained and saved in {obj_dir}"
+    logger.info(msg)
+  ```
+
+#### Load the dataset and run everything
+The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
+  ```python
+if __name__ == "__main__":
+    # Initiate BEL model
+    model = init_bel()
+
+    # Set directories
+    data_dir = jp(os.getcwd(), "dataset")
+    output_dir = jp(os.getcwd(), "results")
+
+    # Load dataset
+    X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
+    X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
+    y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
+    y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
+
+    # Train model
+    bel_training(
+        bel_=model,
+        X_train_=X_train,
+        x_test_=X_test,
+        y_train_=y_train,
+        y_test_=y_test,
+        directory=output_dir,
+    )
+
+    # Plot the results
+    bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
+    bel.n_posts = Setup.HyperParameters.n_posts
+
+    # Plot raw data
+    myvis.plot_results(
+        bel,
+        base_dir=output_dir
+    )
+
+    # Plot PCA
+    myvis.pca_vision(
+        bel,
+        base_dir=output_dir,
+    )
+
+    # Plot CCA
+    myvis.cca_vision(bel=bel, base_dir=output_dir)
+  ```
+#### Visualization
+##### PC's
+  <p align="center">
+<img src="/docs/img/pca/d_scores.png" height="500" background-color: white>
+</p>
+<p align="center">
+  Figure 5: Principal Components of the predictor.
+<p align="center">
+  
