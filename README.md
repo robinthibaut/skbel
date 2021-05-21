@@ -272,5 +272,9 @@ if __name__ == "__main__":
   
 ##### Prediction
   <p align="center">
-<img src="/docs/img/uq/_cca_30.png" height="500" background-color: white>
+<img src="/docs/img/uq/818bf1676c424f76b83bd777ae588a1d_cca_30-01.png" height="500" background-color: white>
 </p>
+<p align="center">
+  Figure 7: BEL-derived posterior predictions. The red domain corresponds to the envelope of predictions. The uncertainty reduces around the data sources (injection wells)
+<p align="center">
+ 
