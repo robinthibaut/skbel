@@ -380,7 +380,7 @@ def post_examination(
     # plt.gca().add_artist(legend)
 
     plt.savefig(
-        jp(sdir, f"{root}_SD.pdf"), dpi=300, bbox_inches="tight", transparent=True
+        jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=True
     )
     if show:
         plt.show()
@@ -446,7 +446,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
         plt.savefig(
-            jp(fig_dir, f"h_pca_inverse_transform.pdf"), dpi=300, transparent=True
+            jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=True
         )
         plt.close()
 
@@ -544,7 +544,7 @@ def plot_results(
     if h:
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
-        ff = jp(fig_dir, "whpa.pdf")  # figure name
+        ff = jp(fig_dir, "whpa.png")  # figure name
         Y = check_array(bel.Y)
         try:
             Y_obs = check_array(bel.Y_obs)
@@ -570,7 +570,7 @@ def plot_results(
         plt.close()
 
         # WHPs
-        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.pdf")
+        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
         forecast_posterior = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
         forecast_posterior = bel.inverse_transform(forecast_posterior)
         forecast_posterior = forecast_posterior.reshape(
@@ -682,7 +682,7 @@ def mode_histo(
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_mode.pdf"),
+        os.path.join(directory, f"{fig_name}_well_mode.png"),
         dpi=300,
         transparent=True,
     )
@@ -715,7 +715,7 @@ def mode_histo(
     plt.gca().add_artist(legend_b)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_well_box.pdf"),
+        os.path.join(directory, f"{fig_name}_well_box.png"),
         dpi=300,
         transparent=True,
     )
@@ -736,7 +736,7 @@ def mode_histo(
     plt.gca().add_artist(legend_a)
 
     plt.savefig(
-        os.path.join(directory, f"{fig_name}_hist.pdf"),
+        os.path.join(directory, f"{fig_name}_hist.png"),
         dpi=300,
         transparent=True,
     )
@@ -791,7 +791,7 @@ def curves(
     plt.tick_params(labelsize=labelsize)
     if sdir:
         utils.dirmaker(sdir)
-        plt.savefig(jp(sdir, f"{title}.pdf"), dpi=300, transparent=True)
+        plt.savefig(jp(sdir, f"{title}.png"), dpi=300, transparent=True)
         plt.close()
     if show:
         plt.show()
@@ -848,7 +848,7 @@ def curves_i(
         plt.ylabel(ylabel)
         if sdir:
             utils.dirmaker(sdir)
-            plt.savefig(jp(sdir, f"{title}_{t + 1}.pdf"), dpi=300, transparent=True)
+            plt.savefig(jp(sdir, f"{title}_{t + 1}.png"), dpi=300, transparent=True)
             plt.close()
         if show:
             plt.show()
@@ -958,7 +958,7 @@ def plot_whpa(bel, base_dir):
         legend1=legend,
         colors=["darkblue", "darkred"],
         labels=labels,
-        fig_file=os.path.join(base_dir, "whpa_training.pdf"),
+        fig_file=os.path.join(base_dir, "whpa_training.png"),
     )
 
 
@@ -1013,7 +1013,7 @@ def cca_vision(bel, base_dir: str = None, root: str = None):
     plt.gca().add_artist(legend)
 
     plt.savefig(
-        os.path.join(os.path.dirname(res_dir), "cca", "coefs.pdf"),
+        os.path.join(os.path.dirname(res_dir), "cca", "coefs.png"),
         bbox_inches="tight",
         dpi=300,
         transparent=True,
@@ -1057,7 +1057,7 @@ def pca_vision(
     subdir = jp(base_dir, root, w, "pca")
 
     if d:
-        fig_file = os.path.join(subdir, "d_scores.pdf")
+        fig_file = os.path.join(subdir, "d_scores.png")
         if scores:
             pca_scores(
                 training=bel.X_pc,
@@ -1069,7 +1069,7 @@ def pca_vision(
             )
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(subdir, "d_exvar.pdf")
+            fig_file = os.path.join(subdir, "d_exvar.png")
             explained_variance(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_predictor,
@@ -1088,7 +1088,7 @@ def pca_vision(
             Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
         h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         # Plot
-        fig_file = os.path.join(subdir, "h_pca_scores.pdf")
+        fig_file = os.path.join(subdir, "h_pca_scores.png")
         if scores:
             pca_scores(
                 training=h_pc_training,
@@ -1100,7 +1100,7 @@ def pca_vision(
             )
         # Explained variance plots
         if exvar:
-            fig_file = os.path.join(subdir, "h_pca_exvar.pdf")
+            fig_file = os.path.join(subdir, "h_pca_exvar.png")
             explained_variance(
                 bel,
                 n_comp=Setup.HyperParameters.n_pc_target,
@@ -1171,7 +1171,7 @@ def d_pca_inverse_plot(
 
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
-        plt.savefig(jp(fig_dir, f"{root}_d.pdf"), dpi=300, transparent=True)
+        plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=True)
         plt.close()
     if show:
         plt.show()
