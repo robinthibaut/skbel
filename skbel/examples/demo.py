@@ -65,18 +65,27 @@ def init_bel():
     return bel_model
 
 
-def bel_training(bel_, *, X_train_, x_test_, y_train_, y_test_, directory):
+def bel_training(bel_,
+                 *,
+                 X_train_: pd.DataFrame,
+                 x_test_: pd.DataFrame,
+                 y_train_: pd.DataFrame,
+                 y_test_: pd.DataFrame = None,
+                 directory: str = None):
     """
-    :param bel_:
-    :param X_train_:
-    :param x_test_:
-    :param y_train_:
-    :param y_test_:
-    :param directory:
+    :param bel_: BEL model
+    :param X_train_: Predictor set for training
+    :param x_test_: Predictor "test"
+    :param y_train_: Target set for training
+    :param y_test_: "True" target (optional)
+    :param directory: Path to the directory in which to unload the results
     :return:
     """
     #%% Directory in which to load forecasts
-    sub_dir = directory
+    if directory is None:
+        sub_dir = os.getcwd()
+    else:
+        sub_dir = directory
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
