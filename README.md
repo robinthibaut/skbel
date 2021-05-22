@@ -54,7 +54,7 @@ Example
 - The predictor is the set of breakthrough curves coming from 6 different injection wells around the pumping well (Figure 3).
 - The target is the WHPA (Figure 4).
   
-For this example, the data is already pre-processed. We are working with 400 exmples of both `d` and `h` and consider one extra pair to be predicted. See details in the reference.
+For this example, the data is already pre-processed. We are working with 400 examples of both `d` and `h` and consider one extra pair to be predicted. See details in the reference.
   
 <p align="center">
 <img src="/docs/img/data/curves.png" height="500" background-color: white>
