@@ -40,7 +40,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 - The posterior distribution is sampled to obtain realizations of `h` in canonical space, successively back-transformed to the original space.
 
 <p align="center">
-<img src="/docs/img/img.png" height="500">
+<img src="/docs/img/flow-01.png" height="500">
 </p>
 <p align="center">
   Figure 2: Typical BEL worflow.
