@@ -15,7 +15,6 @@ from skbel.learning.bel import BEL
 def init_bel():
     """
     Set all BEL pipelines
-    :return:
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
