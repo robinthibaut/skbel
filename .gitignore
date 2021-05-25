@@ -1,6 +1,7 @@
 ### Python template
 *.pdf
 setup.py
+*.ai
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
