@@ -7,9 +7,9 @@ before_install:
   - python --version
   - pip install -U pip
   - pip install -U pytest
-  - pip install codecov
+  - pip install pytest-cov
 install:
   - pip install ".[test]" . # install package + test dependencies
 script: python -m pytest # run tests
 after_success:
-  - codecov # submit coverage
+  - pytest --cov=./ # submit coverage
