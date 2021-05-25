@@ -13,7 +13,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 ### Introduction
 
 <p align="center">
-<img src="/docs/img/evidential.png" height="350">
+<img src="/docs/img/evidential.png">
 </p>
 <p align="center">
   Figure 1: The concept of BEL. d = predictor (observed data), h = target (parameter of interest), m = model.
@@ -42,7 +42,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 - The posterior distribution is sampled to obtain realizations of `h` in canonical space, successively back-transformed to the original space.
 
 <p align="center">
-<img src="/docs/img/flow-01.png" height="500">
+<img src="/docs/img/flow-01.png">
 </p>
 <p align="center">
   Figure 2: Typical BEL worflow.
@@ -59,14 +59,14 @@ Example
 For this example, the data is already pre-processed. We are working with 400 examples of both `d` and `h` and consider one extra pair to be predicted. See details in the reference.
   
 <p align="center">
-<img src="/docs/img/data/curves.png" height="500" background-color: white>
+<img src="/docs/img/data/curves.png" background-color: white>
 </p>
 <p align="center">
   Figure 3: Predictor set. Prior in the background and test data in thick lines.
 <p align="center">
 
   <p align="center">
-<img src="/docs/img/whpa.png" height="500" background-color: white>
+<img src="/docs/img/whpa.png" background-color: white>
 </p>
 <p align="center">
   Figure 4: Target set. Prior in the background (blue) and test data to predict in red.
@@ -262,7 +262,7 @@ if __name__ == "__main__":
 #### Visualization
 ##### PC's
   <p align="center">
-<img src="/docs/img/pca_plot1-01.png" height="800" background-color: white>
+<img src="/docs/img/pca_plot1-01.png" background-color: white>
 </p>
 <p align="center">
   Figure 5: A. The full predictor of the test set is the concatenation of all breakthrough curves (thick curves on Figure 3). PCA decomposition with 50 PC’s allows to recover the original curves while smoothing out some noise present in the original dataset. B. Original test target compared to test target projected then back-transformed with its 30 Principal Components. C. Principal Components of the predictor training set and projected test set. D. Principal Components of the target training set and the projected test set. E. Cumulative explained variance for the Principal Components of the predictor training set. F. Cumulative explained variance for the Principal Components of the target training set.
@@ -271,7 +271,7 @@ if __name__ == "__main__":
 ##### CV's
 
   <p align="center">
-<img src="/docs/img/cca_joint_new-01.png" height="700" background-color: white>
+<img src="/docs/img/cca_joint_new-01.png" background-color: white>
 </p>
 <p align="center">
   Figure 6: A, B, C. Canonical Variates bivariate distribution plots for the 4 firsts pairs of the training set, and the projection in the canonical space of the selected test predictor and associated test target (see notches). The posterior distribution of h^c computed according to BEL and KDE can be compared on the y marginal plot. D. Decrease of the Canonical Correlation Coefficient r with the number of CV pairs for the training set.
@@ -279,7 +279,7 @@ if __name__ == "__main__":
   
 ##### Prediction
   <p align="center">
-<img src="/docs/img/uq/818bf1676c424f76b83bd777ae588a1d_cca_30-01.png" height="500" background-color: white>
+<img src="/docs/img/uq/818bf1676c424f76b83bd777ae588a1d_cca_30-01.png" background-color: white>
 </p>
 <p align="center">
   Figure 7: BEL-derived posterior predictions. The red domain corresponds to the envelope of predictions. The uncertainty reduces around the data sources (injection wells)
