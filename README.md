@@ -2,6 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/skbel.svg)](https://badge.fury.io/py/skbel)
 [![Build Status](https://travis-ci.com/robinthibaut/skbel.svg?branch=master)](https://travis-ci.com/robinthibaut/skbel)
+[![DOI](https://zenodo.org/badge/369214956.svg)](https://zenodo.org/badge/latestdoi/369214956)
 
 ```pip install skbel```
 
