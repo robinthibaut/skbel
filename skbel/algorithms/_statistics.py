@@ -405,6 +405,9 @@ def posterior_conditional(
 
     post = _normalize_distribution(post, support)
 
+    # pmean = np.mean(support[~np.isclose(hp, 0)])
+    # pvar = np.var(support[~np.isclose(hp, 0)])
+
     return post, support
 
 
