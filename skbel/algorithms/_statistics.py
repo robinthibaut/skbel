@@ -374,6 +374,8 @@ def posterior_conditional(
     :param Y_obs: Observation (target, y-axis)
     :return:
     """
+    # TODO: Adapt this method to evaluate the posterior distribution moments
+
     # Compute KDE
     dens, support = kde_params(x=X, y=Y)
     # Grid parameters
@@ -404,20 +406,6 @@ def posterior_conditional(
     post = _normalize_distribution(post, support)
 
     return post, support
-
-
-def _log_transform(f, k_mean: float, k_std: float):
-    """
-    Transforms the values of the statistical_simulation simulations into meaningful data.
-    :param: f: np.array: Simulation output = Hk field
-    :param: k_mean: float: Mean of the Hk field
-    :param: k_std: float: Standard deviation of the Hk field
-    """
-    # TODO: Move this to pysgems package
-
-    ff = f * k_std + k_mean
-
-    return 10 ** ff
 
 
 def mvn_inference(
