@@ -1,4 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+import os
+from os.path import join as jp
 
 import numpy as np
 
@@ -70,10 +72,13 @@ def test_posterior():
     seed = 123456
     bel.seed = seed
 
-    X_train = np.load("X_train.npy")
-    y_train = np.load("y_train.npy")
+    # Get file path
+    my_path = os.path.dirname(os.path.abspath(__file__))
 
-    X_test = np.load("X_test.npy")
+    X_train = np.load(jp(my_path, "X_train.npy"))
+    y_train = np.load(jp(my_path, "y_train.npy"))
+
+    X_test = np.load(jp(my_path, "X_test.npy"))
 
     # Fit
     bel.fit(X=X_train, Y=y_train)
@@ -81,8 +86,8 @@ def test_posterior():
     post_mean, post_cov = bel.predict(X_test)
 
     # Compare with reference
-    ref_mean = np.load("ref_mean.npy")
-    ref_covariance = np.load("ref_covariance.npy")
+    ref_mean = np.load(jp(my_path, "ref_mean.npy"))
+    ref_covariance = np.load(jp(my_path, "ref_covariance.npy"))
 
     msg1 = "The posterior means are different"
     np.testing.assert_allclose(post_mean, ref_mean, atol=1e-6, err_msg=msg1)
