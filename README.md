@@ -274,7 +274,7 @@ if __name__ == "__main__":
 <img src="/docs/img/cca_joint_new-01.png" height="700" background-color: white>
 </p>
 <p align="center">
-  Figure 6: A, B, C. Canonical Variates bivariate distribution plots for the 4 firsts pairs of the training set, and the projection in the canonical space of the selected test predictor and associated test target (see notches). The posterior distribution of h^ccomputed according to BEL and KDE can be compared on the y marginal plot. D. Decrease of the Canonical Correlation Coefficient r with the number of CV pairs for the training set.
+  Figure 6: A, B, C. Canonical Variates bivariate distribution plots for the 4 firsts pairs of the training set, and the projection in the canonical space of the selected test predictor and associated test target (see notches). The posterior distribution of h^c computed according to BEL and KDE can be compared on the y marginal plot. D. Decrease of the Canonical Correlation Coefficient r with the number of CV pairs for the training set.
 <p align="center">
   
 ##### Prediction
