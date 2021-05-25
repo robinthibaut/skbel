@@ -1,6 +1,7 @@
 <img src="/docs/img/illu-01.png">
 
 [![PyPI version](https://badge.fury.io/py/skbel.svg)](https://badge.fury.io/py/skbel)
+[![Build Status](https://travis-ci.com/robinthibaut/skbel.svg?branch=master)](https://travis-ci.com/robinthibaut/skbel)
 
 ```pip install skbel```
 
