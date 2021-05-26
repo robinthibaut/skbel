@@ -1,4 +1,5 @@
 ### Python template
+skbel/develop/*
 *.pdf
 setup.py
 *.ai
