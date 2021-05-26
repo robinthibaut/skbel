@@ -305,7 +305,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 hp, sup = posterior_conditional(
                     X=self.X_f.T[comp_n], Y=self.Y_f.T[comp_n], X_obs=self.X_obs_f.T[comp_n]
                 )
-                hp[np.abs(hp) < 1e-8] = 0
+                hp[np.abs(hp) < 1e-12] = 0
                 hp = _normalize_distribution(hp, sup)
                 if comp_n > 0:
                     my_arr = np.concatenate((my_arr, [hp]), axis=0)
@@ -314,9 +314,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     my_arr = [hp]
                     my_sup = [sup]
 
-                mean = sum(sup * hp) / sum(hp)
-                sigma = np.sqrt(sum(hp * (sup - mean) ** 2) / sum(hp))
-                s = np.random.normal(mean, sigma, 200)
+                mean = sum(sup * hp) / sum(hp)  # Find mean
+                sigma = np.sqrt(sum(hp * (sup - mean) ** 2) / sum(hp))  # Find std dev
+                s = np.random.normal(mean, sigma, 1000)  # Sample
 
                 if comp_n > 0:
                     smean = np.concatenate((smean, [mean]), axis=0)
