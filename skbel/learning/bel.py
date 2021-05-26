@@ -16,7 +16,8 @@ from sklearn.utils.validation import (
     check_consistent_length,
 )
 
-from ..algorithms import mvn_inference
+from ..algorithms import mvn_inference, posterior_conditional
+from ..algorithms._statistics import _normalize_distribution
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -298,6 +299,35 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             )
         else:
             warnings.warn("KDE not implemented yet")
+            for comp_n in range(self.cca.n_components):
+                # Get figure default parameters
+                # Conditional:
+                hp, sup = posterior_conditional(
+                    X=self.X_f.T[comp_n], Y=self.Y_f.T[comp_n], X_obs=self.X_obs_f.T[comp_n]
+                )
+                hp[np.abs(hp) < 1e-8] = 0
+                hp = _normalize_distribution(hp, sup)
+                if comp_n > 0:
+                    my_arr = np.concatenate((my_arr, [hp]), axis=0)
+                    my_sup = np.concatenate((my_sup, [sup]), axis=0)
+                else:
+                    my_arr = [hp]
+                    my_sup = [sup]
+
+                mean = sum(sup * hp) / sum(hp)
+                sigma = np.sqrt(sum(hp * (sup - mean) ** 2) / sum(hp))
+                s = np.random.normal(mean, sigma, 200)
+
+                if comp_n > 0:
+                    smean = np.concatenate((smean, [mean]), axis=0)
+                    sbig = np.concatenate((sbig, [s]), axis=0)
+                else:
+                    smean = [mean]
+                    sbig = [s]
+
+            self.posterior_mean = smean
+
+            self.posterior_covariance = np.cov(sbig)
 
         return self.posterior_mean, self.posterior_covariance
 

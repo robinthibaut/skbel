@@ -56,6 +56,7 @@ def init_bel():
         Y_pre_processing=Y_pre_processing,
         Y_post_processing=Y_post_processing,
         cca=cca,
+        mode="kde",
     )
 
     # Set PC cut
@@ -155,10 +156,10 @@ if __name__ == "__main__":
     myvis.plot_results(bel, base_dir=output_dir)
 
     # Plot PCA
-    myvis.pca_vision(
-        bel,
-        base_dir=output_dir,
-    )
+    # myvis.pca_vision(
+    #     bel,
+    #     base_dir=output_dir,
+    # )
 
     # Plot CCA
     myvis.cca_vision(bel=bel, base_dir=output_dir)
