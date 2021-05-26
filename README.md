@@ -288,9 +288,6 @@ if __name__ == "__main__":
  
 ### Contributing
 Contributors and feedback from users are welcome. Don't hesitate to submit an issue or a PR, or request a new feature.
-Some milestones to reach in next releases:
-- The documentation should be more properly and consistently formatted.
-- More examples such as Jupyter notebboks should be uploaded on the repositery.
 
 ### References
   
