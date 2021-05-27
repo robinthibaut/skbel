@@ -5,7 +5,8 @@ Welcome to skbel's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+skbel
+learning
 
 Indices and tables
 ==================
