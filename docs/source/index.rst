@@ -11,6 +11,7 @@ Welcome to skbel's documentation!
    :caption: Contents:
 
 skbel
+modules
 examples
 
 Indices and tables
