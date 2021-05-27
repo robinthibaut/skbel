@@ -37,7 +37,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         cca=None,
     ):
         """
-        :param mode: How to infer the posterior distribution. "mvn" (default) or "kde" (to be implemented)
+        :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
         :param Y_pre_processing: sklearn pipeline for pre-processing the target.
