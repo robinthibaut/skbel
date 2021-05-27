@@ -2,8 +2,6 @@
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-import warnings
-
 import numpy as np
 from sklearn.base import (
     BaseEstimator,
