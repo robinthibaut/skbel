@@ -13,12 +13,13 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.join(os.path.abspath('.'), "skbel"))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'skbel'
-copyright = '2021, Robin Thibaut'
+copyright = '2021, Robin Thibaut, Ghent University'
 author = 'Robin Thibaut'
 
 
