@@ -2,12 +2,15 @@
 
 [![PyPI version](https://badge.fury.io/py/skbel.svg)](https://badge.fury.io/py/skbel)
 [![Build Status](https://travis-ci.com/robinthibaut/skbel.svg?branch=master)](https://travis-ci.com/robinthibaut/skbel)
+[![Documentation Status](https://readthedocs.org/projects/skbel/badge/?version=latest)](https://skbel.readthedocs.io/en/latest/?badge=latest)
 [![DOI](https://zenodo.org/badge/369214956.svg)](https://zenodo.org/badge/latestdoi/369214956)
 [![Downloads](https://pepy.tech/badge/skbel)](https://pepy.tech/project/skbel)
 
 ```pip install skbel```
 
 SKBEL is a Python package built on top of scikit-learn to implement the Bayesian Evidential Learning framework as described in Scheidt et al. (2018).
+
+Documentation: [skbel.readthedocs.io](https://skbel.readthedocs.io/en/latest/)
 
 Bayesian Evidential Learning - A Prediction-Focused Approach
 -----------------------------------------------------------------------------------------
