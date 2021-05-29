@@ -10,7 +10,6 @@ Welcome to skbel's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   source/skbel
    source/modules
 
 Indices and tables
