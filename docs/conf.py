@@ -21,8 +21,8 @@ copyright = '2021, Robin Thibaut'
 author = 'Robin Thibaut'
 
 # -- General configuration ---------------------------------------------------
-master_doc = "index"
-numpydoc_show_class_members = False
+# master_doc = "index"
+# numpydoc_show_class_members = False
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
