@@ -966,8 +966,8 @@ def cca_vision(bel, base_dir: str = None, root: str = None):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
-    :param base_dir
-    :param root:
+    :param base_dir: Base directory path
+    :param root: Directory path
     :return:
     """
 
