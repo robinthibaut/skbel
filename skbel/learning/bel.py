@@ -24,15 +24,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-        self,
-        mode: str = "mvn",
-        copy: bool = True,
-        *,
-        X_pre_processing=None,
-        Y_pre_processing=None,
-        X_post_processing=None,
-        Y_post_processing=None,
-        cca=None,
+            self,
+            mode: str = "mvn",
+            copy: bool = True,
+            *,
+            X_pre_processing=None,
+            Y_pre_processing=None,
+            X_post_processing=None,
+            Y_post_processing=None,
+            cca=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -57,6 +57,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Posterior parameters
         self.posterior_mean = None
         self.posterior_covariance = None
+        self.inverse_cdf = None
 
         # Parameters for sampling
         self._seed = None
@@ -240,9 +241,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Draw n_posts random samples from the multivariate normal distribution :
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
-        Y_samples = np.random.multivariate_normal(
-            mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
-        )
+
+        if self.mode == "mvn":
+            Y_samples = np.random.multivariate_normal(
+                mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
+            )
+        if self.mode == "kde":
+            Y_samples = np.zeros((self._n_posts, self.inverse_cdf.shape[0]))
+            for i, icdf in enumerate(self.inverse_cdf):
+                uniform_samples = np.random.random(self._n_posts)
+                Y_samples[:, i] = icdf(uniform_samples)
 
         return Y_samples
 
@@ -295,6 +303,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 X_obs=X_obs,
                 **dict_args,
             )
+            return self.posterior_mean, self.posterior_covariance
+
         else:
             # KDE inference
             for comp_n in range(self.cca.n_components):
@@ -302,35 +312,32 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 hp, sup = posterior_conditional(
                     X=self.X_f.T[comp_n], Y=self.Y_f.T[comp_n], X_obs=self.X_obs_f.T[comp_n]
                 )
-                hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
-                hp = _normalize_distribution(hp, sup)
+                hp[np.abs(hp) < 1e-6] = 0  # Set very small values to 0.
+
+                from scipy import interpolate
+                kde_cross = interpolate.interp1d(sup, hp, fill_value="extrapolate")
+
+                hp -= np.min(hp)
+                hp /= np.max(hp)
+
+                x_ = np.linspace(-5, 5, int(1e6))
+                hp = kde_cross(x_)
+                cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
+                cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
+                inverse_cdf = interpolate.interp1d(cdf_y, x_)  # this is a function
+
                 if comp_n > 0:
-                    my_arr = np.concatenate((my_arr, [hp]), axis=0)
-                    my_sup = np.concatenate((my_sup, [sup]), axis=0)
+                    icdf = np.concatenate((icdf, [inverse_cdf]), axis=0)
                 else:
-                    my_arr = [hp]
-                    my_sup = [sup]
+                    icdf = [inverse_cdf]
 
-                mean = sum(sup * hp) / sum(hp)  # Find mean
-                sigma = np.sqrt(sum(hp * (sup - mean) ** 2) / sum(hp))  # Find std dev
-                s = np.random.normal(mean, sigma, 200)  # Sample
+            self.inverse_cdf = icdf
 
-                if comp_n > 0:
-                    smean = np.concatenate((smean, [mean]), axis=0)
-                    sbig = np.concatenate((sbig, [s]), axis=0)
-                else:
-                    smean = [mean]
-                    sbig = [s]
-
-            self.posterior_mean = smean
-
-            self.posterior_covariance = np.cov(sbig)
-
-        return self.posterior_mean, self.posterior_covariance
+            return self.inverse_cdf
 
     def inverse_transform(
-        self,
-        Y_pred,
+            self,
+            Y_pred,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior Y to their physical space.
@@ -344,15 +351,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
-            + self.cca.y_mean_
+                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
+                + self.cca.y_mean_
         )  # Posterior PC scores
 
         # Back transform PC scores
         nc = self.Y_pre_processing["pca"].n_components_  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
-            :, : y_post.shape[1]
+        :, : y_post.shape[1]
         ] = y_post  # Fill the dummy matrix with the posterior PC
         y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 
