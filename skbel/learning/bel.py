@@ -9,6 +9,7 @@ from sklearn.base import (
     MultiOutputMixin,
 )
 from sklearn.utils import check_array
+from sklearn.pipeline import Pipeline
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
@@ -17,15 +18,26 @@ from sklearn.utils.validation import (
 from ..algorithms import mvn_inference, posterior_conditional
 
 
-class Dummy(TransformerMixin):
-    def __init__(self, **kwargs):
-        pass
+class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
+    """Dummy transformer that does nothing"""
+    def __init__(self):
+        self.fake_fit_ = np.zeros(1)
 
-    def fit(self, X, y=None):
+    def fit(self, X=None, y=None):
         return self
 
-    def transform(self, X):
-        return X
+    def transform(self, X=None, y=None):  # noqa
+        if X is not None and y is None:
+            return X
+
+        elif y is not None and X is None:
+            return y
+
+        else:
+            return X, y
+
+    def fit_transform(self, X=None, y=None, **fit_params):
+        return self.fit(X, y).transform(X, y)
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -58,6 +70,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.mode = mode
 
         # Processing pipelines
+        if X_pre_processing is None:
+            X_pre_processing = Pipeline([("nothing", Dummy())])
+        if Y_pre_processing is None:
+            Y_pre_processing = Pipeline([("nothing", Dummy())])
+        if X_post_processing is None:
+            X_post_processing = Pipeline([("nothing", Dummy())])
+        if Y_post_processing is None:
+            Y_post_processing = Pipeline([("nothing", Dummy())])
+        if cca is None:
+            cca = Pipeline([("nothing", Dummy())])
+
         self.X_pre_processing = X_pre_processing
         self.Y_pre_processing = Y_pre_processing
         self.X_post_processing = X_post_processing
