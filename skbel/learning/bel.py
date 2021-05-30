@@ -315,16 +315,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 hp[np.abs(hp) < 1e-6] = 0  # Set very small values to 0.
 
                 from scipy import interpolate
-                kde_cross = interpolate.interp1d(sup, hp, fill_value="extrapolate")
 
-                hp -= np.min(hp)
-                hp /= np.max(hp)
-
-                x_ = np.linspace(-5, 5, int(1e6))
-                hp = kde_cross(x_)
                 cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
                 cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-                inverse_cdf = interpolate.interp1d(cdf_y, x_)  # this is a function
+                inverse_cdf = interpolate.interp1d(cdf_y, sup)  # this is a function
 
                 if comp_n > 0:
                     icdf = np.concatenate((icdf, [inverse_cdf]), axis=0)

@@ -303,7 +303,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 200
+    num = 400
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col
@@ -374,7 +374,6 @@ def posterior_conditional(
     :param Y_obs: Observation (target, y-axis)
     :return:
     """
-    # TODO: Adapt this method to evaluate the posterior distribution moments
 
     # Compute KDE
     dens, support = kde_params(x=X, y=Y)
@@ -404,9 +403,6 @@ def posterior_conditional(
         return 0
 
     post = _normalize_distribution(post, support)
-
-    # pmean = np.mean(support[~np.isclose(hp, 0)])
-    # pvar = np.var(support[~np.isclose(hp, 0)])
 
     return post, support
 
