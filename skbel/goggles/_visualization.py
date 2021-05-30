@@ -677,7 +677,7 @@ def _kde_cca(
         #     alpha=0.5,
         #     label="$p(h^{c}|d^{c}_{*})_{KDE}$",
         # )
-        # ax_marg_y.legend(fontsize=10)
+        ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
         ax_joint.set_ylabel("$h^{c}$", fontsize=14)

@@ -13,6 +13,7 @@ from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
 from demo_config import Setup
+
 from skbel import utils
 from skbel.learning.bel import BEL
 
@@ -56,7 +57,6 @@ def init_bel():
         Y_pre_processing=Y_pre_processing,
         Y_post_processing=Y_post_processing,
         cca=cca,
-        mode="kde",
     )
 
     # Set PC cut
@@ -127,6 +127,7 @@ def bel_training(
 if __name__ == "__main__":
     # Initiate BEL model
     model = init_bel()
+    model.mode = "mvn"
 
     # Set directories
     data_dir = jp(os.getcwd(), "dataset")
@@ -156,10 +157,10 @@ if __name__ == "__main__":
     myvis.plot_results(bel, base_dir=output_dir)
 
     # Plot PCA
-    # myvis.pca_vision(
-    #     bel,
-    #     base_dir=output_dir,
-    # )
+    myvis.pca_vision(
+        bel,
+        base_dir=output_dir,
+    )
 
     # Plot CCA
     myvis.cca_vision(bel=bel, base_dir=output_dir)
