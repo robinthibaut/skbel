@@ -15,7 +15,17 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import mvn_inference, posterior_conditional
-from ..algorithms._statistics import _normalize_distribution
+
+
+class Dummy(TransformerMixin):
+    def __init__(self, **kwargs):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -307,14 +317,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         else:
             # KDE inference
+            from scipy import interpolate
             for comp_n in range(self.cca.n_components):
                 # Conditional:
                 hp, sup = posterior_conditional(
                     X=self.X_f.T[comp_n], Y=self.Y_f.T[comp_n], X_obs=self.X_obs_f.T[comp_n]
                 )
-                hp[np.abs(hp) < 1e-6] = 0  # Set very small values to 0.
-
-                from scipy import interpolate
+                hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
 
                 cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
                 cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0

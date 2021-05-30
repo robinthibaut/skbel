@@ -25,7 +25,7 @@ class KDE:
         *,
         bw_method: str = None,
         bw_adjust: float = 1,
-        gridsize: int = 200,
+        gridsize: int = 400,
         cut: float = 3,
         clip: list = None,
         cumulative: bool = False,
@@ -236,7 +236,7 @@ def kde_params(
     x: np.array = None,
     y: np.array = None,
     bw: float = None,
-    gridsize: int = 200,
+    gridsize: int = 400,
     cut: float = 3,
     clip=None,
     cumulative: bool = False,
@@ -303,7 +303,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 200
+    num = 400
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col

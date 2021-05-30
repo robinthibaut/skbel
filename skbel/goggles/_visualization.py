@@ -667,16 +667,16 @@ def _kde_cca(
         )
         # Conditional distribution
         #  - Line plot
-        # ax_marg_y.plot(hp, sup, color="red", alpha=0)
-        # #  - Fill to axis
-        # ax_marg_y.fill_betweenx(
-        #     sup,
-        #     0,
-        #     hp,
-        #     color="mediumorchid",
-        #     alpha=0.5,
-        #     label="$p(h^{c}|d^{c}_{*})_{KDE}$",
-        # )
+        ax_marg_y.plot(hp, sup, color="red", alpha=0)
+        #  - Fill to axis
+        ax_marg_y.fill_betweenx(
+            sup,
+            0,
+            hp,
+            color="mediumorchid",
+            alpha=0.5,
+            label="$p(h^{c}|d^{c}_{*})_{KDE}$",
+        )
         ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
