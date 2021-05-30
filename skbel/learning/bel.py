@@ -20,6 +20,7 @@ from ..algorithms import mvn_inference, posterior_conditional
 
 class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """Dummy transformer that does nothing"""
+
     def __init__(self):
         self.fake_fit_ = np.zeros(1)
 
@@ -88,8 +89,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.cca = cca
 
         # Posterior parameters
+        # MVN inference
         self.posterior_mean = None
         self.posterior_covariance = None
+        # KDE inference
         self.inverse_cdf = None
 
         # Parameters for sampling
@@ -315,21 +318,23 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_obs = self.X_post_processing.transform(X_obs)
         self.X_obs_f = X_obs
 
-        # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-        # Number of PCA components for the curves
-        x_dim = self.X_n_pc
-        noise = 0.01
-        # I matrix. (n_comp_PCA, n_comp_PCA)
-        x_cov = np.eye(x_dim) * noise
-        # (n_comp_CCA, n_comp_CCA)
-        # Get the rotation matrices
-        x_rotations = self.cca.x_rotations_
-        x_cov = x_rotations.T @ x_cov @ x_rotations
-        dict_args = {"x_cov": x_cov}
-
-        X, Y = self.X_f, self.Y_f
         # Estimate the posterior mean and covariance
         if self.mode == "mvn":
+
+            # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+            # Number of PCA components for the curves
+            x_dim = self.X_n_pc
+            noise = 0.01
+            # I matrix. (n_comp_PCA, n_comp_PCA)
+            x_cov = np.eye(x_dim) * noise
+            # (n_comp_CCA, n_comp_CCA)
+            # Get the rotation matrices
+            x_rotations = self.cca.x_rotations_
+            x_cov = x_rotations.T @ x_cov @ x_rotations
+            dict_args = {"x_cov": x_cov}
+
+            X, Y = self.X_f, self.Y_f
+
             self.posterior_mean, self.posterior_covariance = mvn_inference(
                 X=X,
                 Y=Y,
