@@ -6,6 +6,8 @@ through PCA, and then apply CCA.
 
 It would be interesting to try other techniques and implement it in the framework.
 
+Alternative blueprints could be written in the same style as the BEL class implementing the classic scheme.
+
 """
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
@@ -65,19 +67,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-            self,
-            mode: str = "mvn",
-            copy: bool = True,
-            *,
-            X_pre_processing=None,
-            Y_pre_processing=None,
-            X_post_processing=None,
-            Y_post_processing=None,
-            cca=None,
-            x_pc=None,
-            y_pc=None,
-            x_dim=None,
-            y_dim=None,
+        self,
+        mode: str = "mvn",
+        copy: bool = True,
+        *,
+        X_pre_processing=None,
+        Y_pre_processing=None,
+        X_post_processing=None,
+        Y_post_processing=None,
+        cca=None,
+        x_pc=None,
+        y_pc=None,
+        x_dim=None,
+        y_dim=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -382,10 +384,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             # KDE inference
             from scipy import interpolate
+
             for comp_n in range(self.cca.n_components):
                 # Conditional:
                 hp, sup = posterior_conditional(
-                    X=self.X_f.T[comp_n], Y=self.Y_f.T[comp_n], X_obs=self.X_obs_f.T[comp_n]
+                    X=self.X_f.T[comp_n],
+                    Y=self.Y_f.T[comp_n],
+                    X_obs=self.X_obs_f.T[comp_n],
                 )
                 hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
 
@@ -403,8 +408,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return self.inverse_cdf
 
     def inverse_transform(
-            self,
-            Y_pred,
+        self,
+        Y_pred,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior Y to their physical space.
@@ -418,15 +423,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
-                + self.cca.y_mean_
+            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
+            + self.cca.y_mean_
         )  # Posterior PC scores
 
         # Back transform PC scores
         nc = self.Y_pc.shape[0]  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
-        :, : y_post.shape[1]
+            :, : y_post.shape[1]
         ] = y_post  # Fill the dummy matrix with the posterior PC
         y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 

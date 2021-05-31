@@ -663,7 +663,7 @@ def _kde_cca(
             kde_y_samp,
             color="teal",
             alpha=0.5,
-            label="$p(h^{c}|d^{c}_{*})$"+f"{bel.mode.upper()}",
+            label="$p(h^{c}|d^{c}_{*})$" + f"{bel.mode.upper()}",
         )
         # Conditional distribution
         #  - Line plot
