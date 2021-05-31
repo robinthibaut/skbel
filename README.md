@@ -37,7 +37,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 #### Dimensionality reduction
 - Principal Component Analysis (PCA) is applied to both target and predictor to aggregate the correlated variables into a few independent Principal Components (PC’s).
 #### Learning
-- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each another.
+- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each other.
 #### Post-processing
 - Specific post-processing is applied to the CV's if necessary (such as CV normalization).
 #### Posterior distribution inference
@@ -145,10 +145,6 @@ def init_bel():
   
 - The ```X_pre_processing``` and ```Y_pre_processing``` objects are pipelines which will first scale the data for predictor and target, then apply the dimension reduction through PCA.
 
-- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
-
-- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
-
 - The ```X_post_processing``` and ```Y_post_processing``` objects are pipelines which will normalize predictor and target CV's.
   
 - Finally, the BEL model is constructed by passing as arguments all these pipelines in the `BEL` object.
@@ -215,8 +211,12 @@ def bel_training(
   ```
 
 #### Load the dataset and run everything
-The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
-  ```python
+- The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
+- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
+- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
+- Note that the variable `y_test` is the unknown to predict. It is simply saved within the BEL model for later uses (such as plotting or experimental design), but it is ignored during the training.
+  
+```python
 if __name__ == "__main__":
 
     # Set directories
