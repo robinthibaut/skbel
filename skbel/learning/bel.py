@@ -9,7 +9,6 @@ It would be interesting to try other techniques and implement it in the framewor
 """
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import warnings
 
 import numpy as np
 from sklearn.base import (
