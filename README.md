@@ -145,10 +145,6 @@ def init_bel():
   
 - The ```X_pre_processing``` and ```Y_pre_processing``` objects are pipelines which will first scale the data for predictor and target, then apply the dimension reduction through PCA.
 
-- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
-
-- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
-
 - The ```X_post_processing``` and ```Y_post_processing``` objects are pipelines which will normalize predictor and target CV's.
   
 - Finally, the BEL model is constructed by passing as arguments all these pipelines in the `BEL` object.
@@ -215,7 +211,9 @@ def bel_training(
   ```
 
 #### Load the dataset and run everything
-The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
+- The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
+- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
+- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
   ```python
 if __name__ == "__main__":
 
