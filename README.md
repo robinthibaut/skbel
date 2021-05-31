@@ -214,7 +214,8 @@ def bel_training(
 - The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
 - An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
 - The CCA operator `cca` is set to keep the maximum number of CV possible (30).
-  ```python
+  
+```python
 if __name__ == "__main__":
 
     # Set directories
