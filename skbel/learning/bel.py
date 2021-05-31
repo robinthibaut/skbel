@@ -1,6 +1,15 @@
-"""Bayesian Evidential Learning Framework"""
+"""
+Bayesian Evidential Learning Framework
+
+Currently, the common practice is to first transform predictor and target variables
+through PCA, and then apply CCA.
+
+It would be interesting to try other techniques and implement it in the framework.
+
+"""
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+import warnings
 
 import numpy as np
 from sklearn.base import (
@@ -415,7 +424,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )  # Posterior PC scores
 
         # Back transform PC scores
-        nc = self.Y_pre_processing["pca"].n_components_  # Number of components
+        nc = self.Y_pc.shape[0]  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
         :, : y_post.shape[1]
