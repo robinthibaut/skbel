@@ -37,6 +37,16 @@ class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             return X, y
 
+    def inverse_transform(self, X=None, y=None):  # noqa
+        if X is not None and y is None:
+            return X
+
+        elif y is not None and X is None:
+            return y
+
+        else:
+            return X, y
+
     def fit_transform(self, X=None, y=None, **fit_params):
         return self.fit(X, y).transform(X, y)
 

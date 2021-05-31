@@ -49,7 +49,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 <img src="/docs/img/flow-01.png">
 </p>
 <p align="center">
-  Figure 2: Typical BEL worflow.
+  Figure 2: Typical BEL workflow.
 <p align="center">
  
 Example
@@ -93,6 +93,7 @@ from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
 from demo_config import Setup
+
 from skbel import utils
 from skbel.learning.bel import BEL
 
@@ -207,7 +208,7 @@ def bel_training(bel_,
     bel_.fit(X=X_train_, Y=y_train_)
 
     # %% Sample for the observation
-    # Extract n random sample (target pc's).
+    # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
     bel_.predict(x_test_)
 
