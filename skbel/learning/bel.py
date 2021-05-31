@@ -66,6 +66,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             X_post_processing=None,
             Y_post_processing=None,
             cca=None,
+            x_pc=None,
+            y_pc=None,
+            x_dim=None,
+            y_dim=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -75,6 +79,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
         :param cca: sklearn cca object
+        :param x_pc: Number of principal components to keep (predictor).
+        :param y_pc: Number of principal components to keep (target).
+        :param x_dim: Predictor original dimensions.
+        :param y_dim: Target original dimensions.
         """
         self.copy = copy
         # How to infer the posterior parameters
@@ -110,12 +118,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self._n_posts = None
 
         # Original dataset
-        self.X_shape, self.Y_shape = None, None
+        self._X_shape, self._Y_shape = x_dim, y_dim
         self.X, self.Y = None, None
         self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
-        self._X_n_pc, self._Y_n_pc = None, None
+        self._X_n_pc, self._Y_n_pc = x_pc, y_pc
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -127,13 +135,31 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     # The following properties are central to the BEL framework
     @property
+    def X_shape(self):
+        """Predictor original shape"""
+        return self._X_shape
+
+    @X_shape.setter
+    def X_shape(self, x_shape):
+        self._X_shape = x_shape
+
+    @property
+    def Y_shape(self):
+        """Predictor original shape"""
+        return self._Y_shape
+
+    @Y_shape.setter
+    def Y_shape(self, y_shape):
+        self._Y_shape = y_shape
+
+    @property
     def X_n_pc(self):
         """Number of components to keep after pre-processing (dimensionality reduction)"""
         return self._X_n_pc
 
     @X_n_pc.setter
-    def X_n_pc(self, X_n_pc):
-        self._X_n_pc = X_n_pc
+    def X_n_pc(self, x_n_pc):
+        self._X_n_pc = x_n_pc
 
     @property
     def Y_n_pc(self):
@@ -141,8 +167,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self._Y_n_pc
 
     @Y_n_pc.setter
-    def Y_n_pc(self, Y_n_pc):
-        self._Y_n_pc = Y_n_pc
+    def Y_n_pc(self, y_n_pc):
+        self._Y_n_pc = y_n_pc
 
     @property
     def n_posts(self):
@@ -150,8 +176,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self._n_posts
 
     @n_posts.setter
-    def n_posts(self, n_posts):
-        self._n_posts = n_posts
+    def n_posts(self, n_p):
+        self._n_posts = n_p
 
     @property
     def seed(self):
@@ -159,8 +185,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self._seed
 
     @seed.setter
-    def seed(self, seed):
-        self._seed = seed
+    def seed(self, s):
+        self._seed = s
         np.random.seed(self._seed)
 
     def fit(self, X, Y):
@@ -174,14 +200,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         check_consistent_length(X, Y)
         self.X, self.Y = X, Y  # Save dataframe with names
-        # Store original shape
-        try:
-            self.X_shape, self.Y_shape = (
-                X.attrs["physical_shape"],
-                Y.attrs["physical_shape"],
-            )
-        except AttributeError:
-            self.X_shape, self.Y_shape = (1,), (1,)
 
         _X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2

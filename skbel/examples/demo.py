@@ -12,7 +12,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
-from demo_config import Setup
 
 from skbel import utils
 from skbel.learning.bel import BEL
@@ -20,7 +19,7 @@ from skbel.learning.bel import BEL
 
 def init_bel():
     """
-    Set all BEL pipelines
+    Set all BEL pipelines. This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -37,10 +36,7 @@ def init_bel():
     )
 
     # Canonical Correlation Analysis
-    # Number of CCA components is chosen as the min number of PC
-    n_pc_pred, n_pc_targ = 50, 30
-
-    cca = CCA(n_components=min(n_pc_targ, n_pc_pred), max_iter=500 * 20, tol=1e-6)
+    cca = CCA()
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
@@ -58,10 +54,6 @@ def init_bel():
         Y_post_processing=Y_post_processing,
         cca=cca,
     )
-
-    # Set PC cut
-    bel_model.X_n_pc = n_pc_pred
-    bel_model.Y_n_pc = n_pc_targ
 
     return bel_model
 
@@ -114,7 +106,7 @@ def bel_training(
     bel_.fit(X=X_train_, Y=y_train_)
 
     # %% Sample for the observation
-    # Extract n random sample (target pc's).
+    # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
     bel_.predict(x_test_)
 
@@ -125,9 +117,6 @@ def bel_training(
 
 
 if __name__ == "__main__":
-    # Initiate BEL model
-    model = init_bel()
-    model.mode = "mvn"
 
     # Set directories
     data_dir = jp(os.getcwd(), "dataset")
@@ -139,6 +128,23 @@ if __name__ == "__main__":
     y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
     y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
 
+    # Initiate BEL model
+    model = init_bel()
+
+    # Set model parameters
+    model.mode = "mvn"  # How to compute the posterior conditional distribution
+    # Set PC cut
+    model.X_n_pc = 50
+    model.Y_n_pc = 30
+    # Save original dimensions of both predictor and target
+    model.X_shape = (6, 200)  # Six curves with 200 time steps each
+    model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
+    # Number of CCA components is chosen as the min number of PC
+    n_cca = min(model.X_n_pc, model.Y_n_pc)
+    model.cca.n_components = n_cca
+    # Number of samples to be extracted from the posterior distribution
+    model.n_posts = 400
+
     # Train model
     bel_training(
         bel_=model,
@@ -149,18 +155,14 @@ if __name__ == "__main__":
         directory=output_dir,
     )
 
-    # Plot the results
-    bel = joblib.load(jp(output_dir, "obj", "bel.pkl"))
-    bel.n_posts = Setup.HyperParameters.n_posts
-
     # Plot raw data
-    myvis.plot_results(bel, base_dir=output_dir)
+    myvis.plot_results(model, base_dir=output_dir)
 
     # Plot PCA
     myvis.pca_vision(
-        bel,
+        model,
         base_dir=output_dir,
     )
 
     # Plot CCA
-    myvis.cca_vision(bel=bel, base_dir=output_dir)
+    myvis.cca_vision(bel=model, base_dir=output_dir)

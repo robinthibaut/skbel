@@ -1,4 +1,7 @@
+"""pytest unit"""
+
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
+
 import os
 from os.path import join as jp
 
