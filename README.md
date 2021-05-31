@@ -37,7 +37,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
 #### Dimensionality reduction
 - Principal Component Analysis (PCA) is applied to both target and predictor to aggregate the correlated variables into a few independent Principal Components (PC’s).
 #### Learning
-- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each another.
+- Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each other.
 #### Post-processing
 - Specific post-processing is applied to the CV's if necessary (such as CV normalization).
 #### Posterior distribution inference
