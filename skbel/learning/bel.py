@@ -25,7 +25,7 @@ from sklearn.utils.validation import (
     check_consistent_length,
 )
 
-from ..algorithms import mvn_inference, posterior_conditional
+from ..algorithms import mvn_inference, posterior_conditional, it_sampling
 
 
 class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -67,19 +67,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-        self,
-        mode: str = "mvn",
-        copy: bool = True,
-        *,
-        X_pre_processing=None,
-        Y_pre_processing=None,
-        X_post_processing=None,
-        Y_post_processing=None,
-        cca=None,
-        x_pc=None,
-        y_pc=None,
-        x_dim=None,
-        y_dim=None,
+            self,
+            mode: str = "mvn",
+            copy: bool = True,
+            *,
+            X_pre_processing=None,
+            Y_pre_processing=None,
+            X_post_processing=None,
+            Y_post_processing=None,
+            cca=None,
+            x_pc=None,
+            y_pc=None,
+            x_dim=None,
+            y_dim=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -121,7 +121,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.posterior_mean = None
         self.posterior_covariance = None
         # KDE inference
-        self.inverse_cdf = None
+        self.pdf = None
 
         # Parameters for sampling
         self._seed = None
@@ -321,10 +321,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
             )
         if self.mode == "kde":
-            Y_samples = np.zeros((self._n_posts, self.inverse_cdf.shape[0]))
-            for i, icdf in enumerate(self.inverse_cdf):
-                uniform_samples = np.random.random(self._n_posts)
-                Y_samples[:, i] = icdf(uniform_samples)
+            Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
+            for i, pdf in enumerate(self.pdf):
+                # uniform_samples = np.random.random(self._n_posts)
+                uniform_samples = it_sampling(pdf=pdf,
+                                              num_samples=self._n_posts,
+                                              lower_bd=pdf.x.min(),
+                                              upper_bd=pdf.x.max(),
+                                              guess=1)
+
+                # Y_samples[:, i] = icdf(uniform_samples)
+                Y_samples[:, i] = uniform_samples
 
         return Y_samples
 
@@ -393,23 +400,24 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs=self.X_obs_f.T[comp_n],
                 )
                 hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
+                ipdf = interpolate.interp1d(sup, hp, kind="cubic")
 
-                cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
-                cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-                inverse_cdf = interpolate.interp1d(cdf_y, sup)  # this is a function
+                # cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
+                # cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
+                # pdf = interpolate.interp1d(cdf_y, sup)  # this is a function
 
                 if comp_n > 0:
-                    icdf = np.concatenate((icdf, [inverse_cdf]), axis=0)
+                    pdf = np.concatenate((pdf, [ipdf]), axis=0)
                 else:
-                    icdf = [inverse_cdf]
+                    pdf = [ipdf]
 
-            self.inverse_cdf = icdf
+            self.pdf = pdf
 
-            return self.inverse_cdf
+            return self.pdf
 
     def inverse_transform(
-        self,
-        Y_pred,
+            self,
+            Y_pred,
     ) -> np.array:
         """
         Back-transforms the sampled gaussian distributed posterior Y to their physical space.
@@ -423,15 +431,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
-            + self.cca.y_mean_
+                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
+                + self.cca.y_mean_
         )  # Posterior PC scores
 
         # Back transform PC scores
         nc = self.Y_pc.shape[0]  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
-            :, : y_post.shape[1]
+        :, : y_post.shape[1]
         ] = y_post  # Fill the dummy matrix with the posterior PC
         y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
 
