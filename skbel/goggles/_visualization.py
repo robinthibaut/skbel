@@ -552,7 +552,7 @@ def _kde_cca(
     bel.Y_obs_f = bel.transform(Y=Y_obs)
 
     # load prediction object
-    post_test = bel.random_sample(n_posts=bel._n_posts)
+    post_test = bel.random_sample(n_posts=5000)
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters

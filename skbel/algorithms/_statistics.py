@@ -609,6 +609,7 @@ def _chebnodes(a, b, n):
 def adaptive_chebfit(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
     """Fit a chebyshev polynomial, increasing sampling rate until coefficient
     tail falls below provided tolerance.
+    Copyright (c) 2017 Peter Wills
 
     Parameters
     ----------
@@ -654,6 +655,7 @@ def adaptive_chebfit(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
 
 def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
     """Get Chebyshev approximation of the CDF.
+    Copyright (c) 2017 Peter Wills
 
     Parameters
     ----------
@@ -700,6 +702,7 @@ def it_sampling(pdf,
                 upper_bd=np.inf,
                 chebyshev=False):
     """Sample from an arbitrary, unnormalized PDF.
+    Copyright (c) 2017 Peter Wills
 
     Parameters
     ----------
