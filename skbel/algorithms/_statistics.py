@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from scipy import integrate, ndimage, stats
+from scipy import integrate, ndimage, stats, interpolate
 from scipy.optimize import root
 from numpy.random import uniform
 
@@ -14,7 +14,7 @@ from sklearn.utils import check_array
 
 from skbel.algorithms.extmath import get_block
 
-__all__ = ["KDE", "kde_params", "posterior_conditional", "mvn_inference", "it_sampling"]
+__all__ = ["KDE", "kde_params", "posterior_conditional", "mvn_inference", "it_sampling", "normalize"]
 
 
 class KDE:
@@ -648,6 +648,7 @@ def adaptive_chebfit(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
         coeffs = chebfit(x, y, n - 1)
         error = max(np.abs(coeffs[-5:]))
         i += 1
+
     return x, coeffs
 
 
@@ -695,7 +696,6 @@ def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
 
 def it_sampling(pdf,
                 num_samples,
-                guess,
                 lower_bd=-np.inf,
                 upper_bd=np.inf,
                 chebyshev=False):
@@ -747,6 +747,12 @@ def it_sampling(pdf,
 
     seeds = uniform(0, 1, num_samples)
     samples = []
+    # Get initial guess
+    cdf_y = np.cumsum(pdf.y)  # cumulative distribution function, cdf
+    cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
+    pdf_e = interpolate.interp1d(cdf_y, pdf.x)  # this is a function
+    guess = np.mean([pdf_e(np.random.rand()) for _ in range(100)])
+
     for seed in seeds:
         def shifted(x):
             return cdf(x) - seed
@@ -755,6 +761,3 @@ def it_sampling(pdf,
         samples.append(soln.x[0])
 
     return np.array(samples)
-
-
-

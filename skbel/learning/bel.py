@@ -25,7 +25,8 @@ from sklearn.utils.validation import (
     check_consistent_length,
 )
 
-from ..algorithms import mvn_inference, posterior_conditional, it_sampling
+from ..algorithms import mvn_inference, posterior_conditional, it_sampling, normalize
+from ..algorithms._statistics import _normalize_distribution
 
 
 class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -323,14 +324,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.mode == "kde":
             Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
             for i, pdf in enumerate(self.pdf):
-                # uniform_samples = np.random.random(self._n_posts)
                 uniform_samples = it_sampling(pdf=pdf,
                                               num_samples=self._n_posts,
                                               lower_bd=pdf.x.min(),
                                               upper_bd=pdf.x.max(),
-                                              guess=1)
+                                              chebyshev=True,
+                                              )
 
-                # Y_samples[:, i] = icdf(uniform_samples)
                 Y_samples[:, i] = uniform_samples
 
         return Y_samples
@@ -400,11 +400,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs=self.X_obs_f.T[comp_n],
                 )
                 hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
+                hp = _normalize_distribution(hp, sup)
                 ipdf = interpolate.interp1d(sup, hp, kind="cubic")
-
-                # cdf_y = np.cumsum(hp)  # cumulative distribution function, cdf
-                # cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-                # pdf = interpolate.interp1d(cdf_y, sup)  # this is a function
 
                 if comp_n > 0:
                     pdf = np.concatenate((pdf, [ipdf]), axis=0)
