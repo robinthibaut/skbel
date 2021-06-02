@@ -29,7 +29,7 @@ class KDE:
             *,
             bw_method: str = None,
             bw_adjust: float = 1,
-            gridsize: int = 400,
+            gridsize: int = 200,
             cut: float = 3,
             clip: list = None,
             cumulative: bool = False,
@@ -240,7 +240,7 @@ def kde_params(
         x: np.array = None,
         y: np.array = None,
         bw: float = None,
-        gridsize: int = 400,
+        gridsize: int = 200,
         cut: float = 3,
         clip=None,
         cumulative: bool = False,
@@ -307,7 +307,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 400
+    num = 200
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col
@@ -753,14 +753,23 @@ def it_sampling(pdf,
     # Get initial guess
     cdf_y = np.cumsum(pdf.y)  # cumulative distribution function, cdf
     cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-    pdf_e = interpolate.interp1d(cdf_y, pdf.x)  # this is a function
-    guess = np.mean([pdf_e(np.random.rand()) for _ in range(100)])
+    inverse_cdf = interpolate.interp1d(cdf_y, pdf.x)  # this is a function
+    simple_samples = inverse_cdf(seeds)
 
-    for seed in seeds:
-        def shifted(x):
-            return cdf(x) - seed
+    mean = sum(pdf.x * pdf.y) / sum(pdf.y)
+    estd = np.sqrt(sum(pdf.y * (pdf.x - mean) ** 2) / sum(pdf.y))
 
-        soln = root(shifted, guess)
-        samples.append(soln.x[0])
+    if estd <= 0.6:
+        return simple_samples
 
-    return np.array(samples)
+    else:
+        guess = np.mean(simple_samples)
+
+        for seed in seeds:
+            def shifted(x):
+                return cdf(x) - seed
+
+            soln = root(shifted, guess)
+            samples.append(soln.x[0])
+
+        return np.array(samples)
