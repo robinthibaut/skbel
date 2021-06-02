@@ -753,15 +753,16 @@ def it_sampling(pdf,
     # Get initial guess
     cdf_y = np.cumsum(pdf.y)  # cumulative distribution function, cdf
     cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-    inverse_cdf = interpolate.interp1d(cdf_y, pdf.x)  # this is a function
+    inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")  # this is a function
     simple_samples = inverse_cdf(seeds)
 
+    # Compute empirical mean and standard deviation
     mean = sum(pdf.x * pdf.y) / sum(pdf.y)
     estd = np.sqrt(sum(pdf.y * (pdf.x - mean) ** 2) / sum(pdf.y))
-
+    # If distribution is too tight (small std) then use of simple inverse transform sampling
     if estd <= 0.6:
         return simple_samples
-
+    # Otherwise, use Chebyshev approach
     else:
         guess = np.mean(simple_samples)
 
