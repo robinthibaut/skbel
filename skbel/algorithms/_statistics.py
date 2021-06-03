@@ -14,7 +14,14 @@ from sklearn.utils import check_array
 
 from skbel.algorithms.extmath import get_block
 
-__all__ = ["KDE", "kde_params", "posterior_conditional", "mvn_inference", "it_sampling", "normalize"]
+__all__ = [
+    "KDE",
+    "kde_params",
+    "posterior_conditional",
+    "mvn_inference",
+    "it_sampling",
+    "normalize",
+]
 
 
 class KDE:
@@ -25,14 +32,14 @@ class KDE:
     """
 
     def __init__(
-            self,
-            *,
-            bw_method: str = None,
-            bw_adjust: float = 1,
-            gridsize: int = 200,
-            cut: float = 3,
-            clip: list = None,
-            cumulative: bool = False,
+        self,
+        *,
+        bw_method: str = None,
+        bw_adjust: float = 1,
+        gridsize: int = 200,
+        cut: float = 3,
+        clip: list = None,
+        cumulative: bool = False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -70,7 +77,7 @@ class KDE:
 
     @staticmethod
     def _define_support_grid(
-            x: np.array, bw: float, cut: float, clip: list, gridsize: int
+        x: np.array, bw: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
@@ -101,11 +108,11 @@ class KDE:
         return grid1, grid2
 
     def define_support(
-            self,
-            x1: np.array,
-            x2: np.array = None,
-            weights: np.array = None,
-            cache: bool = True,
+        self,
+        x1: np.array,
+        x2: np.array = None,
+        weights: np.array = None,
+        cache: bool = True,
     ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
@@ -176,8 +183,8 @@ class KDE:
 
 
 def _univariate_density(
-        data_variable: pd.DataFrame,
-        estimate_kws: dict,
+    data_variable: pd.DataFrame,
+    estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -200,8 +207,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-        data: pd.DataFrame,
-        estimate_kws: dict,
+    data: pd.DataFrame,
+    estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -237,15 +244,15 @@ def _bivariate_density(
 
 
 def kde_params(
-        x: np.array = None,
-        y: np.array = None,
-        bw: float = None,
-        gridsize: int = 200,
-        cut: float = 3,
-        clip=None,
-        cumulative: bool = False,
-        bw_method: str = "scott",
-        bw_adjust: int = 1,
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    gridsize: int = 200,
+    cut: float = 3,
+    clip=None,
+    cumulative: bool = False,
+    bw_method: str = "scott",
+    bw_adjust: int = 1,
 ):
     """
     Obtain density and support (grid) of the bivariate KDE
@@ -314,11 +321,11 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
 
 
 def _conditional_distribution(
-        kde_array: np.array,
-        x_array: np.array,
-        y_array: np.array,
-        x: float = None,
-        y: float = None,
+    kde_array: np.array,
+    x_array: np.array,
+    y_array: np.array,
+    x: float = None,
+    y: float = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -368,7 +375,7 @@ def _normalize_distribution(post: np.array, support: np.array):
 
 
 def posterior_conditional(
-        X: np.array, Y: np.array, X_obs: float = None, Y_obs: float = None
+    X: np.array, Y: np.array, X_obs: float = None, Y_obs: float = None
 ):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
@@ -412,7 +419,7 @@ def posterior_conditional(
 
 
 def mvn_inference(
-        X: np.array, Y: np.array, X_obs: np.array, **kwargs
+    X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
     """
     Estimating posterior mean and covariance of the target.
@@ -458,7 +465,7 @@ def mvn_inference(
     x_ls_predicted = np.matmul(Y, g.T)
     x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
     x_modeling_error = (
-            X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
+        X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
     )
     # (n_comp_CCA, n_training)
 
@@ -482,7 +489,7 @@ def mvn_inference(
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (
-            d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
+        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
     )  # (n_comp_CCA,)
 
     return y_posterior_mean, y_posterior_covariance
@@ -520,10 +527,10 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
     if lower_bd >= upper_bd:
-        raise ValueError('Lower bound must be less than upper bound.')
+        raise ValueError("Lower bound must be less than upper bound.")
     quadrature = integrate.quad(pdf, lower_bd, upper_bd, full_output=1)
     if not _convergent(quadrature):
-        raise ValueError('PDF integral likely divergent.')
+        raise ValueError("PDF integral likely divergent.")
     A = quadrature[0]
 
     def pdf_normed(x):
@@ -533,6 +540,7 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
             return 0
 
     if vectorize:
+
         def pdf_vectorized(x):
             try:
                 return pdf_normed(x)
@@ -569,7 +577,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
     pdf_norm = normalize(pdf, lower_bd, upper_bd)
 
     def cdf_number(x):
-        "Numerical cdf"""
+        "Numerical cdf" ""
         if x < lower_bd:
             return 0.0
         elif x > upper_bd:
@@ -589,8 +597,13 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
 def _chebnodes(a, b, n):
     """Chebyshev nodes of rank n on integral [a,b]."""
     if not a < b:
-        raise ValueError('Lower bound must be less than upper bound.')
-    return np.array([1 / 2 * ((a + b) + (b - a) * np.cos((2 * k - 1) * np.pi / (2 * n))) for k in range(1, n + 1)])
+        raise ValueError("Lower bound must be less than upper bound.")
+    return np.array(
+        [
+            1 / 2 * ((a + b) + (b - a) * np.cos((2 * k - 1) * np.pi / (2 * n)))
+            for k in range(1, n + 1)
+        ]
+    )
 
 
 def adaptive_chebfit(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
@@ -665,9 +678,9 @@ def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
         as an argument, and returns an iterable of floats of the same length.
     """
     if not (np.isfinite(lower_bd) and np.isfinite(upper_bd)):
-        raise ValueError('Bounds must be finite.')
+        raise ValueError("Bounds must be finite.")
     if not lower_bd < upper_bd:
-        raise ValueError('Lower bound must be less than upper bound.')
+        raise ValueError("Lower bound must be less than upper bound.")
 
     x, coeffs = adaptive_chebfit(pdf, lower_bd, upper_bd, eps)
     int_coeffs = chebint(coeffs)
@@ -681,11 +694,7 @@ def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
     return cdf
 
 
-def it_sampling(pdf,
-                num_samples,
-                lower_bd=-np.inf,
-                upper_bd=np.inf,
-                chebyshev=False):
+def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=False):
     """Sample from an arbitrary, unnormalized PDF.
     Copyright (c) 2017 Peter Wills
 
@@ -729,11 +738,15 @@ def it_sampling(pdf,
     if chebyshev:
 
         if not (np.isfinite(lower_bd) and np.isfinite(upper_bd)):
-            raise ValueError('Bounds must be finite for Chebyshev approximation of CDF.')
+            raise ValueError(
+                "Bounds must be finite for Chebyshev approximation of CDF."
+            )
 
         cdf = chebcdf(pdf, lower_bd, upper_bd)
         cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
-        inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")
+        inverse_cdf = interpolate.interp1d(
+            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+        )
         simple_samples = inverse_cdf(seeds)
 
         # Compute empirical mean and standard deviation
@@ -749,6 +762,7 @@ def it_sampling(pdf,
             guess = np.mean(simple_samples)
 
             for seed in seeds:
+
                 def shifted(x):
                     return cdf(x) - seed
 
@@ -759,7 +773,8 @@ def it_sampling(pdf,
     else:
         cdf = get_cdf(pdf, lower_bd, upper_bd)
         cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
-        inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")
+        inverse_cdf = interpolate.interp1d(
+            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+        )
         simple_samples = inverse_cdf(seeds)
         return simple_samples
-

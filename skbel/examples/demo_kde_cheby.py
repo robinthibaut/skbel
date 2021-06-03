@@ -132,7 +132,9 @@ if __name__ == "__main__":
     model = init_bel()
 
     # Set model parameters
-    model.mode = "kde_chebyshev"  # How to compute the posterior conditional distribution
+    model.mode = (
+        "kde_chebyshev"  # How to compute the posterior conditional distribution
+    )
     # Set PC cut
     model.X_n_pc = 50
     model.Y_n_pc = 30
