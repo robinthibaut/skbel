@@ -298,12 +298,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             return _xp, _yp
 
-    def random_sample(self, n_posts: int = None) -> np.array:
+    def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
         """
         Random sample the inferred posterior Gaussian distribution
-        :param n_posts:
+        :param n_posts: int
+        :param mode: str
         :return:
         """
+        if mode is not None:
+            self.mode = mode
+
         # Set the seed for later use
         if self.seed is None:
             self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
@@ -321,7 +325,20 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_samples = np.random.multivariate_normal(
                 mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
             )
+
         if self.mode == "kde":
+            Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
+            for i, pdf in enumerate(self.pdf):
+                uniform_samples = it_sampling(pdf=pdf,
+                                              num_samples=self._n_posts,
+                                              lower_bd=pdf.x.min(),
+                                              upper_bd=pdf.x.max(),
+                                              chebyshev=False,
+                                              )
+
+                Y_samples[:, i] = uniform_samples
+
+        if self.mode == "kde_chebyshev":
             Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
             for i, pdf in enumerate(self.pdf):
                 uniform_samples = it_sampling(pdf=pdf,
@@ -345,10 +362,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         return self.fit(X, y).transform(X, y)
 
-    def predict(self, X_obs) -> (np.array, np.array):
+    def predict(self, X_obs, mode: str = None) -> (np.array, np.array):
         """
         Make predictions, in the BEL fashion.
         """
+        if mode is not None:
+            self.mode = mode
         self.X_obs = X_obs  # Save dataframe with name
         try:
             X_obs = check_array(self.X_obs)

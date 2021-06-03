@@ -552,7 +552,7 @@ def _kde_cca(
     bel.Y_obs_f = bel.transform(Y=Y_obs)
 
     # load prediction object
-    post_test = bel.random_sample(n_posts=5000)
+    post_test = bel.random_sample(n_posts=400)
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -565,7 +565,7 @@ def _kde_cca(
 
         # Plot h posterior given d
         density, support = kde_params(
-            x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=1000
+            x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
         )
         xx, yy = support
 

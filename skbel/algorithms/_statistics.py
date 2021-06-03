@@ -488,11 +488,9 @@ def mvn_inference(
     return y_posterior_mean, y_posterior_covariance
 
 
-_MESSAGE = "The integral is probably divergent, or slowly convergent."
-
-
 def _convergent(quadrature):
-    if len(quadrature) > 3 and quadrature[3] == _MESSAGE:
+    msg = "The integral is probably divergent, or slowly convergent."
+    if len(quadrature) > 3 and quadrature[3] == msg:
         return False
     else:
         return True
@@ -528,7 +526,6 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
         raise ValueError('PDF integral likely divergent.')
     A = quadrature[0]
 
-    # pdf_normed = lambda x: pdf(x) / A if lower_bd <= x <= upper_bd else 0
     def pdf_normed(x):
         if lower_bd <= x <= upper_bd:
             return pdf(x) / A
@@ -587,16 +584,6 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
             return cdf_number(x)
 
     return cdf_vector
-
-
-############################################
-# CHEBYSHEV APPROXIMATION OF PDF & CDF
-############################################
-
-# This section follows the work of Olver & Townsend (2013), who suggest using
-# Chebyshev polynomials to approximate the PDF. This allows for trivial
-# construction of the CDF, as these polynomials can be integrated in closed
-# form.
 
 
 def _chebnodes(a, b, n):
@@ -694,8 +681,6 @@ def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
     return cdf
 
 
-# Sample via root-finding on CDF
-
 def it_sampling(pdf,
                 num_samples,
                 lower_bd=-np.inf,
@@ -716,8 +701,6 @@ def it_sampling(pdf,
         manually establish cutoffs for the density.
     upper_bd : float
         Upper bound of the support of the pdf.
-    guess : float or int
-        Initial guess for the numerical solver to use when inverting the CDF.
     chebyshev: Boolean, optional (default=False)
         If True, then the CDF is approximated using Chebyshev polynomials.
 
@@ -741,36 +724,42 @@ def it_sampling(pdf,
     for >100k samples.
 
     """
+    seeds = uniform(0, 1, num_samples)
+
     if chebyshev:
+
         if not (np.isfinite(lower_bd) and np.isfinite(upper_bd)):
             raise ValueError('Bounds must be finite for Chebyshev approximation of CDF.')
+
         cdf = chebcdf(pdf, lower_bd, upper_bd)
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+        inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")
+        simple_samples = inverse_cdf(seeds)
+
+        # Compute empirical mean and standard deviation
+        mean = sum(pdf.x * pdf.y) / sum(pdf.y)
+        estd = np.sqrt(sum(pdf.y * (pdf.x - mean) ** 2) / sum(pdf.y))
+        # If distribution is too tight (small std) then use of simple inverse transform sampling
+        if estd <= 0.6:
+            return simple_samples
+        # Otherwise, use Chebyshev approach
+        else:
+            samples = []
+
+            guess = np.mean(simple_samples)
+
+            for seed in seeds:
+                def shifted(x):
+                    return cdf(x) - seed
+
+                soln = root(shifted, guess)
+                samples.append(soln.x[0])
+
+            return np.array(samples)
     else:
         cdf = get_cdf(pdf, lower_bd, upper_bd)
-
-    seeds = uniform(0, 1, num_samples)
-    samples = []
-    # Get initial guess
-    cdf_y = np.cumsum(pdf.y)  # cumulative distribution function, cdf
-    cdf_y = cdf_y / cdf_y.max()  # takes care of normalizing cdf to 1.0
-    inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")  # this is a function
-    simple_samples = inverse_cdf(seeds)
-
-    # Compute empirical mean and standard deviation
-    mean = sum(pdf.x * pdf.y) / sum(pdf.y)
-    estd = np.sqrt(sum(pdf.y * (pdf.x - mean) ** 2) / sum(pdf.y))
-    # If distribution is too tight (small std) then use of simple inverse transform sampling
-    if estd <= 0.6:
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+        inverse_cdf = interpolate.interp1d(cdf_y, pdf.x, kind="linear", fill_value="extrapolate")
+        simple_samples = inverse_cdf(seeds)
         return simple_samples
-    # Otherwise, use Chebyshev approach
-    else:
-        guess = np.mean(simple_samples)
 
-        for seed in seeds:
-            def shifted(x):
-                return cdf(x) - seed
-
-            soln = root(shifted, guess)
-            samples.append(soln.x[0])
-
-        return np.array(samples)
