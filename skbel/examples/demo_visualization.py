@@ -16,7 +16,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
 
-from demo_config import Setup
+from skbel.examples.demo_config import Setup
 from skbel import utils
 from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
 from skbel.spatial import (
@@ -1062,7 +1062,7 @@ def pca_vision(
             pca_scores(
                 training=bel.X_pc,
                 prediction=bel.X_obs_pc,
-                n_comp=Setup.HyperParameters.n_pc_predictor,
+                n_comp=bel.x_pc,
                 # annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
@@ -1072,7 +1072,7 @@ def pca_vision(
             fig_file = os.path.join(subdir, "d_exvar.png")
             explained_variance(
                 bel,
-                n_comp=Setup.HyperParameters.n_pc_predictor,
+                n_comp=bel.x_pc,
                 thr=0.8,
                 # annotation=["E"],
                 fig_file=fig_file,
@@ -1093,7 +1093,7 @@ def pca_vision(
             pca_scores(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
-                n_comp=Setup.HyperParameters.n_pc_target,
+                n_comp=bel.y_pc,
                 # annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
@@ -1103,7 +1103,7 @@ def pca_vision(
             fig_file = os.path.join(subdir, "h_pca_exvar.png")
             explained_variance(
                 bel,
-                n_comp=Setup.HyperParameters.n_pc_target,
+                n_comp=bel.y_pc,
                 thr=0.8,
                 # annotation=["F"],
                 fig_file=fig_file,

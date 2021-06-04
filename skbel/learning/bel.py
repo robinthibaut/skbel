@@ -421,7 +421,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs=self.X_obs_f.T[comp_n],
                 )
                 hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
-                hp = _normalize_distribution(hp, sup)
+                # hp = _normalize_distribution(hp, sup)
                 ipdf = interpolate.interp1d(sup, hp, kind="cubic")
 
                 if comp_n > 0:
