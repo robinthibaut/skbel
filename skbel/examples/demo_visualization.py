@@ -1062,7 +1062,7 @@ def pca_vision(
             pca_scores(
                 training=bel.X_pc,
                 prediction=bel.X_obs_pc,
-                n_comp=bel.x_pc,
+                n_comp=bel.X_n_pc,
                 # annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
@@ -1072,7 +1072,7 @@ def pca_vision(
             fig_file = os.path.join(subdir, "d_exvar.png")
             explained_variance(
                 bel,
-                n_comp=bel.x_pc,
+                n_comp=bel.X_n_pc,
                 thr=0.8,
                 # annotation=["E"],
                 fig_file=fig_file,
@@ -1093,7 +1093,7 @@ def pca_vision(
             pca_scores(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
-                n_comp=bel.y_pc,
+                n_comp=bel.Y_n_pc,
                 # annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
@@ -1103,7 +1103,7 @@ def pca_vision(
             fig_file = os.path.join(subdir, "h_pca_exvar.png")
             explained_variance(
                 bel,
-                n_comp=bel.y_pc,
+                n_comp=bel.Y_n_pc,
                 thr=0.8,
                 # annotation=["F"],
                 fig_file=fig_file,
