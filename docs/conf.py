@@ -29,7 +29,12 @@ author = 'Robin Thibaut'
 extensions = ["sphinx.ext.autodoc"
               ]
 
-autodoc_default_options = {"members": True, "undoc-members": True, "private-members": True}
+autodoc_default_options = ['members',
+                           'undoc-members',
+                           'private-members',
+                           'special-members',
+                           'inherited-members',
+                           'show-inheritance']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
