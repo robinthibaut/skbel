@@ -25,8 +25,7 @@ from sklearn.utils.validation import (
     check_consistent_length,
 )
 
-from ..algorithms import mvn_inference, posterior_conditional, it_sampling, normalize
-from ..algorithms._statistics import _normalize_distribution
+from ..algorithms import mvn_inference, posterior_conditional, it_sampling
 
 
 class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -203,14 +202,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def fit(self, X, Y):
         """
         Fit all pipelines.
-        Requires the predictor and target to be panda dataframes with a "physical_shape" attribute.
-        The "physical_shape" is simply the original dimension of the data.
-        :param X: Predictor dataframe.
-        :param Y: Target dataframe.
+        :param X: Predictor array.
+        :param Y: Target array.
         :return:
         """
         check_consistent_length(X, Y)
-        self.X, self.Y = X, Y  # Save dataframe with names
+        self.X, self.Y = X, Y  # Save array with names
 
         _X = self._validate_data(
             X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
@@ -370,7 +367,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         if mode is not None:
             self.mode = mode
-        self.X_obs = X_obs  # Save dataframe with name
+        self.X_obs = X_obs  # Save array with name
         try:
             X_obs = check_array(self.X_obs)
         except ValueError:
