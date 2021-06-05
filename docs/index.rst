@@ -3,14 +3,34 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to skbel's documentation!
+SKBEL
 =================================
+
+.. currentmodule:: SKBEL
+
+This package implements the Bayesian Evidential Learning framework.
+
+Installation
+------------
+
+SKBEL is available through `PyPI <https://pypi.org/project/skbel/>`_, and may be installed using ``pip``: ::
+
+   $ pip install skbel
+
+
+
+Issues and contributing
+-----------------------
+
+Contributors and feedback from users are welcome. Don't hesitate to submit an issue or a PR, or request a new feature.
+
+Table of contents
+-----------------
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-   source/modules
+   source/skbel
 
 Indices and tables
 ==================
