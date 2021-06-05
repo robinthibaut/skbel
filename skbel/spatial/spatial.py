@@ -246,7 +246,7 @@ def contour_extract(x_lim, y_lim, grf, Z):
 
 
 def contours_vertices(
-    x: list, y: list, arrays: np.array, c: float = 0, ignore_: bool = True
+    x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
 ) -> np.array:
     """
     Extracts contour vertices from a list of matrices.
@@ -254,7 +254,7 @@ def contours_vertices(
     :param y:
     :param arrays: list of matrices
     :param c: Contour value
-    :param ignore_: Bool value to consider multiple contours or not (see comments)
+    :param ignore: Bool value to consider multiple contours or not (see comments)
     :return: vertices array
     """
     if len(arrays.shape) < 3:
@@ -268,7 +268,7 @@ def contours_vertices(
     # /!\ If more than one contours are present for the same values, possibility to include them or not.
     # How are the contours sorted in contour_extract.allsegs[0][i] ?
     # It looks like they are sorted by size.
-    if ignore_:
+    if ignore:
         v = np.array([c0.allsegs[0][0] for c0 in c0s], dtype=object)
     else:
         v = np.array(

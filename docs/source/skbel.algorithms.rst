@@ -12,6 +12,14 @@ skbel.algorithms.extmath module
    :undoc-members:
    :show-inheritance:
 
+skbel.algorithms.statistics module
+----------------------------------
+
+.. automodule:: skbel.algorithms.statistics
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
