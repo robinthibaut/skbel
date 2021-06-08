@@ -210,9 +210,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X, self.Y = X, Y  # Save array with names
 
         _X = self._validate_data(
-            X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
+            X, dtype=np.float64, copy=self.copy, ensure_min_samples=2, allow_nd=True,
         )
-        _Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
+        _Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False, allow_nd=True,)
 
         _xt, _yt = (
             self.X_pre_processing.fit_transform(_X),
@@ -371,7 +371,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         try:
             X_obs = check_array(self.X_obs)
         except ValueError:
-            X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
+            X_obs = check_array(self.X_obs.reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : self.X_n_pc]
