@@ -369,7 +369,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.mode = mode
         self.X_obs = X_obs  # Save array with name
         try:
-            X_obs = check_array(self.X_obs)
+            X_obs = check_array(self.X_obs, allow_nd=True)
         except ValueError:
             X_obs = check_array(self.X_obs.reshape(1, -1))
         # Project observed data into canonical space.
