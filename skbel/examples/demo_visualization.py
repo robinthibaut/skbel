@@ -402,7 +402,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
         v_pc = check_array(bel.Y_obs_pc.reshape(1, -1))
     else:
         try:
-            Y_obs = check_array(bel.Y_obs)
+            Y_obs = check_array(bel.Y_obs, allow_nd=True)
         except ValueError:
             Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
 
@@ -490,9 +490,9 @@ def plot_results(
         # Plot curves
         sdir = jp(md, "data")
 
-        X = check_array(bel.X)
+        X = check_array(bel.X, allow_nd=True)
         try:
-            X_obs = check_array(bel.X_obs)
+            X_obs = check_array(bel.X_obs, allow_nd=True)
         except ValueError:
             X_obs = check_array(bel.X_obs.to_numpy().reshape(1, -1))
 
@@ -545,9 +545,9 @@ def plot_results(
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
         ff = jp(fig_dir, "whpa.png")  # figure name
-        Y = check_array(bel.Y)
+        Y = check_array(bel.Y, allow_nd=True)
         try:
-            Y_obs = check_array(bel.Y_obs)
+            Y_obs = check_array(bel.Y_obs, allow_nd=True)
         except ValueError:
             Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
@@ -1083,7 +1083,7 @@ def pca_vision(
         # Transform and split
         h_pc_training = bel.Y_pc
         try:
-            Y_obs = check_array(bel.Y_obs)
+            Y_obs = check_array(bel.Y_obs, allow_nd=True)
         except ValueError:
             Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
         h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)

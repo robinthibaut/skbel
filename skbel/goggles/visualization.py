@@ -544,9 +544,9 @@ def _kde_cca(
     )  # Gets correlation coefficient
 
     try:
-        Y_obs = check_array(bel.Y_obs)
+        Y_obs = check_array(bel.Y_obs, allow_nd=True)
     except ValueError:
-        Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+        Y_obs = check_array(bel.Y_obs.reshape(1, -1))
 
     # Transform Y obs
     bel.Y_obs_f = bel.transform(Y=Y_obs)

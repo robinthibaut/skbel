@@ -263,7 +263,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _xp
 
         elif Y is not None and X is None:
-            Y = check_array(Y, copy=True, ensure_2d=False)
+            Y = check_array(Y, copy=True, ensure_2d=False, allow_nd=True)
             _xt, _yt = (
                 self.X_pre_processing.transform(self.X),
                 self.Y_pre_processing.transform(Y),
