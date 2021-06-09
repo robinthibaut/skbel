@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
+import skbel.goggles.visualization
 
 from skbel import utils
 from skbel.learning.bel import BEL
@@ -167,4 +168,4 @@ if __name__ == "__main__":
     )
 
     # Plot CCA
-    myvis.cca_vision(bel=model, base_dir=output_dir)
+    skbel.goggles.visualization.cca_vision(bel=model, base_dir=output_dir)

@@ -215,10 +215,11 @@ def bel_training(
 - An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
 - The CCA operator `cca` is set to keep the maximum number of CV possible (30).
 - Note that the variable `y_test` is the unknown to predict. It is simply saved within the BEL model for later uses (such as plotting or experimental design), but it is ignored during the training.
-  
-```python
-if __name__ == "__main__":
 
+```python
+import skbel.goggles.visualization
+
+if __name__ == "__main__":
     # Set directories
     data_dir = jp(os.getcwd(), "dataset")
     output_dir = jp(os.getcwd(), "results")
@@ -266,7 +267,7 @@ if __name__ == "__main__":
     )
 
     # Plot CCA
-    myvis.cca_vision(bel=model, base_dir=output_dir)
+    skbel.goggles.visualization.cca_vision(bel=model, base_dir=output_dir)
   ```
 #### Visualization
 ##### PC's

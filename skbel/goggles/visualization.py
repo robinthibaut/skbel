@@ -7,6 +7,7 @@ import string
 from os.path import join as jp
 
 import numpy as np
+from loguru import logger
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import legend
 from numpy import ma
@@ -220,7 +221,7 @@ def pca_scores(
     training: np.array,
     prediction: np.array,
     n_comp: int,
-    annotation: list,
+    annotation: list = None,
     fig_file: str = None,
     labels: bool = True,
     show: bool = False,
@@ -780,3 +781,65 @@ def _kde_cca(
 
         if dist_plot:
             posterior_distribution()
+
+
+def cca_vision(bel, base_dir: str = None, root: str = None):
+    """
+    Loads CCA pickles and plots components for all folders
+    :param bel: BEL model
+    :param base_dir: Base directory path
+    :param root: Directory path
+    :return:
+    """
+
+    if isinstance(root, (list, tuple)):
+        if len(root) > 1:
+            logger.error("Input error")
+            return
+        else:
+            root = root[0]
+    elif root is None:
+        root = ""
+
+    subdir = os.path.join(base_dir, root)
+
+    res_dir = os.path.join(subdir, "obj")
+
+    # CCA coefficient plot
+    cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
+        offset=bel.cca.n_components
+    )  # Gets correlation coefficient
+    plt.plot(cca_coefficient, "lightblue", zorder=1)
+    plt.scatter(
+        x=np.arange(len(cca_coefficient)),
+        y=cca_coefficient,
+        c=cca_coefficient,
+        alpha=1,
+        s=50,
+        cmap="coolwarm",
+        zorder=2,
+    )
+    cb = plt.colorbar()
+    cb.ax.set_title(r"$\it{" + "r" + "}$")
+    plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
+    plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
+    plt.tick_params(labelsize=5)
+    plt.yticks([])
+    # plt.title('Decrease of CCA correlation coefficient with component number')
+    plt.ylabel("Correlation coefficient")
+    plt.xlabel("Component number")
+
+    # Add annotation
+    legend = _proxy_annotate(annotation=["D"], fz=14, loc=1)
+    plt.gca().add_artist(legend)
+
+    plt.savefig(
+        os.path.join(os.path.dirname(res_dir), "cca", "coefs.png"),
+        bbox_inches="tight",
+        dpi=300,
+        transparent=False,
+    )
+    plt.close()
+
+    # KDE plots which consume a lot of time.
+    _kde_cca(bel, sdir=os.path.join(subdir, "cca"))
