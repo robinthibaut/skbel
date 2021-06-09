@@ -391,6 +391,7 @@ def plot_results(
     :param h: Boolean to plot target or not
     :param d: Boolean to plot predictor or not
     :param root: str: Forward ID
+    :param base_dir:
     :param folder: str: Well combination. '123456', '1'...
     :return:
     """
@@ -562,6 +563,8 @@ def mode_histo(
 ):
     """
 
+    :param directory:
+    :param title:
     :param colors:
     :param an_i: Figure annotation
     :param wm: Arrays of metric

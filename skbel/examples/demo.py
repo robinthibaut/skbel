@@ -12,7 +12,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
-import skbel.goggles.visualization
+from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
 from skbel.learning.bel import BEL
@@ -59,29 +59,12 @@ def init_bel():
     return bel_model
 
 
-def bel_training(
-    bel_,
-    *,
-    X_train_: pd.DataFrame,
-    x_test_: pd.DataFrame,
-    y_train_: pd.DataFrame,
-    y_test_: pd.DataFrame = None,
-    directory: str = None,
-):
-    """
-    :param bel_: BEL model
-    :param X_train_: Predictor set for training
-    :param x_test_: Predictor "test"
-    :param y_train_: Target set for training
-    :param y_test_: "True" target (optional)
-    :param directory: Path to the directory in which to unload the results
-    :return:
-    """
-    #%% Directory in which to load forecasts
-    if directory is None:
-        sub_dir = os.getcwd()
-    else:
-        sub_dir = directory
+if __name__ == "__main__":
+
+    # %% Set directories
+    data_dir = jp(os.getcwd(), "dataset")
+    # Directory in which to unload forecasts
+    sub_dir = jp(os.getcwd(), "results")
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
@@ -102,37 +85,16 @@ def bel_training(
         ]
     ]
 
-    # %% Fit BEL model
-    bel_.Y_obs = y_test_
-    bel_.fit(X=X_train_, Y=y_train_)
-
-    # %% Sample for the observation
-    # Extract n random sample (target CV's).
-    # The posterior distribution is computed within the method below.
-    bel_.predict(x_test_)
-
-    # Save the fitted BEL model
-    joblib.dump(bel_, jp(obj_dir, "bel.pkl"))
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
-
-
-if __name__ == "__main__":
-
-    # Set directories
-    data_dir = jp(os.getcwd(), "dataset")
-    output_dir = jp(os.getcwd(), "results")
-
-    # Load dataset
+    # %% Load dataset
     X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
     X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
     y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
     y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
 
-    # Initiate BEL model
+    # %% Initiate BEL model
     model = init_bel()
 
-    # Set model parameters
+    # %% Set model parameters
     model.mode = "mvn"  # How to compute the posterior conditional distribution
     # Set PC cut
     model.X_n_pc = 50
@@ -146,24 +108,31 @@ if __name__ == "__main__":
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 
-    # Train model
-    bel_training(
-        bel_=model,
-        X_train_=X_train,
-        x_test_=X_test,
-        y_train_=y_train,
-        y_test_=y_test,
-        directory=output_dir,
-    )
+    # %% Train the model
+    # Fit BEL model
+    model.Y_obs = y_test
+    model.fit(X=X_train, Y=y_train)
+
+    # Sample for the observation
+    # Extract n random sample (target CV's).
+    # The posterior distribution is computed within the method below.
+    model.predict(X_test)
+
+    # Save the fitted BEL model
+    joblib.dump(model, jp(obj_dir, "bel.pkl"))
+    msg = f"model trained and saved in {obj_dir}"
+    logger.info(msg)
+
+    # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(model, base_dir=output_dir)
+    myvis.plot_results(model, base_dir=sub_dir)
 
     # Plot PCA
-    myvis.pca_vision(
+    pca_vision(
         model,
-        base_dir=output_dir,
+        fig_dir=fig_pca_dir,
     )
 
     # Plot CCA
-    skbel.goggles.visualization.cca_vision(bel=model, base_dir=output_dir)
+    cca_vision(bel=model, fig_dir=fig_cca_dir)

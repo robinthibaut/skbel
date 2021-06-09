@@ -23,6 +23,8 @@ __all__ = [
     "_proxy_annotate",
     "explained_variance",
     "pca_scores",
+    "pca_vision",
+    "cca_vision",
     "cca_plot",
     "_despine",
     "_kde_cca",
@@ -353,6 +355,80 @@ def cca_plot(
             plt.close()
 
 
+def pca_vision(
+    bel,
+    fig_dir: str,
+    d: bool = True,
+    h: bool = True,
+    scores: bool = True,
+    exvar: bool = True,
+    labels: bool = True,
+):
+    """
+    Loads PCA pickles and plot scores for all folders
+    :param fig_dir:
+    :param bel: BEL model
+    :param labels:
+    :param d: bool:
+    :param h: bool:
+    :param scores: bool:
+    :param exvar: bool:
+    :return:
+    """
+
+    if d:
+        fig_file = os.path.join(fig_dir, "d_scores.png")
+        if scores:
+            pca_scores(
+                training=bel.X_pc,
+                prediction=bel.X_obs_pc,
+                n_comp=bel.X_n_pc,
+                # annotation=["C"],
+                labels=labels,
+                fig_file=fig_file,
+            )
+        # Explained variance plots
+        if exvar:
+            fig_file = os.path.join(fig_dir, "d_exvar.png")
+            explained_variance(
+                bel,
+                n_comp=bel.X_n_pc,
+                thr=0.8,
+                # annotation=["E"],
+                fig_file=fig_file,
+            )
+
+    if h:
+        # Transform and split
+        h_pc_training = bel.Y_pc
+        try:
+            Y_obs = check_array(bel.Y_obs, allow_nd=True)
+        except ValueError:
+            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+        h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
+        # Plot
+        fig_file = os.path.join(fig_dir, "h_pca_scores.png")
+        if scores:
+            pca_scores(
+                training=h_pc_training,
+                prediction=h_pc_prediction,
+                n_comp=bel.Y_n_pc,
+                # annotation=["D"],
+                labels=labels,
+                fig_file=fig_file,
+            )
+        # Explained variance plots
+        if exvar:
+            fig_file = os.path.join(fig_dir, "h_pca_exvar.png")
+            explained_variance(
+                bel,
+                n_comp=bel.Y_n_pc,
+                thr=0.8,
+                # annotation=["F"],
+                fig_file=fig_file,
+            )
+
+
 def _despine(
     fig=None,
     ax=None,
@@ -549,7 +625,10 @@ def _kde_cca(
     try:
         Y_obs = check_array(bel.Y_obs, allow_nd=True)
     except ValueError:
-        Y_obs = check_array(bel.Y_obs.reshape(1, -1))
+        try:
+            Y_obs = check_array(bel.Y_obs.reshape(1, -1))
+        except AttributeError:
+            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
 
     # Transform Y obs
     bel.Y_obs_f = bel.transform(Y=Y_obs)
@@ -785,27 +864,13 @@ def _kde_cca(
             posterior_distribution()
 
 
-def cca_vision(bel, base_dir: str = None, root: str = None):
+def cca_vision(bel, fig_dir: str = None):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
-    :param base_dir: Base directory path
-    :param root: Directory path
+    :param fig_dir: Base directory path
     :return:
     """
-
-    if isinstance(root, (list, tuple)):
-        if len(root) > 1:
-            logger.error("Input error")
-            return
-        else:
-            root = root[0]
-    elif root is None:
-        root = ""
-
-    subdir = os.path.join(base_dir, root)
-
-    res_dir = os.path.join(subdir, "obj")
 
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
@@ -832,11 +897,11 @@ def cca_vision(bel, base_dir: str = None, root: str = None):
     plt.xlabel("Component number")
 
     # Add annotation
-    legend = _proxy_annotate(annotation=["D"], fz=14, loc=1)
-    plt.gca().add_artist(legend)
+    legendary = _proxy_annotate(annotation=["D"], fz=14, loc=1)
+    plt.gca().add_artist(legendary)
 
     plt.savefig(
-        os.path.join(os.path.dirname(res_dir), "cca", "coefs.png"),
+        os.path.join(fig_dir, "coefs.png"),
         bbox_inches="tight",
         dpi=300,
         transparent=False,
@@ -844,4 +909,4 @@ def cca_vision(bel, base_dir: str = None, root: str = None):
     plt.close()
 
     # KDE plots which consume a lot of time.
-    _kde_cca(bel, sdir=os.path.join(subdir, "cca"))
+    _kde_cca(bel, sdir=fig_dir)

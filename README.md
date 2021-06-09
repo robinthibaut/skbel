@@ -267,7 +267,7 @@ if __name__ == "__main__":
     )
 
     # Plot CCA
-    skbel.goggles.visualization.cca_vision(bel=model, base_dir=output_dir)
+    skbel.goggles.visualization.cca_vision(bel=model, fig_dir=output_dir)
   ```
 #### Visualization
 ##### PC's
