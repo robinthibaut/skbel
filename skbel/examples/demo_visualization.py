@@ -415,7 +415,10 @@ def plot_results(
         try:
             X_obs = check_array(bel.X_obs, allow_nd=True)
         except ValueError:
-            X_obs = check_array(bel.X_obs.reshape(1, -1))
+            try:
+                X_obs = check_array(bel.X_obs.to_numpy().reshape(1, -1))
+            except AttributeError:
+                X_obs = check_array(bel.X_obs.reshape(1, -1))
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)

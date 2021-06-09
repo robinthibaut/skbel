@@ -371,7 +371,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         try:
             X_obs = check_array(self.X_obs, allow_nd=True)
         except ValueError:
-            X_obs = check_array(self.X_obs.reshape(1, -1))
+            try:
+                X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
+            except AttributeError:
+                X_obs = check_array(self.X_obs.reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : self.X_n_pc]
