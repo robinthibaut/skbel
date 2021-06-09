@@ -238,6 +238,8 @@ def pca_scores(
     :return:
     """
     # Scores plot
+    if annotation is None:
+        annotation = []
     # Grid
     plt.grid(alpha=0.2)
     # Ticks
