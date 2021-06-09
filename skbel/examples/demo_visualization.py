@@ -18,7 +18,7 @@ from sklearn.utils import check_array, deprecated
 
 from skbel.examples.demo_config import Setup
 from skbel import utils
-from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca
+from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, _kde_cca, pca_scores
 from skbel.spatial import (
     contours_vertices,
     grid_parameters,
@@ -89,85 +89,6 @@ def reload_trained_model(base_dir: str, root: str = None, well: str = None):
     bel = joblib.load(jp(res_dir, "bel.pkl"))
 
     return bel
-
-
-def pca_scores(
-    training: np.array,
-    prediction: np.array,
-    n_comp: int,
-    annotation: list = None,
-    fig_file: str = None,
-    labels: bool = True,
-    show: bool = False,
-):
-    """
-    PCA scores plot, displays scores of observations above those of training.
-    :param labels:
-    :param training: Training scores
-    :param prediction: Test scores
-    :param n_comp: How many components to show
-    :param annotation: List of annotation(s)
-    :param fig_file:
-    :param show:
-    :return:
-    """
-    if annotation is None:
-        annotation = []
-    # Scores plot
-    # Grid
-    plt.grid(alpha=0.2)
-    # Ticks
-    plt.xticks(
-        np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-        np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
-    )  # Plot all training scores
-    plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
-    # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
-
-    # For each sample used for prediction:
-    for sample_n in range(len(prediction)):
-        # Select observation
-        pc_obs = prediction[sample_n]
-        # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        spl = make_interp_spline(
-            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-        )  # type: BSpline
-        power_smooth = spl(xnew)
-        # I forgot why I had to put '-1'
-        plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
-
-        plt.plot(
-            pc_obs.T[:n_comp],  # Plot observations scores
-            "ro",
-            markersize=3,
-            markeredgecolor="k",
-            markeredgewidth=0.4,
-            alpha=0.8,
-            label=str(sample_n),
-        )
-
-    if labels:
-        plt.title("Principal Components of training and test dataset")
-        plt.xlabel("PC number")
-        plt.ylabel("PC")
-    plt.tick_params(labelsize=11)
-    # Add legend
-    # Add title inside the box
-    legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
-    _proxy_legend(
-        legend1=legend_a,
-        colors=["blue", "red"],
-        labels=["Training", "Test"],
-        marker=["o", "o"],
-    )
-
-    if fig_file:
-        utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=False)
-        plt.close()
-    if show:
-        plt.show()
 
 
 def whpa_plot(
@@ -494,7 +415,7 @@ def plot_results(
         try:
             X_obs = check_array(bel.X_obs, allow_nd=True)
         except ValueError:
-            X_obs = check_array(bel.X_obs.to_numpy().reshape(1, -1))
+            X_obs = check_array(bel.X_obs.reshape(1, -1))
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
