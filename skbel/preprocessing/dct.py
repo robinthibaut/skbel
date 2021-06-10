@@ -57,6 +57,8 @@ class DiscreteCosinusTransform2D(TransformerMixin, BaseEstimator):
         except ValueError:
             X = check_array(self.X.reshape(1, -1))
 
+        X = X.reshape(-1, self.m_cut, self.n_cut)
+
         dummy = np.zeros((X.shape[0], self.n_rows, self.n_cols))
         dummy[:, : self.m_cut, : self.n_cut] = X
 
