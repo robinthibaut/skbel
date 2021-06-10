@@ -245,10 +245,16 @@ def pca_scores(
     # Grid
     plt.grid(alpha=0.2)
     # Ticks
-    plt.xticks(
-        np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-        np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
-    )  # Plot all training scores
+    # Inly works for multiple of 5 - not ideal - quick fix with "try"
+    try:
+        plt.xticks(
+            np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
+            np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
+        )
+    except Exception as e:
+        logger.error(e)
+
+    # Plot all training scores
     plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
 
