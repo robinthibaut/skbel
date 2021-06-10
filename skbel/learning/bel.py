@@ -264,7 +264,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # The key here is to cut PC's based on the number defined in configuration file
 
         if X is not None and Y is None:
-            X = check_array(X, copy=True)
+            X = check_array(X, copy=self.copy)
             _xt = self.X_pre_processing.transform(X)
             _xt = _xt[:, : self.X_n_pc]
             _xc = self.cca.transform(X=_xt)
@@ -273,7 +273,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _xp
 
         elif Y is not None and X is None:
-            Y = check_array(Y, copy=True, ensure_2d=False, allow_nd=True)
+            Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _xt, _yt = (
                 self.X_pre_processing.transform(self.X),
                 self.Y_pre_processing.transform(Y),
