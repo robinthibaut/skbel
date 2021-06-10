@@ -245,7 +245,7 @@ def pca_scores(
     # Grid
     plt.grid(alpha=0.2)
     # Ticks
-    # Inly works for multiple of 5 - not ideal - quick fix with "try"
+    # Only works for multiple of 5 - not ideal - quick fix with "try"
     try:
         plt.xticks(
             np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
