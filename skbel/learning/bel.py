@@ -121,7 +121,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.posterior_mean = None
         self.posterior_covariance = None
         # KDE inference
-        self.pdf = None
+        self.kde_functions = None
 
         # Parameters for sampling
         self._seed = None
@@ -334,28 +334,38 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             )
 
         if self.mode == "kde":
-            Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
-            for i, pdf in enumerate(self.pdf):
-                uniform_samples = it_sampling(
-                    pdf=pdf,
-                    num_samples=self._n_posts,
-                    lower_bd=pdf.x.min(),
-                    upper_bd=pdf.x.max(),
-                    chebyshev=False,
-                )
+            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
+            for i, fun in enumerate(self.kde_functions):
+                if fun["kind"] == "pdf":
+                    pdf = fun["function"]
+                    uniform_samples = it_sampling(
+                        pdf=pdf,
+                        num_samples=self.n_posts,
+                        lower_bd=pdf.x.min(),
+                        upper_bd=pdf.x.max(),
+                        chebyshev=False,
+                    )
+                elif fun["kind"] == "linear":
+                    rel1d = fun["function"]
+                    uniform_samples = np.ones(self.n_posts)*rel1d(self.X_obs_f.T[i][0])
 
                 Y_samples[:, i] = uniform_samples
 
         if self.mode == "kde_chebyshev":
-            Y_samples = np.zeros((self._n_posts, self.pdf.shape[0]))
-            for i, pdf in enumerate(self.pdf):
-                uniform_samples = it_sampling(
-                    pdf=pdf,
-                    num_samples=self._n_posts,
-                    lower_bd=pdf.x.min(),
-                    upper_bd=pdf.x.max(),
-                    chebyshev=True,
-                )
+            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
+            for i, fun in enumerate(self.kde_functions):
+                if fun["kind"] == "pdf":
+                    pdf = fun["function"]
+                    uniform_samples = it_sampling(
+                        pdf=pdf,
+                        num_samples=self.n_posts,
+                        lower_bd=pdf.x.min(),
+                        upper_bd=pdf.x.max(),
+                        chebyshev=True,
+                    )
+                elif fun["kind"] == "linear":
+                    rel1d = fun["function"]
+                    uniform_samples = np.ones(self.n_posts)*rel1d(self.X_obs_f)
 
                 Y_samples[:, i] = uniform_samples
 
@@ -424,24 +434,36 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             from scipy import interpolate
 
             for comp_n in range(self.cca.n_components):
-                # Conditional:
-                hp, sup = posterior_conditional(
-                    X=self.X_f.T[comp_n],
-                    Y=self.Y_f.T[comp_n],
-                    X_obs=self.X_obs_f.T[comp_n],
-                )
-                hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
-                # hp = _normalize_distribution(hp, sup)
-                ipdf = interpolate.interp1d(sup, hp, kind="cubic")
+
+                # If the relation is almost perfectly linear, it doesn't make sense to perform a
+                # KDE estimation.
+                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(offset=1)[0]
+                if corr >= 0.999:
+                    kind = "linear"
+                    fun = interpolate.interp1d(self.X_f.T[comp_n], self.Y_f.T[comp_n], fill_value="extrapolate")
+
+                else:
+                    # Conditional:
+                    hp, sup = posterior_conditional(
+                        X=self.X_f.T[comp_n],
+                        Y=self.Y_f.T[comp_n],
+                        X_obs=self.X_obs_f.T[comp_n],
+                    )
+                    hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
+                    # hp = _normalize_distribution(hp, sup)
+                    kind = "pdf"
+                    fun = interpolate.interp1d(sup, hp, kind="cubic")
+
+                sample_fun = {"kind": kind, "function": fun}
 
                 if comp_n > 0:
-                    pdf = np.concatenate((pdf, [ipdf]), axis=0)
+                    functions = np.concatenate((functions, [sample_fun]), axis=0)
                 else:
-                    pdf = [ipdf]
+                    functions = [sample_fun]
 
-            self.pdf = pdf
+            self.kde_functions = functions
 
-            return self.pdf
+            return self.kde_functions
 
     def inverse_transform(
         self,

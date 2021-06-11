@@ -610,23 +610,27 @@ def _kde_cca(
     show: bool = False,
     dist_plot: bool = False,
 ):
-    # Find max kde value (absolutely not optimal)
-    vmax = 0
-    for comp_n in range(bel.cca.n_components):
-        # Working with final product of BEL (not with raw cca scores)
-        hp, sup = posterior_conditional(
-            X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
-        )
-
-        # Plot h posterior given d
-        density, _ = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n])
-        maxloc = np.max(density)
-        if vmax < maxloc:
-            vmax = maxloc
 
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
+    # Find max kde value (absolutely not optimal)
+    vmax = 0
+    for comp_n in range(5):
+
+        if cca_coefficient[comp_n] >= 0.999:
+            pass
+        else:
+            # Working with final product of BEL (not with raw cca scores)
+            hp, sup = posterior_conditional(
+                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
+            )
+
+            # Plot h posterior given d
+            density, _ = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n])
+            maxloc = np.max(density)
+            if vmax < maxloc:
+                vmax = maxloc
 
     try:
         Y_obs = check_array(bel.Y_obs, allow_nd=True)
@@ -646,38 +650,38 @@ def _kde_cca(
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
-        # Conditional:
-        hp, sup = posterior_conditional(
-            X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
-        )
-
-        # Plot h posterior given d
-        density, support = kde_params(
-            x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
-        )
-        xx, yy = support
-
         marginal_eval_x = KDE()
         marginal_eval_y = KDE()
-
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n])
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n])
 
-        y_samp = post_test.T[comp_n]
-        # use the same support as y
-        kde_y_samp, sup_samp = marginal_eval_y(y_samp)
+        if cca_coefficient[comp_n] < 0.999:
+            # Conditional:
+            hp, sup = posterior_conditional(
+                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
+            )
 
-        # Filled contour plot
-        # Mask values under threshold
-        z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
-        # Filled contour plot
-        # 'BuPu_r' is nice
-        cf = ax_joint.contourf(
-            xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
-        )
-        cb = plt.colorbar(cf, ax=[ax_cb], location="left")
-        cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
+            # Plot h posterior given d
+            density, support = kde_params(
+                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
+            )
+            xx, yy = support
+
+            y_samp = post_test.T[comp_n]
+            # use the same support as y
+            kde_y_samp, sup_samp = marginal_eval_y(y_samp)
+
+            # Filled contour plot
+            # Mask values under threshold
+            z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
+            # Filled contour plot
+            # 'BuPu_r' is nice
+            cf = ax_joint.contourf(
+                xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
+            )
+            cb = plt.colorbar(cf, ax=[ax_cb], location="left")
+            cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
         # Vertical line
         ax_joint.axvline(
             x=bel.X_obs_f.T[comp_n],
@@ -741,30 +745,31 @@ def _kde_cca(
             linewidth=1,
             alpha=0.5,
         )
-        # Marginal y plot with BEL
-        #  - Line plot
-        ax_marg_y.plot(kde_y_samp, sup_samp, color="black", linewidth=0.5, alpha=0)
-        #  - Fill to axis
-        ax_marg_y.fill_betweenx(
-            sup_samp,
-            0,
-            kde_y_samp,
-            color="teal",
-            alpha=0.5,
-            label="$p(h^{c}|d^{c}_{*})$" + f"{bel.mode.upper()}",
-        )
-        # Conditional distribution
-        #  - Line plot
-        ax_marg_y.plot(hp, sup, color="red", alpha=0)
-        #  - Fill to axis
-        ax_marg_y.fill_betweenx(
-            sup,
-            0,
-            hp,
-            color="mediumorchid",
-            alpha=0.5,
-            label="$p(h^{c}|d^{c}_{*})_{KDE}$",
-        )
+        if cca_coefficient[comp_n] < 0.999:
+            # Marginal y plot with BEL
+            #  - Line plot
+            ax_marg_y.plot(kde_y_samp, sup_samp, color="black", linewidth=0.5, alpha=0)
+            #  - Fill to axis
+            ax_marg_y.fill_betweenx(
+                sup_samp,
+                0,
+                kde_y_samp,
+                color="teal",
+                alpha=0.5,
+                label="$p(h^{c}|d^{c}_{*})$" + f"{bel.mode.upper()}",
+            )
+            # Conditional distribution
+            #  - Line plot
+            ax_marg_y.plot(hp, sup, color="red", alpha=0)
+            #  - Fill to axis
+            ax_marg_y.fill_betweenx(
+                sup,
+                0,
+                hp,
+                color="mediumorchid",
+                alpha=0.5,
+                label="$p(h^{c}|d^{c}_{*})_{KDE}$",
+            )
         ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
