@@ -20,6 +20,7 @@ from sklearn.base import (
 )
 from sklearn.utils import check_array
 from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,
@@ -347,7 +348,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )
                 elif fun["kind"] == "linear":
                     rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts)*rel1d(self.X_obs_f.T[i][0])
+                    uniform_samples = np.ones(self.n_posts)*rel1d.predict(np.array([self.X_obs_f.T[i]]))
 
                 Y_samples[:, i] = uniform_samples
 
@@ -440,7 +441,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(offset=1)[0]
                 if corr >= 0.999:
                     kind = "linear"
-                    fun = interpolate.interp1d(self.X_f.T[comp_n], self.Y_f.T[comp_n], fill_value="extrapolate")
+                    fun = LinearRegression().fit(self.X_f.T[comp_n].reshape(-1, 1),
+                                                 self.Y_f.T[comp_n].reshape(-1, 1))
+
+                    # fun = interpolate.interp1d(self.X_f.T[comp_n], self.Y_f.T[comp_n], fill_value="extrapolate")
 
                 else:
                     # Conditional:

@@ -4,6 +4,7 @@
 import itertools
 import os
 import string
+import warnings
 from os.path import join as jp
 
 import numpy as np
@@ -12,6 +13,7 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import legend
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
+from sklearn.utils.validation import check_is_fitted
 
 import skbel.utils
 from sklearn.utils import check_array
@@ -616,7 +618,11 @@ def _kde_cca(
     )  # Gets correlation coefficient
     # Find max kde value (absolutely not optimal)
     vmax = 0
-    for comp_n in range(5):
+    if bel.cca.n_components < 10:
+        cmax = bel.cca.n_components
+    else:
+        cmax = 10
+    for comp_n in range(cmax):
 
         if cca_coefficient[comp_n] >= 0.999:
             pass
@@ -682,6 +688,14 @@ def _kde_cca(
             )
             cb = plt.colorbar(cf, ax=[ax_cb], location="left")
             cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
+
+        reg = bel.kde_functions[comp_n]["function"]
+        try:
+            check_is_fitted(reg)
+            reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
+            plt.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=.7)
+        except Exception as e:
+            warnings.warn(e)
         # Vertical line
         ax_joint.axvline(
             x=bel.X_obs_f.T[comp_n],
