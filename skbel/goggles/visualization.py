@@ -693,7 +693,7 @@ def _kde_cca(
         try:
             check_is_fitted(reg)
             reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-            plt.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=.7)
+            ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=.7)
         except Exception as e:
             warnings.warn(e)
         # Vertical line
