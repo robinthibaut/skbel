@@ -4,10 +4,10 @@ skbel.preprocessing package
 Submodules
 ----------
 
-skbel.preprocessing.dimension\_reduction module
------------------------------------------------
+skbel.preprocessing.dct module
+------------------------------
 
-.. automodule:: skbel.preprocessing.dimension_reduction
+.. automodule:: skbel.preprocessing.dct
    :members:
    :undoc-members:
    :show-inheritance:
