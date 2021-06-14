@@ -78,3 +78,13 @@ html_theme = "sphinx_rtd_theme"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# cd = "cd docs"
+# mc = "make clean"
+# mh = "make html"
+# auto = "sphinx-apidoc -f -o source/ ../skbel/"
+#
+# os.system(cd)
+# os.system(mc)
+# os.system(mh)
+# os.system(auto)
