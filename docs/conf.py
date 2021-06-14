@@ -46,7 +46,7 @@ extensions = [
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx.ext.inheritance_diagram",
-    "m2r2",
+    # "m2r2",
 ]
 
 autodoc_default_options = {'members': True,
