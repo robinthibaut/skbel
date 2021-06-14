@@ -38,7 +38,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
-    "sphinx.ext.autosummary",
+    # "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
     "numpydoc",
     "nbsphinx",
@@ -52,9 +52,9 @@ extensions = [
 autodoc_default_options = {'members': True,
                            'undoc-members': True,
                            'private-members': True,
-                           'special-members': True,
-                           'inherited-members': True,
-                           'show-inheritance': True}
+                           'special-members': False,
+                           'inherited-members': False,
+                           'show-inheritance': False}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

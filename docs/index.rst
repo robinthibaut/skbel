@@ -30,7 +30,7 @@ Table of contents
 .. toctree::
    :maxdepth: 2
 
-   source/skbel
+   source/modules
 
 Indices and tables
 ==================

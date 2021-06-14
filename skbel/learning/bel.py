@@ -336,6 +336,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if self.mode == "kde":
             Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
+            # PArses the functions dict
             for i, fun in enumerate(self.kde_functions):
                 if fun["kind"] == "pdf":
                     pdf = fun["function"]
@@ -377,7 +378,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Fit-Transform across all pipelines
         :param X:
         :param y:
-        :return:
+        :return: If mode == "mvn" - returns the posterior mean and covariance. If mode == "kde" - returns a dictionary
+        of functions.
         """
 
         return self.fit(X, y).transform(X, y)
@@ -439,12 +441,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 # If the relation is almost perfectly linear, it doesn't make sense to perform a
                 # KDE estimation.
                 corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(offset=1)[0]
+                # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
                 if corr >= 0.999:
                     kind = "linear"
                     fun = LinearRegression().fit(self.X_f.T[comp_n].reshape(-1, 1),
                                                  self.Y_f.T[comp_n].reshape(-1, 1))
-
-                    # fun = interpolate.interp1d(self.X_f.T[comp_n], self.Y_f.T[comp_n], fill_value="extrapolate")
 
                 else:
                     # Conditional:
@@ -458,6 +459,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     kind = "pdf"
                     fun = interpolate.interp1d(sup, hp, kind="cubic")
 
+                # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                 sample_fun = {"kind": kind, "function": fun}
 
                 if comp_n > 0:
