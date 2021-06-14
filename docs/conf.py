@@ -52,7 +52,7 @@ extensions = [
 autodoc_default_options = {'members': True,
                            'undoc-members': True,
                            'private-members': True,
-                           'special-members': False,
+                           'special-members': True,
                            'inherited-members': False,
                            'show-inheritance': False}
 
