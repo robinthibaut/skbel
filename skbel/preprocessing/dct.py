@@ -1,6 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-"""Discrete Cosinus Transform written in scikit-learn style"""
+"""Discrete Cosine Transform written in scikit-learn style"""
 
 import numpy as np
 from scipy.fftpack import dct, idct
