@@ -7,7 +7,7 @@ from scipy.fftpack import dct, idct
 from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.utils import check_array
 
-__all__ = ["DiscreteCosinusTransform2D"]
+__all__ = ["DiscreteCosineTransform2D"]
 
 
 def dct2(a):
@@ -18,7 +18,7 @@ def idct2(a):
     return idct(idct(a.T, norm="ortho").T, norm="ortho")
 
 
-class DiscreteCosinusTransform2D(TransformerMixin, BaseEstimator):
+class DiscreteCosineTransform2D(TransformerMixin, BaseEstimator):
     def __init__(self, *, m_cut: int = None, n_cut: int = None):
         # Original shape
         self.n_rows = None
