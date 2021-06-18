@@ -23,13 +23,13 @@ def init_bel():
     X_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA(n_components=50)),
+            ("pca", PCA()),
         ]
     )
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA(n_components=30)),
+            ("pca", PCA()),
         ]
     )
 
