@@ -407,13 +407,22 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if mode is not None:
             self.mode = mode
         self.X_obs = X_obs  # Save array with name
-        try:
-            X_obs = check_array(self.X_obs, allow_nd=True)
-        except ValueError:
+        if type(self.X_obs) is list:
             try:
-                X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
-            except AttributeError:
-                X_obs = check_array(self.X_obs.reshape(1, -1))
+                X_obs = [check_array(x, allow_nd=True) for x in self.X_obs]
+            except ValueError:
+                try:
+                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in self.X_obs]
+                except AttributeError:
+                    X_obs = [check_array(x.reshape(1, -1)) for x in self.X_obs]
+        else:
+            try:
+                X_obs = check_array(self.X_obs, allow_nd=True)
+            except ValueError:
+                try:
+                    X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
+                except AttributeError:
+                    X_obs = check_array(self.X_obs.reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         X_obs = X_obs[:, : self.X_n_pc]
@@ -512,7 +521,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )  # Posterior PC scores
 
         # Back transform PC scores
-        nc = self.Y_pc.shape[1]  # Number of components
+        nc = self.Y_pc.shape[0]  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
             :, : y_post.shape[1]
