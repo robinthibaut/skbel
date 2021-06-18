@@ -207,16 +207,30 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param Y: Target array.
         :return:
         """
-        check_consistent_length(X, Y)
+        if type(X) is list:  # If more than one dataset used
+            [check_consistent_length(x, Y) for x in X]
+            _X = [
+                self._validate_data(
+                    x,
+                    dtype=np.float64,
+                    copy=self.copy,
+                    ensure_min_samples=2,
+                    allow_nd=True,
+                )
+                for x in X
+            ]
+        else:
+            check_consistent_length(X, Y)
+            _X = self._validate_data(
+                X,
+                dtype=np.float64,
+                copy=self.copy,
+                ensure_min_samples=2,
+                allow_nd=True,
+            )
+
         self.X, self.Y = X, Y  # Save array with names
 
-        _X = self._validate_data(
-            X,
-            dtype=np.float64,
-            copy=self.copy,
-            ensure_min_samples=2,
-            allow_nd=True,
-        )
         _Y = check_array(
             Y,
             dtype=np.float64,
