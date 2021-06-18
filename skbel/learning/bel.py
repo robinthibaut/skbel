@@ -492,7 +492,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )  # Posterior PC scores
 
         # Back transform PC scores
-        nc = self.Y_pc.shape[0]  # Number of components
+        nc = self.Y_pc.shape[1]  # Number of components
         dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
         dummy[
             :, : y_post.shape[1]
