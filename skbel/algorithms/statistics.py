@@ -577,13 +577,13 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
     pdf_norm = normalize(pdf, lower_bd, upper_bd)
 
     def cdf_number(x):
-        "Numerical cdf" ""
+        """Numerical cdf"""
         if x < lower_bd:
             return 0.0
         elif x > upper_bd:
             return 1.0
         else:
-            return integrate.quad(pdf_norm, lower_bd, x, limit=50*5)[0]
+            return integrate.quad(pdf_norm, lower_bd, x, limit=50 * 5)[0]
 
     def cdf_vector(x):
         try:

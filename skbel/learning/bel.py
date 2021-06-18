@@ -349,7 +349,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )
                 elif fun["kind"] == "linear":
                     rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts)*rel1d.predict(np.array([self.X_obs_f.T[i]]))
+                    uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+                        np.array([self.X_obs_f.T[i]])
+                    )
 
                 Y_samples[:, i] = uniform_samples
 
@@ -367,7 +369,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )
                 elif fun["kind"] == "linear":
                     rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts)*rel1d(self.X_obs_f)
+                    uniform_samples = np.ones(self.n_posts) * rel1d(self.X_obs_f)
 
                 Y_samples[:, i] = uniform_samples
 
@@ -440,12 +442,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                 # If the relation is almost perfectly linear, it doesn't make sense to perform a
                 # KDE estimation.
-                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(offset=1)[0]
+                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
+                    offset=1
+                )[0]
                 # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
                 if corr >= 0.999:
                     kind = "linear"
-                    fun = LinearRegression().fit(self.X_f.T[comp_n].reshape(-1, 1),
-                                                 self.Y_f.T[comp_n].reshape(-1, 1))
+                    fun = LinearRegression().fit(
+                        self.X_f.T[comp_n].reshape(-1, 1),
+                        self.Y_f.T[comp_n].reshape(-1, 1),
+                    )
 
                 else:
                     # Conditional:

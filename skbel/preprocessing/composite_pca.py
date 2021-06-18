@@ -30,7 +30,11 @@ class CompositePCA(TransformerMixin, BaseEstimator, metaclass=ABCMeta):
 
     def inverse_transform(self, Xr, yc=None, **fit_params):
         rm = np.concatenate([[0], self.n_components])
-        Xc = [Xr[rm[i]:rm[i+1]] for i in range(len(rm)-1)]
-        Xit = [pca.inverse_transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]
+        Xc = [
+            Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
+        ]  # Separates the concatenated features into the
+        # different original datasets
+        Xit = [
+            pca.inverse_transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
+        ]  # Successively inverse transform
         return Xit
-
