@@ -5,6 +5,8 @@ from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import check_is_fitted
 
+__all__ = ["CompositePCA"]
+
 
 class CompositePCA(TransformerMixin, BaseEstimator, metaclass=ABCMeta):
     def __init__(self, n_components: list):
@@ -31,7 +33,7 @@ class CompositePCA(TransformerMixin, BaseEstimator, metaclass=ABCMeta):
     def inverse_transform(self, Xr: np.array, yc=None, **fit_params) -> list:
         rm = np.concatenate([[0], self.n_components])
         Xc = [
-            Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
+            Xr[rm[i]: rm[i + 1]] for i in range(len(rm) - 1)
         ]  # Separates the concatenated features into the
         # different original datasets
         Xit = [
