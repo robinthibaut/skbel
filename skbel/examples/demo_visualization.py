@@ -377,8 +377,10 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
 
 def plot_results(
     bel,
-    d: bool = True,
-    h: bool = True,
+    X: np.array = None,
+    X_obs: np.array = None,
+    Y: np.array = None,
+    Y_obs: np.array = None,
     root: str = None,
     base_dir: str = None,
     folder: str = None,
@@ -388,8 +390,10 @@ def plot_results(
     Plots forecasts results in the 'uq' folder
     :param bel: BEL model
     :param annotation: List of annotations
-    :param h: Boolean to plot target or not
-    :param d: Boolean to plot predictor or not
+    :param X: Predictor array
+    :param X_obs: "Observed" predictor array
+    :param Y: Target array
+    :param Y_obs: "True" target array
     :param root: str: Forward ID
     :param base_dir:
     :param folder: str: Well combination. '123456', '1'...
@@ -406,19 +410,19 @@ def plot_results(
     wells_id = list(wells.wells_data.keys())
     cols = [wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w]
 
-    if d:
+    if X is not None:
         # Curves - d
         # Plot curves
         sdir = jp(md, "data")
 
-        X = check_array(bel.X, allow_nd=True)
+        X = check_array(X, allow_nd=True)
         try:
-            X_obs = check_array(bel.X_obs, allow_nd=True)
+            X_obs = check_array(X_obs, allow_nd=True)
         except ValueError:
             try:
-                X_obs = check_array(bel.X_obs.to_numpy().reshape(1, -1))
+                X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
             except AttributeError:
-                X_obs = check_array(bel.X_obs.reshape(1, -1))
+                X_obs = check_array(X_obs.reshape(1, -1))
 
         tc = X.reshape((Setup.HyperParameters.n_posts,) + bel.X_shape)
         tcp = X_obs.reshape((-1,) + bel.X_shape)
@@ -465,15 +469,15 @@ def plot_results(
             highlight=[len(tc) - 1],
         )
 
-    if h:
+    if Y is not None:
         # WHP - h test + training
         fig_dir = jp(base_dir, root)
         ff = jp(fig_dir, "whpa.png")  # figure name
-        Y = check_array(bel.Y, allow_nd=True)
+        Y = check_array(Y, allow_nd=True)
         try:
-            Y_obs = check_array(bel.Y_obs, allow_nd=True)
+            Y_obs = check_array(Y_obs, allow_nd=True)
         except ValueError:
-            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
+            Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
         h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
         h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
         # Plots target training + prediction

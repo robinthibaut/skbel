@@ -155,7 +155,7 @@ def init_bel():
 - The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
 - An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
 - The CCA operator `cca` is set to keep the maximum number of CV possible (30).
-- Note that the variable `y_test` is the unknown to predict. It is simply saved within the BEL model for later uses (such as plotting or experimental design), but it is ignored during the training.
+- The variable `y_test` is the unknown target to predict. It is ignored during the training.
 
 ```python
 if __name__ == "__main__":
@@ -203,7 +203,6 @@ if __name__ == "__main__":
 
     # %% Train the model
     # Fit BEL model
-    model.Y_obs = y_test
     model.fit(X=X_train, Y=y_train)
 
     # Sample for the observation
@@ -219,16 +218,24 @@ if __name__ == "__main__":
     # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(model, base_dir=sub_dir)
+    myvis.plot_results(model,
+                       X=X_train,
+                       X_obs=X_test,
+                       Y=y_train,
+                       Y_obs=y_test,
+                       base_dir=sub_dir)
 
     # Plot PCA
     pca_vision(
         model,
+        Y_obs=y_test,
         fig_dir=fig_pca_dir,
     )
 
     # Plot CCA
-    cca_vision(bel=model, fig_dir=fig_cca_dir)
+    cca_vision(bel=model,
+               Y_obs=y_test,
+               fig_dir=fig_cca_dir)
   ```
 #### Visualization
 ##### PC's

@@ -93,8 +93,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Original dataset
         self._X_shape, self._Y_shape = x_dim, y_dim
-        self.X, self.Y = None, None
-        self.X_obs, self.Y_obs = None, None  # Observation data
+        # TODO: We shouldn't save raw data in the BEL model as it can be too heavy
+        # self.X, self.Y = None, None
+        # self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
         self.X_pc, self.Y_pc = None, None
@@ -175,7 +176,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 allow_nd=True,
             )
 
-        self.X, self.Y = X, Y  # Save array with names
+        # self.X, self.Y = X, Y  # Save array
 
         _Y = check_array(
             Y,
@@ -229,19 +230,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
-            _xt, _yt = (
-                self.X_pre_processing.transform(self.X),
-                self.Y_pre_processing.transform(Y),
-            )
-            _, _yc = self.cca.transform(X=_xt, Y=_yt)
+            _yt = self.Y_pre_processing.transform(Y)
+            dummy = np.zeros(self.X_pc.shape)
+            _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
 
         else:
             _xt, _yt = (
-                self.X_pre_processing.transform(self.X),
-                self.Y_pre_processing.transform(self.Y),
+                self.X_pre_processing.transform(X),
+                self.Y_pre_processing.transform(Y),
             )
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
@@ -338,25 +337,25 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         if mode is not None:
             self.mode = mode
-        self.X_obs = X_obs  # Save array with name
-        if type(self.X_obs) is list:
+        # self.X_obs = X_obs  # Save array with name
+        if type(X_obs) is list:
             try:
-                X_obs = [check_array(x, allow_nd=True) for x in self.X_obs]
+                X_obs = [check_array(x, allow_nd=True) for x in X_obs]
             except ValueError:
                 try:
                     X_obs = [
-                        check_array(x.to_numpy().reshape(1, -1)) for x in self.X_obs
+                        check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
                     ]
                 except AttributeError:
-                    X_obs = [check_array(x.reshape(1, -1)) for x in self.X_obs]
+                    X_obs = [check_array(x.reshape(1, -1)) for x in X_obs]
         else:
             try:
-                X_obs = check_array(self.X_obs, allow_nd=True)
+                X_obs = check_array(X_obs, allow_nd=True)
             except ValueError:
                 try:
-                    X_obs = check_array(self.X_obs.to_numpy().reshape(1, -1))
+                    X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
                 except AttributeError:
-                    X_obs = check_array(self.X_obs.reshape(1, -1))
+                    X_obs = check_array(X_obs.reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         self.X_obs_pc = X_obs
