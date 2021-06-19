@@ -93,6 +93,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
+from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
 from skbel.learning.bel import BEL
@@ -109,18 +110,18 @@ def init_bel():
     X_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("pca", PCA(n_components=50)),
         ]
     )
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("pca", PCA(n_components=30)),
         ]
     )
 
     # Canonical Correlation Analysis
-    cca = CCA()
+    cca = CCA(n_components=30)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
@@ -149,32 +150,20 @@ def init_bel():
   
 - Finally, the BEL model is constructed by passing as arguments all these pipelines in the `BEL` object.
   
-#### Training the BEL model
-A simple function can be defined to train our model.
-  ```python
-def bel_training(
-    bel_,
-    *,
-    X_train_: pd.DataFrame,
-    x_test_: pd.DataFrame,
-    y_train_: pd.DataFrame,
-    y_test_: pd.DataFrame = None,
-    directory: str = None,
-):
-    """
-    :param bel_: BEL model
-    :param X_train_: Predictor set for training
-    :param x_test_: Predictor "test"
-    :param y_train_: Target set for training
-    :param y_test_: "True" target (optional)
-    :param directory: Path to the directory in which to unload the results
-    :return:
-    """
-    #%% Directory in which to load forecasts
-    if directory is None:
-        sub_dir = os.getcwd()
-    else:
-        sub_dir = directory
+
+#### Load the dataset and run everything
+- The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
+- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
+- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
+- Note that the variable `y_test` is the unknown to predict. It is simply saved within the BEL model for later uses (such as plotting or experimental design), but it is ignored during the training.
+
+```python
+if __name__ == "__main__":
+
+    # %% Set directories
+    data_dir = jp(os.getcwd(), "dataset")
+    # Directory in which to unload forecasts
+    sub_dir = jp(os.getcwd(), "results")
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
@@ -195,79 +184,51 @@ def bel_training(
         ]
     ]
 
-    # %% Fit BEL model
-    bel_.Y_obs = y_test_
-    bel_.fit(X=X_train_, Y=y_train_)
-
-    # %% Sample for the observation
-    # Extract n random sample (target CV's).
-    # The posterior distribution is computed within the method below.
-    bel_.predict(x_test_)
-
-    # Save the fitted BEL model
-    joblib.dump(bel_, jp(obj_dir, "bel.pkl"))
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
-  ```
-
-#### Load the dataset and run everything
-- The example dataset is saved as pandas DataFrame in `skbel/examples/dataset`.
-- An arbitrary choice has to be made on the number of PC to keep for the predictor and the target. In this case, they are set to 50 and 30, respectively.
-- The CCA operator `cca` is set to keep the maximum number of CV possible (30).
-- Note that the variable `y_test` is the unknown to predict. It is simply saved within the BEL model for later uses (such as plotting or experimental design), but it is ignored during the training.
-
-```python
-import skbel.goggles.visualization
-
-if __name__ == "__main__":
-    # Set directories
-    data_dir = jp(os.getcwd(), "dataset")
-    output_dir = jp(os.getcwd(), "results")
-
-    # Load dataset
+    # %% Load dataset
     X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
     X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
     y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
     y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
 
-    # Initiate BEL model
+    # %% Initiate BEL model
     model = init_bel()
 
-    # Set model parameters
+    # %% Set model parameters
     model.mode = "mvn"  # How to compute the posterior conditional distribution
-    # Set PC cut
-    model.X_n_pc = 50
-    model.Y_n_pc = 30
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
-    # Number of CCA components is chosen as the min number of PC
-    n_cca = min(model.X_n_pc, model.Y_n_pc)
-    model.cca.n_components = n_cca
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 
-    # Train model
-    bel_training(
-        bel_=model,
-        X_train_=X_train,
-        x_test_=X_test,
-        y_train_=y_train,
-        y_test_=y_test,
-        directory=output_dir,
-    )
+    # %% Train the model
+    # Fit BEL model
+    model.Y_obs = y_test
+    model.fit(X=X_train, Y=y_train)
+
+    # Sample for the observation
+    # Extract n random sample (target CV's).
+    # The posterior distribution is computed within the method below.
+    model.predict(X_test)
+
+    # Save the fitted BEL model
+    joblib.dump(model, jp(obj_dir, "bel.pkl"))
+    msg = f"model trained and saved in {obj_dir}"
+    logger.info(msg)
+
+    # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(model, base_dir=output_dir)
+    myvis.plot_results(model, base_dir=sub_dir)
 
     # Plot PCA
-    myvis.pca_vision(
+    pca_vision(
         model,
-        base_dir=output_dir,
+        fig_dir=fig_pca_dir,
     )
 
     # Plot CCA
-    skbel.goggles.visualization.cca_vision(bel=model, fig_dir=output_dir)
+    cca_vision(bel=model, fig_dir=fig_cca_dir)
   ```
 #### Visualization
 ##### PC's
