@@ -26,18 +26,18 @@ def init_bel():
     X_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("pca", PCA(n_components=50)),
         ]
     )
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA()),
+            ("pca", PCA(n_components=30)),
         ]
     )
 
     # Canonical Correlation Analysis
-    cca = CCA()
+    cca = CCA(n_components=30)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
@@ -96,15 +96,9 @@ if __name__ == "__main__":
 
     # %% Set model parameters
     model.mode = "mvn"  # How to compute the posterior conditional distribution
-    # Set PC cut
-    model.X_n_pc = 50
-    model.Y_n_pc = 30
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
-    # Number of CCA components is chosen as the min number of PC
-    n_cca = min(model.X_n_pc, model.Y_n_pc)
-    model.cca.n_components = n_cca
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 

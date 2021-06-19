@@ -29,39 +29,6 @@ from sklearn.utils.validation import (
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling
 
 
-class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    """Dummy transformer that does nothing"""
-
-    def __init__(self):
-        self.fake_fit_ = np.zeros(1)
-
-    def fit(self, X=None, y=None):
-        return self
-
-    def transform(self, X=None, y=None):  # noqa
-        if X is not None and y is None:
-            return X
-
-        elif y is not None and X is None:
-            return y
-
-        else:
-            return X, y
-
-    def inverse_transform(self, X=None, y=None):  # noqa
-        if X is not None and y is None:
-            return X
-
-        elif y is not None and X is None:
-            return y
-
-        else:
-            return X, y
-
-    def fit_transform(self, X=None, y=None, **fit_params):
-        return self.fit(X, y).transform(X, y)
-
-
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
     Heart of the framework. Inherits from scikit-learn base classes.
@@ -77,8 +44,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_post_processing=None,
         Y_post_processing=None,
         cca=None,
-        x_pc=None,
-        y_pc=None,
         x_dim=None,
         y_dim=None,
     ):
@@ -90,8 +55,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
         :param cca: sklearn cca object
-        :param x_pc: Number of principal components to keep (predictor).
-        :param y_pc: Number of principal components to keep (target).
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
         """
@@ -101,15 +64,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Processing pipelines
         if X_pre_processing is None:
-            X_pre_processing = Pipeline([("nothing", Dummy())])
+            X_pre_processing = Pipeline([("nothing", "passthrough")])
         if Y_pre_processing is None:
-            Y_pre_processing = Pipeline([("nothing", Dummy())])
+            Y_pre_processing = Pipeline([("nothing", "passthrough")])
         if X_post_processing is None:
-            X_post_processing = Pipeline([("nothing", Dummy())])
+            X_post_processing = Pipeline([("nothing", "passthrough")])
         if Y_post_processing is None:
-            Y_post_processing = Pipeline([("nothing", Dummy())])
+            Y_post_processing = Pipeline([("nothing", "passthrough")])
         if cca is None:
-            cca = Pipeline([("nothing", Dummy())])
+            cca = Pipeline([("nothing", "passthrough")])
 
         self.X_pre_processing = X_pre_processing
         self.Y_pre_processing = Y_pre_processing
@@ -134,7 +97,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
-        self._X_n_pc, self._Y_n_pc = x_pc, y_pc
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -164,24 +126,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self._Y_shape = y_shape
 
     @property
-    def X_n_pc(self):
-        """Number of components to keep after pre-processing (dimensionality reduction)"""
-        return self._X_n_pc
-
-    @X_n_pc.setter
-    def X_n_pc(self, x_n_pc):
-        self._X_n_pc = x_n_pc
-
-    @property
-    def Y_n_pc(self):
-        """Number of components to keep after pre-processing (dimensionality reduction)"""
-        return self._Y_n_pc
-
-    @Y_n_pc.setter
-    def Y_n_pc(self, y_n_pc):
-        self._Y_n_pc = y_n_pc
-
-    @property
     def n_posts(self):
         """Number of sample to extract from the posterior multivariate distribution after post-processing"""
         return self._n_posts
@@ -207,7 +151,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param Y: Target array.
         :return:
         """
-        if type(X) is list:  # If more than one dataset used
+        if type(X) is list:  # If more than one dataset used (several features of different nature)
             [check_consistent_length(x, Y) for x in X]
             _X = [
                 self._validate_data(
@@ -244,11 +188,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.Y_pre_processing.fit_transform(_Y),
         )
 
-        _xt, _yt = (
-            _xt[:, : self.X_n_pc],
-            _yt[:, : self.Y_n_pc],
-        )  # Cut PC
-
         # Dataset after preprocessing
         self.X_pc, self.Y_pc = _xt, _yt
 
@@ -281,7 +220,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if X is not None and Y is None:
             X = check_array(X, copy=self.copy)
             _xt = self.X_pre_processing.transform(X)
-            _xt = _xt[:, : self.X_n_pc]
             _xc = self.cca.transform(X=_xt)
             _xp = self.X_post_processing.transform(_xc)
 
@@ -293,10 +231,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.X_pre_processing.transform(self.X),
                 self.Y_pre_processing.transform(Y),
             )
-            _xt, _yt = (
-                _xt[:, : self.X_n_pc],
-                _yt[:, : self.Y_n_pc],
-            )
             _, _yc = self.cca.transform(X=_xt, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -306,10 +240,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             _xt, _yt = (
                 self.X_pre_processing.transform(self.X),
                 self.Y_pre_processing.transform(self.Y),
-            )
-            _xt, _yt = (
-                _xt[:, : self.X_n_pc],
-                _yt[:, : self.Y_n_pc],
             )
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
@@ -425,7 +355,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs = check_array(self.X_obs.reshape(1, -1))
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
-        X_obs = X_obs[:, : self.X_n_pc]
         self.X_obs_pc = X_obs
         X_obs = self.cca.transform(X_obs)
         self.X_obs_c = X_obs
@@ -437,7 +366,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
             # Number of PCA components for the curves
-            x_dim = self.X_n_pc
+            x_dim = self.X_pc.shape[1]
             noise = 0.01
             # I matrix. (n_comp_PCA, n_comp_PCA)
             x_cov = np.eye(x_dim) * noise
@@ -521,11 +450,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )  # Posterior PC scores
 
         # Back transform PC scores
-        nc = self.Y_pc.shape[0]  # Number of components
-        dummy = np.zeros((self.n_posts, nc))  # Create a dummy matrix filled with zeros
-        dummy[
-            :, : y_post.shape[1]
-        ] = y_post  # Fill the dummy matrix with the posterior PC
-        y_post = self.Y_pre_processing.inverse_transform(dummy)  # Inverse transform
+        y_post_raw = self.Y_pre_processing.inverse_transform(y_post)  # Inverse transform
 
-        return y_post
+        return y_post_raw

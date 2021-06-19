@@ -1,9 +1,9 @@
 import numpy as np
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import TransformerMixin, BaseEstimator, MultiOutputMixin
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import check_is_fitted
 
-__all__ = ["CompositePCA", "CompositeTransformer"]
+__all__ = ["CompositePCA", "CompositeTransformer", "Dummy"]
 
 
 class CompositePCA(TransformerMixin, BaseEstimator):
@@ -64,3 +64,36 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
             obj.inverse_transform(Xr[i]) for i, obj in enumerate(self.t_objects)
         ]  # Successively inverse transform
         return Xit
+
+
+class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
+    """Dummy transformer that does nothing"""
+
+    def __init__(self):
+        self.fake_fit_ = np.zeros(1)
+
+    def fit(self, X=None, y=None):
+        return self
+
+    def transform(self, X=None, y=None):  # noqa
+        if X is not None and y is None:
+            return X
+
+        elif y is not None and X is None:
+            return y
+
+        else:
+            return X, y
+
+    def inverse_transform(self, X=None, y=None):  # noqa
+        if X is not None and y is None:
+            return X
+
+        elif y is not None and X is None:
+            return y
+
+        else:
+            return X, y
+
+    def fit_transform(self, X=None, y=None, **fit_params):
+        return self.fit(X, y).transform(X, y)
