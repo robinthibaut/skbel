@@ -52,16 +52,16 @@ def _my_alphabet(az: int):
 
 
 def _proxy_legend(
-        legend1: legend = None,
-        colors: list = None,
-        labels: list = None,
-        loc: int = 4,
-        marker: list = None,
-        pec: list = None,
-        fz: float = 11,
-        fig_file: str = None,
-        extra: list = None,
-        obj=None,
+    legend1: legend = None,
+    colors: list = None,
+    labels: list = None,
+    loc: int = 4,
+    marker: list = None,
+    pec: list = None,
+    fz: float = 11,
+    fig_file: str = None,
+    extra: list = None,
+    obj=None,
 ):
     """
     Add a second legend to a figure @ bottom right (loc=4)
@@ -149,12 +149,12 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
 
 
 def explained_variance(
-        bel,
-        n_comp: int = 0,
-        thr: float = 1.0,
-        annotation: list = None,
-        fig_file: str = None,
-        show: bool = False,
+    bel,
+    n_comp: int = 0,
+    thr: float = 1.0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
 ):
     """
     PCA explained variance plot
@@ -178,7 +178,7 @@ def explained_variance(
     )
     # Explained variance vector:
     cum = (
-            np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
+        np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
     )
     # x-ticks
     plt.xticks(
@@ -222,13 +222,13 @@ def explained_variance(
 
 
 def pca_scores(
-        training: np.array,
-        prediction: np.array,
-        n_comp: int,
-        annotation: list = None,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training: np.array,
+    prediction: np.array,
+    n_comp: int,
+    annotation: list = None,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
@@ -307,12 +307,12 @@ def pca_scores(
 
 
 def cca_plot(
-        bel,
-        d: np.array,
-        h: np.array,
-        d_pc_prediction: np.array,
-        sdir: str = None,
-        show: bool = False,
+    bel,
+    d: np.array,
+    h: np.array,
+    d_pc_prediction: np.array,
+    sdir: str = None,
+    show: bool = False,
 ):
     """
     CCA plots.
@@ -364,14 +364,14 @@ def cca_plot(
 
 
 def pca_vision(
-        bel,
-        fig_dir: str,
-        d: bool = True,
-        h: bool = True,
-        Y_obs: np.array = None,
-        scores: bool = True,
-        exvar: bool = True,
-        labels: bool = True,
+    bel,
+    fig_dir: str,
+    d: bool = True,
+    h: bool = True,
+    Y_obs: np.array = None,
+    scores: bool = True,
+    exvar: bool = True,
+    labels: bool = True,
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -440,14 +440,14 @@ def pca_vision(
 
 
 def _despine(
-        fig=None,
-        ax=None,
-        top=True,
-        right=True,
-        left=False,
-        bottom=False,
-        offset=None,
-        trim=False,
+    fig=None,
+    ax=None,
+    top=True,
+    right=True,
+    left=False,
+    bottom=False,
+    offset=None,
+    trim=False,
 ):
     """Remove the top and right spines from plot(s).
 
@@ -609,11 +609,11 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        bel,
-        Y_obs: np.array = None,
-        sdir: str = None,
-        show: bool = False,
-        dist_plot: bool = False,
+    bel,
+    Y_obs: np.array = None,
+    sdir: str = None,
+    show: bool = False,
+    dist_plot: bool = False,
 ):
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components

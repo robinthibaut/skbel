@@ -119,12 +119,9 @@ if __name__ == "__main__":
     # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(model,
-                       X=X_train,
-                       X_obs=X_test,
-                       Y=y_train,
-                       Y_obs=y_test,
-                       base_dir=sub_dir)
+    myvis.plot_results(
+        model, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
+    )
 
     # Plot PCA
     pca_vision(
@@ -134,6 +131,4 @@ if __name__ == "__main__":
     )
 
     # Plot CCA
-    cca_vision(bel=model,
-               Y_obs=y_test,
-               fig_dir=fig_cca_dir)
+    cca_vision(bel=model, Y_obs=y_test, fig_dir=fig_cca_dir)

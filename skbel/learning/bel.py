@@ -343,9 +343,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 X_obs = [check_array(x, allow_nd=True) for x in X_obs]
             except ValueError:
                 try:
-                    X_obs = [
-                        check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
-                    ]
+                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in X_obs]
                 except AttributeError:
                     X_obs = [check_array(x.reshape(1, -1)) for x in X_obs]
         else:
