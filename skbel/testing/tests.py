@@ -123,5 +123,3 @@ def test_kde():
 
     msg1 = "The posterior samples are different"
     np.testing.assert_allclose(y_samples, y_samples_ref, atol=1e-3, err_msg=msg1)
-
-

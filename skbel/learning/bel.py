@@ -151,7 +151,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param Y: Target array.
         :return:
         """
-        if type(X) is list:  # If more than one dataset used (several features of different nature)
+        if (
+            type(X) is list
+        ):  # If more than one dataset used (several features of different nature)
             [check_consistent_length(x, Y) for x in X]
             _X = [
                 self._validate_data(
@@ -342,7 +344,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 X_obs = [check_array(x, allow_nd=True) for x in self.X_obs]
             except ValueError:
                 try:
-                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in self.X_obs]
+                    X_obs = [
+                        check_array(x.to_numpy().reshape(1, -1)) for x in self.X_obs
+                    ]
                 except AttributeError:
                     X_obs = [check_array(x.reshape(1, -1)) for x in self.X_obs]
         else:
@@ -450,6 +454,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         )  # Posterior PC scores
 
         # Back transform PC scores
-        y_post_raw = self.Y_pre_processing.inverse_transform(y_post)  # Inverse transform
+        y_post_raw = self.Y_pre_processing.inverse_transform(
+            y_post
+        )  # Inverse transform
 
         return y_post_raw
