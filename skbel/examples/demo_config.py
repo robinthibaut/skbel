@@ -168,6 +168,8 @@ class Setup:
         # Target
         n_pc_target: int = 30
 
+        n_cca: int = np.min([n_pc_target, n_pc_predictor])
+
         # Posterior
         # Size of data set
         n_total: int = 500  # Parameter to optimize
@@ -190,3 +192,10 @@ class Setup:
         """Experimental Design"""
 
         metric = None
+
+    @dataclass
+    class DataSet:
+        """Experimental Design"""
+
+        X_shape = (6, 200)
+        Y_shape = (1, 100, 87)

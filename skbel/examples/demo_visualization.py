@@ -261,7 +261,7 @@ def whpa_plot(
         utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, bbox_inches="tight", dpi=300, transparent=False)
         plt.close()
-    if show:
+    elif show:
         plt.show()
         plt.close()
 
@@ -371,9 +371,216 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
         if show:
             plt.show()
             plt.close()
-    if show:
+    elif show:
         plt.show()
         plt.close()
+
+
+def plot_predictor(
+    X: np.array = None,
+    X_obs: np.array = None,
+    root: str = None,
+    base_dir: str = None,
+    folder: str = None,
+    annotation: list = None,
+    show: bool = False,
+):
+    if root is None:
+        root = ""
+    if folder is None:
+        folder = ""
+    # Directory
+    md = jp(base_dir, root, folder)
+    # Wells
+    wells = Setup.Wells
+    wells_id = list(wells.wells_data.keys())
+    cols = [wells.wells_data[w]["color"] for w in wells_id if "pumping" not in w]
+
+    # Curves - d
+    # Plot curves
+    sdir = jp(md, "data")
+
+    X = check_array(X, allow_nd=True)
+    try:
+        X_obs = check_array(X_obs, allow_nd=True)
+    except ValueError:
+        try:
+            X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
+        except AttributeError:
+            X_obs = check_array(X_obs.reshape(1, -1))
+
+    tc = X.reshape((Setup.HyperParameters.n_posts,) + Setup.DataSet.X_shape)
+    tcp = X_obs.reshape((-1,) + Setup.DataSet.X_shape)
+    tc = np.concatenate((tc, tcp), axis=0)
+
+    # Plot parameters for predictor
+    xlabel = "Observation index number"
+    ylabel = "Concentration ($g/m^{3})$"
+    factor = 1000
+    labelsize = 11
+
+    curves(
+        cols=cols,
+        tc=tc,
+        sdir=sdir,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        factor=factor,
+        title="Predictor training and test set",
+        labelsize=labelsize,
+        highlight=[len(tc) - 1],
+        show=show,
+    )
+
+    curves(
+        cols=cols,
+        tc=tc,
+        sdir=sdir,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        factor=factor,
+        title="Predictor test set",
+        labelsize=labelsize,
+        highlight=[len(tc) - 1],
+        ghost=True,
+        show=show,
+    )
+
+    # curves_i(
+    #     cols=cols,
+    #     tc=tc,
+    #     xlabel=xlabel,
+    #     ylabel=ylabel,
+    #     factor=factor,
+    #     labelsize=labelsize,
+    #     sdir=sdir,
+    #     highlight=[len(tc) - 1],
+    #     show=False,
+    # )
+
+
+def plot_target(
+    Y: np.array = None,
+    Y_obs: np.array = None,
+    root: str = None,
+    base_dir: str = None,
+    folder: str = None,
+    annotation: list = None,
+    show: bool = False,
+):
+    if root is None:
+        root = ""
+    if folder is None:
+        folder = ""
+    if annotation is None:
+        annotation = ["A"]
+    # Wells
+    # WHP - h test + training
+    fig_dir = jp(base_dir, root)
+    ff = jp(fig_dir, "whpa.png")  # figure name
+    Y = check_array(Y, allow_nd=True)
+    try:
+        Y_obs = check_array(Y_obs, allow_nd=True)
+    except ValueError:
+        Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
+    h_test = Y_obs.reshape((Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    h_training = Y.reshape((-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    # Plots target training + prediction
+    whpa_plot(whpa=h_training, color="blue", alpha=0.5)
+    whpa_plot(
+        whpa=h_test,
+        color="r",
+        lw=2,
+        alpha=0.8,
+        title="Target training and test set",
+        xlabel="X(m)",
+        ylabel="Y(m)",
+        labelsize=11,
+    )
+    colors = ["blue", "red"]
+    labels = ["Training", "Test"]
+    legend = _proxy_annotate(annotation=annotation, loc=2, fz=14)
+    _proxy_legend(legend1=legend, colors=colors, labels=labels)
+
+    plt.savefig(ff, bbox_inches="tight", dpi=300, transparent=False)
+    if show:
+        plt.show()
+    plt.close()
+
+
+def plot_posterior(
+    forecast_posterior: np.array = None,
+    Y: np.array = None,
+    Y_obs: np.array = None,
+    root: str = None,
+    base_dir: str = None,
+    folder: str = None,
+    annotation: list = None,
+    show: bool = False,
+):
+    if root is None:
+        root = ""
+    if folder is None:
+        folder = ""
+    if annotation is None:
+        annotation = ["A"]
+    # I display here the prior h behind the forecasts sampled from the posterior.
+    well_ids = [0] + list(map(int, list(folder)))
+    labels = ["Training", "Samples", "True test"]
+    colors = ["darkblue", "darkred", "k"]
+    Y_obs = Y_obs.to_numpy().reshape((Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    Y = Y.to_numpy().reshape((-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    # Training
+    _, well_legend = whpa_plot(
+        whpa=Y,
+        alpha=0.5,
+        lw=0.5,
+        color=colors[0],
+        show_wells=True,
+        well_ids=well_ids,
+        show=False,
+    )
+
+    # Samples
+    whpa_plot(
+        whpa=forecast_posterior,
+        color=colors[1],
+        lw=1,
+        alpha=0.8,
+        highlight=True,
+        show=False,
+    )
+
+    # True test
+    whpa_plot(
+        whpa=Y_obs,
+        color=colors[2],
+        lw=0.8,
+        alpha=1,
+        x_lim=[800, 1200],
+        xlabel="X(m)",
+        ylabel="Y(m)",
+        labelsize=11,
+        show=False,
+    )
+
+    # Other tricky operation to add annotation
+    legend_an = _proxy_annotate(annotation=annotation, loc=2, fz=14)
+
+    # Tricky operation to add a second legend:
+    md = jp(base_dir, root, folder)
+    ff = jp(md, "uq", f"{root}_cca_{Setup.HyperParameters.n_cca}.png")
+
+    _proxy_legend(
+        legend1=well_legend,
+        extra=[legend_an],
+        colors=colors,
+        labels=labels,
+    )
+    plt.savefig(ff, bbox_inches="tight", dpi=300, transparent=False)
+    if show:
+        plt.show()
+    plt.close()
 
 
 def plot_results(
@@ -445,7 +652,7 @@ def plot_results(
             factor=factor,
             labelsize=labelsize,
             highlight=[len(tc) - 1],
-            show=show
+            show=show,
         )
 
         curves(
@@ -459,7 +666,7 @@ def plot_results(
             highlight=[len(tc) - 1],
             ghost=True,
             title="curves_ghost",
-            show=show
+            show=show,
         )
 
         curves_i(
@@ -471,7 +678,7 @@ def plot_results(
             labelsize=labelsize,
             sdir=sdir,
             highlight=[len(tc) - 1],
-            show=show
+            show=show,
         )
 
     if Y is not None:
@@ -734,7 +941,7 @@ def curves(
         if show:
             plt.show()
             plt.close()
-    if show:
+    elif show:
         plt.show()
         plt.close()
 
@@ -793,7 +1000,7 @@ def curves_i(
             if show:
                 plt.show()
                 plt.close()
-        if show:
+        elif show:
             plt.show()
             plt.close()
 
@@ -1061,6 +1268,6 @@ def d_pca_inverse_plot(
         if show:
             plt.show()
             plt.close()
-    if show:
+    elif show:
         plt.show()
         plt.close()

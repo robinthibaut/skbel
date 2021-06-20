@@ -226,7 +226,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros(self.X_pc.shape)  # Assumes the predictor's PC have already been computed
+            dummy = np.zeros(
+                self.X_pc.shape
+            )  # Assumes the predictor's PC have already been computed
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -441,7 +443,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std + self.cca._y_mean  # noqa
+            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std
+            + self.cca._y_mean  # noqa
         )  # Posterior PC scores
 
         # Back transform PC scores
