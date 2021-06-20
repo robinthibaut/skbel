@@ -385,6 +385,7 @@ def plot_results(
     base_dir: str = None,
     folder: str = None,
     annotation: list = None,
+    show: bool = False,
 ):
     """
     Plots forecasts results in the 'uq' folder
@@ -443,6 +444,7 @@ def plot_results(
             factor=factor,
             labelsize=labelsize,
             highlight=[len(tc) - 1],
+            show=show
         )
 
         curves(
@@ -456,6 +458,7 @@ def plot_results(
             highlight=[len(tc) - 1],
             ghost=True,
             title="curves_ghost",
+            show=show
         )
 
         curves_i(
@@ -467,6 +470,7 @@ def plot_results(
             labelsize=labelsize,
             sdir=sdir,
             highlight=[len(tc) - 1],
+            show=show
         )
 
     if Y is not None:
@@ -495,6 +499,8 @@ def plot_results(
         labels = ["Training", "Test"]
         legend = _proxy_annotate(annotation=[], loc=2, fz=14)
         _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
+        if show:
+            plt.show()
         plt.close()
 
         # WHPs
@@ -555,6 +561,8 @@ def plot_results(
             labels=labels,
             fig_file=ff,
         )
+        if show:
+            plt.show()
 
 
 def mode_histo(

@@ -226,7 +226,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros(self.X_pc.shape)
+            dummy = np.zeros(self.X_pc.shape)  # Assumes the predictor's PC have already been computed
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -349,6 +349,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
                 except AttributeError:
                     X_obs = check_array(X_obs.reshape(1, -1))
+
         # Project observed data into canonical space.
         X_obs = self.X_pre_processing.transform(X_obs)
         self.X_obs_pc = X_obs

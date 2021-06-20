@@ -372,6 +372,7 @@ def pca_vision(
     scores: bool = True,
     exvar: bool = True,
     labels: bool = True,
+    show: bool = False
 ):
     """
     Loads PCA pickles and plot scores for all folders
@@ -396,6 +397,7 @@ def pca_vision(
                 # annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
+                show=show,
             )
         # Explained variance plots
         if exvar:
@@ -406,6 +408,7 @@ def pca_vision(
                 thr=0.8,
                 # annotation=["E"],
                 fig_file=fig_file,
+                show=show,
             )
 
     if h:
@@ -426,6 +429,7 @@ def pca_vision(
                 # annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
+                show=show,
             )
         # Explained variance plots
         if exvar:
@@ -436,6 +440,7 @@ def pca_vision(
                 thr=0.8,
                 # annotation=["F"],
                 fig_file=fig_file,
+                show=show,
             )
 
 
@@ -891,7 +896,7 @@ def _kde_cca(
             posterior_distribution()
 
 
-def cca_vision(bel, Y_obs: np.array, fig_dir: str = None):
+def cca_vision(bel, Y_obs: np.array, fig_dir: str = None, show: bool = False):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
@@ -934,7 +939,9 @@ def cca_vision(bel, Y_obs: np.array, fig_dir: str = None):
         dpi=300,
         transparent=False,
     )
+    if show:
+        plt.show()
     plt.close()
 
     # KDE plots which consume a lot of time.
-    _kde_cca(bel, Y_obs=Y_obs, sdir=fig_dir)
+    _kde_cca(bel, Y_obs=Y_obs, sdir=fig_dir, show=show)
