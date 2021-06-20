@@ -446,8 +446,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca.y_std_
-            + self.cca.y_mean_
+            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std
+            + self.cca._y_mean
         )  # Posterior PC scores
 
         # Back transform PC scores
