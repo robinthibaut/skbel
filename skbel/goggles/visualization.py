@@ -378,7 +378,7 @@ def pca_vision(
     scores: bool = True,
     exvar: bool = True,
     labels: bool = True,
-    show: bool = False
+    show: bool = False,
 ):
     """
     Loads PCA pickles and plot scores for all folders
