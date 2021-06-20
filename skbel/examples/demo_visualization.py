@@ -368,8 +368,9 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
         plt.savefig(
             jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=False
         )
-        plt.close()
-
+        if show:
+            plt.show()
+            plt.close()
     if show:
         plt.show()
         plt.close()
@@ -730,7 +731,9 @@ def curves(
     if sdir:
         utils.dirmaker(sdir)
         plt.savefig(jp(sdir, f"{title}.png"), dpi=300, transparent=False)
-        plt.close()
+        if show:
+            plt.show()
+            plt.close()
     if show:
         plt.show()
         plt.close()
@@ -787,7 +790,9 @@ def curves_i(
         if sdir:
             utils.dirmaker(sdir)
             plt.savefig(jp(sdir, f"{title}_{t + 1}.png"), dpi=300, transparent=False)
-            plt.close()
+            if show:
+                plt.show()
+                plt.close()
         if show:
             plt.show()
             plt.close()
@@ -1053,7 +1058,9 @@ def d_pca_inverse_plot(
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
         plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=False)
-        plt.close()
+        if show:
+            plt.show()
+            plt.close()
     if show:
         plt.show()
         plt.close()

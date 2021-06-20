@@ -215,7 +215,9 @@ def explained_variance(
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=False)
-        plt.close()
+        if show:
+            plt.show()
+            plt.close()
     if show:
         plt.show()
         plt.close()
@@ -301,7 +303,9 @@ def pca_scores(
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
         plt.savefig(fig_file, dpi=300, transparent=False)
-        plt.close()
+        if show:
+            plt.show()
+            plt.close()
     if show:
         plt.show()
 
@@ -357,7 +361,9 @@ def cca_plot(
                 dpi=300,
                 transparent=False,
             )
-            plt.close()
+            if show:
+                plt.show()
+                plt.close()
         if show:
             plt.show()
             plt.close()
@@ -827,7 +833,9 @@ def _kde_cca(
                 dpi=300,
                 transparent=False,
             )
-            plt.close()
+            if show:
+                plt.show()
+                plt.close()
         if show:
             plt.show()
             plt.close()
@@ -887,7 +895,9 @@ def _kde_cca(
                     dpi=300,
                     transparent=False,
                 )
-                plt.close()
+                if show:
+                    plt.show()
+                    plt.close()
             if show:
                 plt.show()
                 plt.close()
