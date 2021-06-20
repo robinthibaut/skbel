@@ -93,11 +93,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Original dataset
         self._X_shape, self._Y_shape = x_dim, y_dim
-        # TODO: We shouldn't save raw data in the BEL model as it can be too heavy
-        # self.X, self.Y = None, None
-        # self.X_obs, self.Y_obs = None, None  # Observation data
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
+        # TODO: It is not necessary to save all this.
         self.X_pc, self.Y_pc = None, None
         self.X_obs_pc, self.Y_obs_pc = None, None
         # Dataset after learning
@@ -176,8 +174,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 allow_nd=True,
             )
 
-        # self.X, self.Y = X, Y  # Save array
-
         _Y = check_array(
             Y,
             dtype=np.float64,
@@ -218,7 +214,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
 
         check_is_fitted(self.cca)
-        # The key here is to cut PC's based on the number defined in configuration file
 
         if X is not None and Y is None:
             X = check_array(X, copy=self.copy)
@@ -331,13 +326,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         return self.fit(X, y).transform(X, y)
 
-    def predict(self, X_obs, mode: str = None) -> (np.array, np.array):
+    def predict(self, X_obs: np.array, mode: str = None) -> (np.array, np.array):
         """
         Make predictions, in the BEL fashion.
         """
         if mode is not None:
             self.mode = mode
-        # self.X_obs = X_obs  # Save array with name
+
         if type(X_obs) is list:
             try:
                 X_obs = [check_array(x, allow_nd=True) for x in X_obs]
@@ -414,7 +409,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         X_obs=self.X_obs_f.T[comp_n],
                     )
                     hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
-                    # hp = _normalize_distribution(hp, sup)
                     kind = "pdf"
                     fun = interpolate.interp1d(sup, hp, kind="cubic")
 
@@ -446,8 +440,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y_pred
         )  # Posterior CCA scores
         y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std
-            + self.cca._y_mean
+            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std + self.cca._y_mean  # noqa
         )  # Posterior PC scores
 
         # Back transform PC scores
