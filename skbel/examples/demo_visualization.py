@@ -525,7 +525,7 @@ def plot_posterior(
     if annotation is None:
         annotation = ["A"]
     # I display here the prior h behind the forecasts sampled from the posterior.
-    well_ids = [0] + list(map(int, list(folder)))
+    well_ids = [0, 1, 2, 3, 4, 5, 6]
     labels = ["Training", "Samples", "True test"]
     colors = ["darkblue", "darkred", "k"]
     Y_obs = Y_obs.to_numpy().reshape((Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
