@@ -4,6 +4,14 @@ skbel.preprocessing package
 Submodules
 ----------
 
+skbel.preprocessing.composite module
+------------------------------------
+
+.. automodule:: skbel.preprocessing.composite
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 skbel.preprocessing.dct module
 ------------------------------
 

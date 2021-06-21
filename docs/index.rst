@@ -31,6 +31,7 @@ Table of contents
    :maxdepth: 2
 
    source/modules
+   source/examples
 
 Indices and tables
 ==================

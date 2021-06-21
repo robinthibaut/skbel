@@ -12,6 +12,14 @@ skbel.learning.bel module
    :undoc-members:
    :show-inheritance:
 
+skbel.learning.kcca module
+--------------------------
+
+.. automodule:: skbel.learning.kcca
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
