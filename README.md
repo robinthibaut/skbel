@@ -55,7 +55,7 @@ Bayesian Evidential Learning - A Prediction-Focused Approach
  
 Example
 -----------------------------------------------------------------------------------------
-- All the details about the example can be found in [arXiv:2105.05539](https://arxiv.org/abs/2105.05539), and the code in `skbel/examples/demo.py`.
+- All the details about the example can be found in [arXiv:2105.05539](https://arxiv.org/abs/2105.05539), and the code in `/examples/demo.py`.
 - It concerns a hydrogeological experiment consisting of predicting the wellhead protection area (WHPA) around a pumping well from measured breakthrough curves at said pumping well. 
 - Predictor and target are generated through forward modeling from a set of hydrogeological model with different hydraulic conductivity fields (not shown).
 - The predictor is the set of breakthrough curves coming from 6 different injection wells around the pumping well (Figure 3).
