@@ -15,7 +15,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_array, deprecated
 
-from skbel.examples.demo_config import Setup
+from examples.demo_config import Setup
 from skbel import utils
 from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, pca_scores
 from skbel.spatial import (
