@@ -14,11 +14,11 @@ python:
    version: 3.7
 #   install:
 #    - requirements: docs/requirements.txt
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - doc
+    install:
+      - method: pip
+        path: .
+        extra_requirements:
+          - doc
 
 #submodules:
 #  include: all
