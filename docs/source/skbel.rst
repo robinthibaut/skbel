@@ -1,5 +1,8 @@
-SKBEL
-======
+skbel package
+=============
+
+Subpackages
+-----------
 
 .. toctree::
    :maxdepth: 4
@@ -10,3 +13,11 @@ SKBEL
    skbel.preprocessing
    skbel.spatial
    skbel.utils
+
+Module contents
+---------------
+
+.. automodule:: skbel
+   :members:
+   :undoc-members:
+   :show-inheritance:
