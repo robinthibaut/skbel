@@ -385,6 +385,8 @@ def plot_predictor(
     annotation: list = None,
     show: bool = False,
 ):
+    if base_dir is None:
+        base_dir = ""
     if root is None:
         root = ""
     if folder is None:
