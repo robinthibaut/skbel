@@ -29,7 +29,7 @@ Table of contents
 .. toctree::
    :maxdepth: 2
 
-   source/skbel.rst
+   source/skbel_stable.rst
    source/examples.rst
 
 Indices and tables

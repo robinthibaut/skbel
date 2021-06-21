@@ -2,7 +2,15 @@ skbel
 sphinx==3.4.3
 sphinx_rtd_theme==0.5.1
 readthedocs-sphinx-search==0.1.0
-numpydoc
 nbsphinx
-matplotlib
 IPython
+scikit-learn==0.24.2
+matplotlib>=3.3.4
+scipy>=1.6.1
+numpy>=1.20.1
+joblib>=1.0.1
+pandas>=1.2.2
+seaborn>=0.11.1
+dataclasses>=0.6
+loguru>=0.5.3
+pytest
