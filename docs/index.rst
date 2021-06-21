@@ -17,12 +17,6 @@ SKBEL is available through `PyPI <https://pypi.org/project/skbel/>`_, and may be
 
    $ pip install skbel
 
-Example
--------
-.. toctree::
-   :maxdepth: 4
-
-   ../../examples/demo.ipynb
 
 Issues and contributing
 -----------------------

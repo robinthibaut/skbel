@@ -4,12 +4,12 @@ Examples
 ========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
 
-   ../../examples/demo
+   ../examples/demo.ipynb
 
 
 Download the examples as notebooks
 ----------------------------------
 
-* :download:`Demo <../../examples/demo.ipynb>`
+* :download:`Demo <../examples/demo.ipynb>`

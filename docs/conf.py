@@ -13,9 +13,9 @@
 import os
 import sys
 
-sys.path.insert(2, os.path.abspath('../skbel'))
-sys.path.insert(1, os.path.abspath('../examples'))
-sys.path.insert(0, os.path.abspath('..'))
+# sys.path.insert(2, os.path.abspath('../skbel'))
+# sys.path.insert(1, os.path.abspath('../examples'))
+sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -42,7 +42,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
-    "numpydoc",
+    # "numpydoc",
     "nbsphinx",
     "matplotlib.sphinxext.plot_directive",
     "IPython.sphinxext.ipython_directive",
