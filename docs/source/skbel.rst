@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    skbel.algorithms
-   skbel.examples
    skbel.goggles
    skbel.learning
    skbel.preprocessing
