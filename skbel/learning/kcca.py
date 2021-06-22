@@ -343,38 +343,6 @@ class KCCA(
     def norm_y_weights(self):
         return self._norm_y_weights
 
-    # @deprecated(  # type: ignore
-    #     "Attribute x_mean_ was deprecated in version 0.24 and "
-    #     "will be removed in 1.1 (renaming of 0.26)."
-    # )
-    @property
-    def x_mean_(self):
-        return self._x_mean
-
-    # @deprecated(  # type: ignore
-    #     "Attribute y_mean_ was deprecated in version 0.24 and "
-    #     "will be removed in 1.1 (renaming of 0.26)."
-    # )
-    @property
-    def y_mean_(self):
-        return self._y_mean
-
-    # @deprecated(  # type: ignore
-    #     "Attribute x_std_ was deprecated in version 0.24 and "
-    #     "will be removed in 1.1 (renaming of 0.26)."
-    # )
-    @property
-    def x_std_(self):
-        return self._x_std
-
-    # @deprecated(  # type: ignore
-    #     "Attribute y_std_ was deprecated in version 0.24 and "
-    #     "will be removed in 1.1 (renaming of 0.26)."
-    # )
-    @property
-    def y_std_(self):
-        return self._y_std
-
     @property
     def x_scores_(self):
         # TODO: raise error in 1.1 instead

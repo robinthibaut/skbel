@@ -1,5 +1,5 @@
-skbel.goggles package
-=====================
+skbel.goggles
+==============
 
 Submodules
 ----------

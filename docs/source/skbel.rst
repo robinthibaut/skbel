@@ -1,5 +1,5 @@
-skbel package
-=============
+skbel
+=====
 
 Subpackages
 -----------

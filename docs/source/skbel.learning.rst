@@ -1,5 +1,5 @@
-skbel.learning package
-======================
+skbel.learning
+==============
 
 Submodules
 ----------

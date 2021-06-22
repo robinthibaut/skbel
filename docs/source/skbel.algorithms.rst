@@ -1,5 +1,5 @@
-skbel.algorithms package
-========================
+skbel.algorithms
+=================
 
 Submodules
 ----------

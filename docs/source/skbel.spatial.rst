@@ -1,5 +1,5 @@
-skbel.spatial package
-=====================
+skbel.spatial
+=============
 
 Submodules
 ----------

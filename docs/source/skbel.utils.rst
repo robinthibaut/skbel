@@ -1,5 +1,5 @@
-skbel.utils package
-===================
+skbel.utils
+===========
 
 Submodules
 ----------

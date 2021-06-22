@@ -1,5 +1,5 @@
-skbel.preprocessing package
-===========================
+skbel.preprocessing
+===================
 
 Submodules
 ----------
