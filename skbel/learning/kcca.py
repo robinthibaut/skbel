@@ -27,12 +27,11 @@ from skbel.utils import FLOAT_DTYPES
 
 
 class KernelCCA(
-    TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator, metaclass=ABCMeta
+    TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator
 ):
     """
     """
 
-    @abstractmethod
     def __init__(
             self,
             n_components=2,
@@ -64,7 +63,7 @@ class KernelCCA(
         self.algorithm = algorithm
         self.max_iter = max_iter
         self.tol = tol
-        self.n_jobs = None
+        self.n_jobs = n_jobs
         self.copy = copy
 
     def _get_kernel(self, X, Y=None):
@@ -275,8 +274,8 @@ class KernelCCA(
 
         if self.fit_inverse_transform:
             # no need to use the kernel to transform X, use shortcut expression
-            X_transformed = self._centerer.transform(self._get_kernel(X, self.X_fit_))
-            Y_transformed = self._centerer.transform(self._get_kernel(Y, self.Y_fit_))
+            X_transformed = self._centerer.transform(self._get_kernel(X))
+            Y_transformed = self._centerer.transform(self._get_kernel(Y))
 
             self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
             self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, Y)
@@ -303,17 +302,20 @@ class KernelCCA(
 
         # no need to use the kernel to transform X, use shortcut expression
         X_transformed = self._centerer.transform(self._get_kernel(X, self.X_fit_))
+        x_scores = np.dot(X_transformed, self.x_rotations_)
 
         if self.fit_inverse_transform:
             self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
 
         if y is not None:
             Y_transformed = self._centerer.transform(self._get_kernel(y, self.Y_fit_))
+            y_scores = np.dot(Y_transformed, self.y_rotations_)
+
             if self.fit_inverse_transform:
                 self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, y)
-            return X_transformed, Y_transformed
+            return x_scores, y_scores
 
-        return X_transformed
+        return x_scores
 
     def transform(self, X, Y=None, copy=True):
         """Apply the dimension reduction.
@@ -408,10 +410,11 @@ class KernelCCA(
         """
         check_is_fitted(self)
         X = check_array(X, copy=copy, dtype=FLOAT_DTYPES)
+        Kx = self._centerer.transform(self._get_kernel(X, self.X_fit_))
         # Normalize
-        X -= self._x_mean
-        X /= self._x_std
-        Ypred = np.dot(X, self.coef_)
+        # X -= self._x_mean
+        # X /= self._x_std
+        Ypred = np.dot(Kx, self.coef_)
         return Ypred + self._y_mean
 
     @property
