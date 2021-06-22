@@ -12,10 +12,3 @@ skbel.spatial.spatial module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.spatial
-   :members:
-   :undoc-members:
-   :show-inheritance:

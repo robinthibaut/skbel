@@ -12,10 +12,3 @@ skbel.goggles.visualization module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.goggles
-   :members:
-   :undoc-members:
-   :show-inheritance:

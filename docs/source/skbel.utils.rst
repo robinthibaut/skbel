@@ -11,11 +11,3 @@ skbel.utils.utils module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: skbel.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

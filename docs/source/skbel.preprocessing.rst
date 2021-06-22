@@ -20,10 +20,3 @@ skbel.preprocessing.dct module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.preprocessing
-   :members:
-   :undoc-members:
-   :show-inheritance:

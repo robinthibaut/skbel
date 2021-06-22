@@ -20,10 +20,3 @@ skbel.learning.kcca module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.learning
-   :members:
-   :undoc-members:
-   :show-inheritance:

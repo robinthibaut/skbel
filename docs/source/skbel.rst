@@ -13,11 +13,3 @@ Subpackages
    skbel.preprocessing
    skbel.spatial
    skbel.utils
-
-Module contents
----------------
-
-.. automodule:: skbel
-   :members:
-   :undoc-members:
-   :show-inheritance:
