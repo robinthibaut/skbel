@@ -26,26 +26,28 @@ from sklearn.utils.validation import check_is_fitted
 from skbel.utils import FLOAT_DTYPES
 
 
-class KernelCCA(
-    TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator
-):
-    """
-    """
+class KernelCCA(TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator):
+    """ """
 
     def __init__(
-            self,
-            n_components=2,
-            *, kernel="linear",
-            gamma=None, degree=3, coef0=1, kernel_params=None,
-            alpha=1.0, fit_inverse_transform=False,
-            scale=True,
-            deflation_mode="canonical",
-            mode="B",
-            algorithm="nipals",
-            max_iter=500,
-            tol=1e-06,
-            n_jobs=None,
-            copy=True,
+        self,
+        n_components=2,
+        *,
+        kernel="linear",
+        gamma=None,
+        degree=3,
+        coef0=1,
+        kernel_params=None,
+        alpha=1.0,
+        fit_inverse_transform=False,
+        scale=True,
+        deflation_mode="canonical",
+        mode="B",
+        algorithm="nipals",
+        max_iter=500,
+        tol=1e-06,
+        n_jobs=None,
+        copy=True,
     ):
         self.n_components = n_components
         # Kernel params
@@ -70,15 +72,13 @@ class KernelCCA(
         if callable(self.kernel):
             params = self.kernel_params or {}
         else:
-            params = {"gamma": self.gamma,
-                      "degree": self.degree,
-                      "coef0": self.coef0}
-        return pairwise_kernels(X, Y, metric=self.kernel,
-                                filter_params=True, n_jobs=self.n_jobs,
-                                **params)
+            params = {"gamma": self.gamma, "degree": self.degree, "coef0": self.coef0}
+        return pairwise_kernels(
+            X, Y, metric=self.kernel, filter_params=True, n_jobs=self.n_jobs, **params
+        )
 
     def _fit_transform(self, Kx, Ky=None):
-        """ Fit's using kernel K"""
+        """Fit's using kernel K"""
         # center kernel
         Kx = self._centerer.fit_transform(Kx)
         Ky = self._centerer.fit_transform(Ky)
@@ -234,12 +234,13 @@ class KernelCCA(
 
     def _fit_inverse_transform(self, X_transformed, X):
         if hasattr(X, "tocsr"):
-            raise NotImplementedError("Inverse transform not implemented for "
-                                      "sparse matrices!")
+            raise NotImplementedError(
+                "Inverse transform not implemented for " "sparse matrices!"
+            )
 
         n_samples = X_transformed.shape[0]
         K = self._get_kernel(X_transformed)
-        K.flat[::n_samples + 1] += self.alpha
+        K.flat[:: n_samples + 1] += self.alpha
         dual_coef_ = linalg.solve(K, X, sym_pos=True, overwrite_a=True)
         X_transformed_fit_ = X_transformed
 
@@ -277,8 +278,12 @@ class KernelCCA(
             X_transformed = self._centerer.transform(self._get_kernel(X))
             Y_transformed = self._centerer.transform(self._get_kernel(Y))
 
-            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
-            self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, Y)
+            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(
+                X_transformed, X
+            )
+            self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(
+                Y_transformed, Y
+            )
 
         self.X_fit_ = X
         self.Y_fit_ = Y
@@ -305,14 +310,18 @@ class KernelCCA(
         x_scores = np.dot(X_transformed, self.x_rotations_)
 
         if self.fit_inverse_transform:
-            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
+            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(
+                X_transformed, X
+            )
 
         if y is not None:
             Y_transformed = self._centerer.transform(self._get_kernel(y, self.Y_fit_))
             y_scores = np.dot(Y_transformed, self.y_rotations_)
 
             if self.fit_inverse_transform:
-                self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, y)
+                self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(
+                    Y_transformed, y
+                )
             return x_scores, y_scores
 
         return x_scores
@@ -380,9 +389,11 @@ class KernelCCA(
         X = check_array(X, dtype=FLOAT_DTYPES)
 
         if not self.fit_inverse_transform:
-            raise NotFittedError("The fit_inverse_transform parameter was not"
-                                 " set to True when instantiating and hence "
-                                 "the inverse transform is not available.")
+            raise NotFittedError(
+                "The fit_inverse_transform parameter was not"
+                " set to True when instantiating and hence "
+                "the inverse transform is not available."
+            )
 
         Kx = self._get_kernel(X, self.X_transformed_fit_)
 
