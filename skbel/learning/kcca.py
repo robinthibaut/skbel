@@ -25,19 +25,11 @@ from sklearn.utils.validation import check_is_fitted
 
 from skbel.utils import FLOAT_DTYPES
 
-from scipy.spatial.distance import pdist, squareform
-
 
 class KernelCCA(
     TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator, metaclass=ABCMeta
 ):
-    """Partial Least Squares (PLS)
-
-    This class implements the generic PLS algorithm.
-
-    Main ref: Wegelin, a survey of Partial Least Squares (PLS) methods,
-    with emphasis on the two-block case
-    https://www.stat.washington.edu/research/reports/2000/tr371.pdf
+    """
     """
 
     @abstractmethod
@@ -283,8 +275,8 @@ class KernelCCA(
 
         if self.fit_inverse_transform:
             # no need to use the kernel to transform X, use shortcut expression
-            X_transformed = np.dot(X, self.x_rotations_)
-            Y_transformed = np.dot(Y, self.y_rotations_)
+            X_transformed = self._centerer.transform(self._get_kernel(X, self.X_fit_))
+            Y_transformed = self._centerer.transform(self._get_kernel(Y, self.Y_fit_))
 
             self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
             self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, Y)
@@ -310,12 +302,16 @@ class KernelCCA(
         self.fit(X, y)
 
         # no need to use the kernel to transform X, use shortcut expression
-        X_transformed = np.dot(X, self.x_rotations_)
-        Y_transformed = np.dot(y, self.y_rotations_)
+        X_transformed = self._centerer.transform(self._get_kernel(X, self.X_fit_))
 
         if self.fit_inverse_transform:
             self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
-            self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, y)
+
+        if y is not None:
+            Y_transformed = self._centerer.transform(self._get_kernel(y, self.Y_fit_))
+            if self.fit_inverse_transform:
+                self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, y)
+            return X_transformed, Y_transformed
 
         return X_transformed
 
@@ -354,8 +350,8 @@ class KernelCCA(
 
             if Ky.ndim == 1:
                 Ky = Ky.reshape(-1, 1)
-            Ky -= self._y_mean
-            Ky /= self._y_std
+            # Ky -= self._y_mean
+            # Ky /= self._y_std
             y_scores = np.dot(Ky, self.y_rotations_)
             return x_scores, y_scores
 
