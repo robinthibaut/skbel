@@ -2,6 +2,7 @@ import warnings
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
+from scipy import linalg
 from scipy.linalg import pinv2
 from sklearn.base import (
     TransformerMixin,
@@ -16,6 +17,9 @@ from sklearn.cross_decomposition._pls import (
     _get_first_singular_vectors_svd,
     PLSRegression,
 )
+from sklearn.exceptions import NotFittedError
+from sklearn.metrics import pairwise_kernels
+from sklearn.preprocessing import KernelCenterer
 from sklearn.utils import check_consistent_length, check_array
 from sklearn.utils.validation import check_is_fitted
 
@@ -24,7 +28,7 @@ from skbel.utils import FLOAT_DTYPES
 from scipy.spatial.distance import pdist, squareform
 
 
-class KCCA(
+class KernelCCA(
     TransformerMixin, RegressorMixin, MultiOutputMixin, BaseEstimator, metaclass=ABCMeta
 ):
     """Partial Least Squares (PLS)
@@ -38,53 +42,64 @@ class KCCA(
 
     @abstractmethod
     def __init__(
-        self,
-        n_components=2,
-        *,
-        scale=True,
-        deflation_mode="regression",
-        mode="A",
-        algorithm="nipals",
-        max_iter=500,
-        tol=1e-06,
-        copy=True,
+            self,
+            n_components=2,
+            *, kernel="linear",
+            gamma=None, degree=3, coef0=1, kernel_params=None,
+            alpha=1.0, fit_inverse_transform=False,
+            scale=True,
+            deflation_mode="canonical",
+            mode="B",
+            algorithm="nipals",
+            max_iter=500,
+            tol=1e-06,
+            n_jobs=None,
+            copy=True,
     ):
         self.n_components = n_components
+        # Kernel params
+        self.kernel = kernel
+        self.kernel_params = kernel_params
+        self.gamma = gamma
+        self.degree = degree
+        self.coef0 = coef0
+        self.alpha = alpha
+        self.fit_inverse_transform = fit_inverse_transform
+        # CCA params
         self.deflation_mode = deflation_mode
         self.mode = mode
         self.scale = scale
         self.algorithm = algorithm
         self.max_iter = max_iter
         self.tol = tol
+        self.n_jobs = None
         self.copy = copy
 
-    def fit(self, X, Y):
-        """Fit model to data.
+    def _get_kernel(self, X, Y=None):
+        if callable(self.kernel):
+            params = self.kernel_params or {}
+        else:
+            params = {"gamma": self.gamma,
+                      "degree": self.degree,
+                      "coef0": self.coef0}
+        return pairwise_kernels(X, Y, metric=self.kernel,
+                                filter_params=True, n_jobs=self.n_jobs,
+                                **params)
 
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training vectors, where `n_samples` is the number of samples and
-            `n_features` is the number of predictors.
+    def _fit_transform(self, Kx, Ky=None):
+        """ Fit's using kernel K"""
+        # center kernel
+        Kx = self._centerer.fit_transform(Kx)
+        Ky = self._centerer.fit_transform(Ky)
 
-        Y : array-like of shape (n_samples,) or (n_samples, n_targets)
-            Target vectors, where `n_samples` is the number of samples and
-            `n_targets` is the number of response variables.
-        """
+        if self.n_components is None:
+            n_components = min(Kx.shape[0], Ky.shape[0])
+        else:
+            n_components = min(Kx.shape[0], Ky.shape[0], self.n_components)
 
-        check_consistent_length(X, Y)
-        X = self._validate_data(
-            X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
-        )
-        Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
-        if Y.ndim == 1:
-            Y = Y.reshape(-1, 1)
-
-        n = X.shape[0]
-        p = X.shape[1]
-        q = Y.shape[1]
-
-        n_components = self.n_components
+        n = Kx.shape[0]
+        p = Kx.shape[1]
+        q = Ky.shape[1]
         if self.deflation_mode == "regression":
             # With PLSRegression n_components is bounded by the rank of (X.T X)
             # see Wegelin page 25
@@ -125,16 +140,9 @@ class KCCA(
         self._norm_y_weights = self.deflation_mode == "canonical"  # 1.1
         norm_y_weights = self._norm_y_weights
 
-        # Kernelization
-
-        gausigma = 1
-        pairwise_dists = squareform(pdist(X, Y, "euclidean"))
-        kernel = np.exp((-(pairwise_dists ** 2)) / (2 * gausigma ** 2))
-        kernel = (kernel + kernel.T) / 2.0
-
         # Scale (in place)
         Xk, Yk, self._x_mean, self._y_mean, self._x_std, self._y_std = _center_scale_xy(
-            X, Y, self.scale
+            Kx, Ky, self.scale
         )
 
         self.x_weights_ = np.zeros((p, n_components))  # U
@@ -216,7 +224,7 @@ class KCCA(
         # Xi . Gamma.T is a sum of n_components rank-1 matrices. X_(R+1) is
         # whatever is left to fully reconstruct X, and can be 0 if X is of rank
         # n_components.
-        # Similiarly, Y was approximated as Omega . Delta.T + Y_(R+1)
+        # Similarly, Y was approximated as Omega . Delta.T + Y_(R+1)
 
         # Compute transformation matrices (rotations_). See User Guide.
         self.x_rotations_ = np.dot(
@@ -230,7 +238,86 @@ class KCCA(
 
         self.coef_ = np.dot(self.x_rotations_, self.y_loadings_.T)
         self.coef_ = self.coef_ * self._y_std
+
+        return Kx, Ky
+
+    def _fit_inverse_transform(self, X_transformed, X):
+        if hasattr(X, "tocsr"):
+            raise NotImplementedError("Inverse transform not implemented for "
+                                      "sparse matrices!")
+
+        n_samples = X_transformed.shape[0]
+        K = self._get_kernel(X_transformed)
+        K.flat[::n_samples + 1] += self.alpha
+        dual_coef_ = linalg.solve(K, X, sym_pos=True, overwrite_a=True)
+        X_transformed_fit_ = X_transformed
+
+        return dual_coef_, X_transformed_fit_
+
+    def fit(self, X, Y):
+        """Fit model to data.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_samples, n_features)
+            Training vectors, where `n_samples` is the number of samples and
+            `n_features` is the number of predictors.
+
+        Y : array-like of shape (n_samples,) or (n_samples, n_targets)
+            Target vectors, where `n_samples` is the number of samples and
+            `n_targets` is the number of response variables.
+        """
+
+        check_consistent_length(X, Y)
+        X = self._validate_data(
+            X, dtype=np.float64, copy=self.copy, ensure_min_samples=2
+        )
+        Y = check_array(Y, dtype=np.float64, copy=self.copy, ensure_2d=False)
+        if Y.ndim == 1:
+            Y = Y.reshape(-1, 1)
+
+        self._centerer = KernelCenterer()
+        Kx = self._get_kernel(X)
+        Ky = self._get_kernel(Y)
+        self._fit_transform(Kx, Ky)
+
+        if self.fit_inverse_transform:
+            # no need to use the kernel to transform X, use shortcut expression
+            X_transformed = np.dot(X, self.x_rotations_)
+            Y_transformed = np.dot(Y, self.y_rotations_)
+
+            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
+            self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, Y)
+
+        self.X_fit_ = X
+        self.Y_fit_ = Y
+
         return self
+
+    def fit_transform(self, X, y=None, **params):
+        """Fit the model from data in X and transform X.
+
+        Parameters
+        ----------
+        X : {array-like, sparse matrix} of shape (n_samples, n_features)
+            Training vector, where n_samples in the number of samples
+            and n_features is the number of features.
+
+        Returns
+        -------
+        X_new : ndarray of shape (n_samples, n_components)
+        """
+        self.fit(X, y)
+
+        # no need to use the kernel to transform X, use shortcut expression
+        X_transformed = np.dot(X, self.x_rotations_)
+        Y_transformed = np.dot(y, self.y_rotations_)
+
+        if self.fit_inverse_transform:
+            self.dual_coef_X, self.X_transformed_fit_ = self._fit_inverse_transform(X_transformed, X)
+            self.dual_coef_Y, self.Y_transformed_fit_ = self._fit_inverse_transform(Y_transformed, y)
+
+        return X_transformed
 
     def transform(self, X, Y=None, copy=True):
         """Apply the dimension reduction.
@@ -252,18 +339,24 @@ class KCCA(
         """
         check_is_fitted(self)
         X = check_array(X, copy=copy, dtype=FLOAT_DTYPES)
+
+        # Compute centered gram matrix between X and training data X_fit_
+        Kx = self._centerer.transform(self._get_kernel(X, self.X_fit_))
+
         # Normalize
-        X -= self._x_mean
-        X /= self._x_std
+        # Kx -= self._x_mean
+        # Kx /= self._x_std
         # Apply rotation
-        x_scores = np.dot(X, self.x_rotations_)
+        x_scores = np.dot(Kx, self.x_rotations_)
         if Y is not None:
             Y = check_array(Y, ensure_2d=False, copy=copy, dtype=FLOAT_DTYPES)
-            if Y.ndim == 1:
-                Y = Y.reshape(-1, 1)
-            Y -= self._y_mean
-            Y /= self._y_std
-            y_scores = np.dot(Y, self.y_rotations_)
+            Ky = self._centerer.transform(self._get_kernel(Y, self.Y_fit_))
+
+            if Ky.ndim == 1:
+                Ky = Ky.reshape(-1, 1)
+            Ky -= self._y_mean
+            Ky /= self._y_std
+            y_scores = np.dot(Ky, self.y_rotations_)
             return x_scores, y_scores
 
         return x_scores
@@ -287,12 +380,17 @@ class KCCA(
         """
         check_is_fitted(self)
         X = check_array(X, dtype=FLOAT_DTYPES)
-        # From pls space to original space
-        X_reconstructed = np.matmul(X, self.x_loadings_.T)
 
-        # Denormalize
-        X_reconstructed *= self._x_std
-        X_reconstructed += self._x_mean
+        if not self.fit_inverse_transform:
+            raise NotFittedError("The fit_inverse_transform parameter was not"
+                                 " set to True when instantiating and hence "
+                                 "the inverse transform is not available.")
+
+        Kx = self._get_kernel(X, self.X_transformed_fit_)
+
+        # From pls space to original space
+        X_reconstructed = np.dot(Kx, self.dual_coef_X)
+
         return X_reconstructed
 
     def predict(self, X, copy=True):
@@ -319,25 +417,6 @@ class KCCA(
         X /= self._x_std
         Ypred = np.dot(X, self.coef_)
         return Ypred + self._y_mean
-
-    def fit_transform(self, X, y=None):
-        """Learn and apply the dimension reduction on the train data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training vectors, where n_samples is the number of samples and
-            n_features is the number of predictors.
-
-        y : array-like of shape (n_samples, n_targets), default=None
-            Target vectors, where n_samples is the number of samples and
-            n_targets is the number of response variables.
-
-        Returns
-        -------
-        x_scores if Y is not given, (x_scores, y_scores) otherwise.
-        """
-        return self.fit(X, y).transform(X, y)
 
     @property
     def norm_y_weights(self):

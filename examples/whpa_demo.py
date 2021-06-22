@@ -16,7 +16,6 @@ from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
 from skbel.learning.bel import BEL
-from sklearn.gaussian_process.kernels import Matern
 
 
 def init_bel():
