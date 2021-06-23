@@ -217,7 +217,7 @@ def explained_variance(
         plt.savefig(fig_file, dpi=300, transparent=False)
         if show:
             plt.show()
-            plt.close()
+        plt.close()
     if show:
         plt.show()
         plt.close()
@@ -305,9 +305,10 @@ def pca_scores(
         plt.savefig(fig_file, dpi=300, transparent=False)
         if show:
             plt.show()
-            plt.close()
+        plt.close()
     if show:
         plt.show()
+        plt.close()
 
 
 def cca_plot(
@@ -363,7 +364,7 @@ def cca_plot(
             )
             if show:
                 plt.show()
-                plt.close()
+            plt.close()
         if show:
             plt.show()
             plt.close()
