@@ -23,7 +23,7 @@ class Kernel(TransformerMixin, BaseEstimator):
         alpha=1.0,
         fit_inverse_transform=False,
         n_jobs=None,
-        copy=True,
+        copy=False,
     ):
         # Kernel params
         self.kernel = kernel
@@ -46,24 +46,16 @@ class Kernel(TransformerMixin, BaseEstimator):
             X, Y, metric=self.kernel, filter_params=True, n_jobs=self.n_jobs, **params
         )
 
-    def _fit_transform(self, K):
-        """Fit's using kernel K"""
-        # center kernel
-        K = self._centerer.fit_transform(K)
-
-        return K
-
-    def _fit_inverse_transform(self, X_transformed, X):
+    def _fit_inverse_transform(self, X, K=None):
         if hasattr(X, "tocsr"):
             raise NotImplementedError(
-                "Inverse transform not implemented for " "sparse matrices!"
+                "Inverse transform not implemented for sparse matrices!"
             )
-
-        n_samples = X_transformed.shape[0]
-        K = self._get_kernel(X_transformed)
+        if K is None:
+            K = self._get_kernel(X)
+        n_samples = X.shape[0]
         K.flat[:: n_samples + 1] += self.alpha
         self.dual_coef_ = linalg.solve(K, X, sym_pos=True, overwrite_a=True)
-        self.X_transformed_fit_ = X_transformed
 
     def fit(self, X, y=None):
         """Fit the model from data in X.
@@ -80,13 +72,10 @@ class Kernel(TransformerMixin, BaseEstimator):
             Returns the instance itself.
         """
         X = self._validate_data(X, accept_sparse="csr", copy=self.copy_X)
-        self._centerer = KernelCenterer()
         K = self._get_kernel(X)
-        self._fit_transform(K)
         #
         if self.fit_inverse_transform:
-            X_transformed = X
-            self._fit_inverse_transform(X_transformed, X)
+            self._fit_inverse_transform(X, K)
 
         self.X_fit_ = X
 
@@ -107,8 +96,8 @@ class Kernel(TransformerMixin, BaseEstimator):
         X = self._validate_data(X, accept_sparse="csr", reset=False)
 
         # Compute centered gram matrix between X and training data X_fit_
-        K = self._centerer.transform(self._get_kernel(X, self.X_fit_))
-
+        # K = self._centerer.transform(self._get_kernel(X, self.X_fit_))
+        K = self._get_kernel(X, self.X_fit_)
         return K
 
     def fit_transform(self, X, y=None, **params):
@@ -124,15 +113,6 @@ class Kernel(TransformerMixin, BaseEstimator):
         -------
         X_new : ndarray of shape (n_samples, n_components)
         """
-        # self.fit(X, **params)
-        #
-        # # no need to use the kernel to transform X, use shortcut expression
-        # X_transformed = X
-        #
-        # if self.fit_inverse_transform:
-        #     self._fit_inverse_transform(X_transformed, X)
-        #
-        # return X_transformed
         return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, X):

@@ -16,7 +16,7 @@ from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
 from skbel.learning.bel import BEL
-from skbel.learning.kcca import KernelCCA
+from skbel.preprocessing.kernel import Kernel
 
 
 def init_bel():
@@ -38,7 +38,7 @@ def init_bel():
     )
 
     # Canonical Correlation Analysis
-    cca = KernelCCA(n_components=30, fit_inverse_transform=True)
+    cca = CCA(n_components=30)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
