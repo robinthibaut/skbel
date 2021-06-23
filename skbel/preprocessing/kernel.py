@@ -149,4 +149,3 @@ class Kernel(TransformerMixin, BaseEstimator):
             "preserves_dtype": [np.float64, np.float32],
             "pairwise": self.kernel == "precomputed",
         }
-
