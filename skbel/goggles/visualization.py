@@ -409,14 +409,17 @@ def pca_vision(
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(fig_dir, "d_exvar.png")
-            explained_variance(
-                bel,
-                n_comp=bel.X_pc.shape[1],
-                thr=0.8,
-                # annotation=["E"],
-                fig_file=fig_file,
-                show=show,
-            )
+            try:
+                explained_variance(
+                    bel,
+                    n_comp=bel.X_pc.shape[1],
+                    thr=0.8,
+                    # annotation=["E"],
+                    fig_file=fig_file,
+                    show=show,
+                )
+            except AttributeError:
+                pass
 
     if h:
         # Transform and split
@@ -441,14 +444,17 @@ def pca_vision(
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(fig_dir, "h_pca_exvar.png")
-            explained_variance(
-                bel,
-                n_comp=bel.Y_pc.shape[1],
-                thr=0.8,
-                # annotation=["F"],
-                fig_file=fig_file,
-                show=show,
-            )
+            try:
+                explained_variance(
+                    bel,
+                    n_comp=bel.Y_pc.shape[1],
+                    thr=0.8,
+                    # annotation=["F"],
+                    fig_file=fig_file,
+                    show=show,
+                )
+            except AttributeError:
+                pass
 
 
 def _despine(

@@ -7,7 +7,7 @@ import joblib
 import pandas as pd
 from loguru import logger
 from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
@@ -26,13 +26,13 @@ def init_bel():
     X_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA(n_components=50)),
+            ("pca", KernelPCA(n_components=50, kernel="linear", fit_inverse_transform=True, alpha=1e-5)),
         ]
     )
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler(with_mean=False)),
-            ("pca", PCA(n_components=30)),
+            ("pca", KernelPCA(n_components=30, kernel="linear", fit_inverse_transform=True, alpha=1e-5)),
         ]
     )
 
