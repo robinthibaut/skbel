@@ -25,19 +25,19 @@ def init_bel():
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [
-            ("scaler", StandardScaler(with_mean=False)),
-            ("pca", KernelPCA(n_components=200, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
+            ("scaler", StandardScaler()),
+            ("pca", KernelPCA(n_components=200, kernel="rbf", fit_inverse_transform=False, alpha=1e-5)),
         ]
     )
     Y_pre_processing = Pipeline(
         [
-            ("scaler", StandardScaler(with_mean=False)),
+            ("scaler", StandardScaler()),
             ("pca", KernelPCA(n_components=200, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
         ]
     )
 
     # Canonical Correlation Analysis
-    cca = CCA(n_components=100)
+    cca = CCA(n_components=200, max_iter=500*5)
 
     # Pipeline after CCA
     X_post_processing = Pipeline(
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # %% Set directories
     data_dir = jp(os.getcwd(), "dataset")
     # Directory in which to unload forecasts
-    sub_dir = jp(os.getcwd(), "results")
+    sub_dir = jp(os.getcwd(), "results_rbf2")
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
@@ -112,22 +112,22 @@ if __name__ == "__main__":
     model.predict(X_test)
 
     # Save the fitted BEL model
-    joblib.dump(model, jp(obj_dir, "bel.pkl"))
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
+    # joblib.dump(model, jp(obj_dir, "bel.pkl"))
+    # msg = f"model trained and saved in {obj_dir}"
+    # logger.info(msg)
 
     # %% Visualization
-
-    # Plot raw data
-    myvis.plot_results(
-        model, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
-    )
 
     # Plot PCA
     pca_vision(
         model,
         Y_obs=y_test,
         fig_dir=fig_pca_dir,
+    )
+
+    # Plot raw data
+    myvis.plot_results(
+        model, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
     )
 
     # Plot CCA
