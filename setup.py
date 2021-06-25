@@ -4,7 +4,7 @@ my_pckg = find_packages(include=["skbel"])
 
 setup(
     name="skbel",
-    version="1.1.1",
+    version="1.1.2",
     packages=my_pckg,
     include_package_data=True,
     url="https://github.com/robinthibaut/skbel",

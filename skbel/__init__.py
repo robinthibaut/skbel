@@ -5,7 +5,7 @@
 #
 # from loguru import logger
 
-__version__ = "1.0.2"
+__version__ = "1.1.2"
 
 source = __name__.split(".")[-1]
 # Set up logger
