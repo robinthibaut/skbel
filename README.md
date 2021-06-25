@@ -8,12 +8,12 @@
 
 ```pip install skbel```
 
-SKBEL is a Python package built on top of scikit-learn to implement the Bayesian Evidential Learning framework as described in Scheidt et al. (2018).
+SKBEL is a Python package built on top of scikit-learn to implement the Bayesian Evidential Learning framework as described in Scheidt et al. (2018). It provides an implementation of Multi-Output Gaussian Process Regression. 
 
 Documentation: [skbel.readthedocs.io](https://skbel.readthedocs.io/en/latest/)
 
-Bayesian Evidential Learning - A Prediction-Focused Approach
------------------------------------------------------------------------------------------
+Bayesian Evidential Learning
+----------------------------
 ### Introduction
 
 <p align="center">
