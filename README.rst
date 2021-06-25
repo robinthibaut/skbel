@@ -33,7 +33,7 @@
 .. |SeabornMinVersion| replace:: 0.9.0
 .. |PytestMinVersion| replace:: 5.0.1
 
-.. image:: /docs/img/illu-01.png
+.. image:: https://raw.githubusercontent.com/robinthibaut/skbel/master/docs/img/illu-01.png
 
 **skbel** is a Python module for implementing the Bayesian Evidential Learning framework built on top of
 scikit-learn and is distributed under the 3-Clause BSD license.

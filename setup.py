@@ -5,7 +5,7 @@ with open("README.rst") as f:
     LONG_DESCRIPTION = f.read()
 setup(
     name="skbel",
-    version="1.1.3",
+    version="1.1.4",
     packages=my_pckg,
     include_package_data=True,
     url="https://github.com/robinthibaut/skbel",
@@ -23,8 +23,6 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: Unix',
         'Operating System :: MacOS',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
