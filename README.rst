@@ -72,9 +72,9 @@ We welcome new contributors of all experience levels.
 Important links
 ~~~~~~~~~~~~~~~
 
-- Official source code repo: https://github.com/skbel/
+- Official source code repo: https://github.com/robinthibaut/skbel/
 - Download releases: https://pypi.org/project/skbel/
-- Issue tracker: https://github.com/skbel/skbel/issues
+- Issue tracker: https://github.com/skbel/issues
 
 Source code
 ~~~~~~~~~~~
