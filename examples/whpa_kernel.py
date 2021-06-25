@@ -32,7 +32,7 @@ def init_bel():
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler()),
-            ("pca", KernelPCA(n_components=300, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
+            ("pca", KernelPCA(n_components=500, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
         ]
     )
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # %% Set directories
     data_dir = jp(os.getcwd(), "dataset")
     # Directory in which to unload forecasts
-    sub_dir = jp(os.getcwd(), "results_rbf3")
+    sub_dir = jp(os.getcwd(), "results_rbf")
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
