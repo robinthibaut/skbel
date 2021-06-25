@@ -8,7 +8,7 @@ SKBEL
 
 .. currentmodule:: SKBEL
 
-This package implements the Bayesian Evidential Learning framework. It provides an implementation of Multi-Output Gaussian Process Regression.
+This package implements the Bayesian Evidential Learning framework.
 
 Installation
 ------------
