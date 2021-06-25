@@ -474,6 +474,8 @@ def mvn_inference(
 
     # Build block matrix
     s11 = y_cov
+    if y_cov.ndim == 0:
+        y_cov = [y_cov]
     s12 = y_cov @ g.T
     s21 = g @ y_cov
     s22 = g @ y_cov @ g.T + x_cov + x_modeling_covariance

@@ -372,7 +372,7 @@ def cca_plot(
 
 def pca_vision(
     bel,
-    fig_dir: str,
+    fig_dir: str = None,
     d: bool = True,
     h: bool = True,
     Y_obs: np.array = None,
@@ -393,6 +393,9 @@ def pca_vision(
     :param exvar: bool:
     :return:
     """
+
+    if fig_dir is None:
+        fig_dir = ""
 
     if d:
         fig_file = os.path.join(fig_dir, "d_scores.png")
@@ -921,7 +924,8 @@ def cca_vision(bel, Y_obs: np.array, fig_dir: str = None, show: bool = False):
     :param fig_dir: Base directory path
     :return:
     """
-
+    if fig_dir is None:
+        fig_dir = ""
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
         offset=bel.cca.n_components
