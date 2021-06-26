@@ -5,14 +5,14 @@ with open("README.rst") as f:
     LONG_DESCRIPTION = f.read()
 setup(
     name="skbel",
-    version="1.1.4",
+    version="1.1.6",
     packages=my_pckg,
     include_package_data=True,
     url="https://github.com/robinthibaut/skbel",
     license="BSD-3",
     author="Robin Thibaut",
     author_email="robin.thibaut@UGent.be",
-    description="A set of Python modules to implement the Bayesian Evidential Learning framework",
+    description="A set of Python modules to implement the Bayesian Evidential Learning (BEL) framework",
     long_description=LONG_DESCRIPTION,
     install_requires=["numpy", "pandas", "scipy", "matplotlib", "scikit-learn", "joblib"],
     classifiers=[

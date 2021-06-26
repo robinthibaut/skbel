@@ -32,7 +32,7 @@ def init_bel():
     Y_pre_processing = Pipeline(
         [
             ("scaler", StandardScaler()),
-            ("pca", KernelPCA(n_components=500, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
+            ("pca", KernelPCA(n_components=250, kernel="rbf", fit_inverse_transform=True, alpha=1e-5)),
         ]
     )
 
