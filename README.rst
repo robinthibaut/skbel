@@ -74,14 +74,14 @@ Important links
 
 - Official source code repo: https://github.com/robinthibaut/skbel/
 - Download releases: https://pypi.org/project/skbel/
-- Issue tracker: https://github.com/skbel/issues
+- Issue tracker: https://github.com/robinthibaut/skbel/issues
 
 Source code
 ~~~~~~~~~~~
 
 You can check the latest sources with the command::
 
-    git clone https://github.com/skbel/skbel.git
+    git clone https://github.com/robinthibaut/skbel/skbel.git
 
 Contributing
 ~~~~~~~~~~~~
