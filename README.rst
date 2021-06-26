@@ -109,4 +109,4 @@ Documentation
 Communication
 ~~~~~~~~~~~~~
 
-- Github Discussions: https://github.com/skbel/skbel/discussions
+- Github Discussions: https://github.com/robinthibaut/skbel/discussions
