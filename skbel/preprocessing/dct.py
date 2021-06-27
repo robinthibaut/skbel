@@ -55,7 +55,7 @@ class DiscreteCosineTransform2D(TransformerMixin, BaseEstimator):
         try:
             X = check_array(X, allow_nd=True)
         except ValueError:
-            X = check_array(self.X.reshape(1, -1))
+            X = check_array(X.reshape(1, -1))
 
         X = X.reshape(-1, self.m_cut, self.n_cut)
 
