@@ -1,22 +1,20 @@
 """Some visualization utilities"""
 
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
-import itertools
-import os
-import string
-import warnings
 from os.path import join as jp
 
+#  Copyright (c) 2021. Robin Thibaut, Ghent University
+import itertools
 import numpy as np
-from loguru import logger
+import os
+import string
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import legend
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
+from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 import skbel.utils
-from sklearn.utils import check_array
 from skbel.algorithms import KDE, kde_params, posterior_conditional
 
 __all__ = [

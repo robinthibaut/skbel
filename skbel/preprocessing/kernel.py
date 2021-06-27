@@ -6,7 +6,6 @@ from sklearn.base import (
 )
 from sklearn.exceptions import NotFittedError
 from sklearn.metrics import pairwise_kernels
-from sklearn.preprocessing import KernelCenterer
 from sklearn.utils.validation import check_is_fitted
 
 

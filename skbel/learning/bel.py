@@ -18,9 +18,9 @@ from sklearn.base import (
     TransformerMixin,
     MultiOutputMixin,
 )
-from sklearn.utils import check_array
-from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.utils import check_array
 from sklearn.utils.validation import (
     check_is_fitted,
     check_consistent_length,

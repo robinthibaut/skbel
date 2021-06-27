@@ -1,8 +1,7 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-from typing import List
-
 import numpy as np
 from matplotlib import pyplot as plt
+from typing import List
 
 plt.rcParams.update({"figure.max_open_warning": 0})
 

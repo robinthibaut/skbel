@@ -1,13 +1,12 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import itertools
+import numpy as np
 import os
 import shutil
 import types
-from typing import List
-
-import numpy as np
 from loguru import logger
+from typing import List
 
 __all__ = [
     "FLOAT_DTYPES",

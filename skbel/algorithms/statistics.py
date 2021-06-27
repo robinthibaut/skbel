@@ -1,15 +1,13 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import math
-import warnings
-
 import numpy as np
 import pandas as pd
+import warnings
+from numpy.polynomial.chebyshev import chebfit, chebval, chebint
+from numpy.random import uniform
 from scipy import integrate, ndimage, stats, interpolate
 from scipy.optimize import root
-from numpy.random import uniform
-
-from numpy.polynomial.chebyshev import chebfit, chebval, chebint
 from sklearn.utils import check_array
 
 from skbel.algorithms.extmath import get_block
