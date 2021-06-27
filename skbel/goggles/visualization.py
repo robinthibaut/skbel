@@ -375,6 +375,7 @@ def pca_vision(
     fig_dir: str = None,
     d: bool = True,
     h: bool = True,
+    X_obs: np.array = None,
     Y_obs: np.array = None,
     scores: bool = True,
     exvar: bool = True,
