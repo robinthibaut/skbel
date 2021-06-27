@@ -3,6 +3,14 @@ from sklearn.base import TransformerMixin, BaseEstimator, MultiOutputMixin
 from sklearn.decomposition import PCA
 from sklearn.utils.validation import check_is_fitted
 
+"""
+Collection of classes to combine multiple-features transformation/dimension reduction.
+The classes below take a base scikit-learn object and sequentially apply the desired algorithm to each set of features 
+part of the same dataset and concatenates the results.
+Scikit-Learn does implement its own "column_transformer", but it is not supported by pipelines, and does not have an 
+"inverse_transform" method. The code here solves these shortcomings.
+"""
+
 __all__ = ["CompositePCA", "CompositeTransformer", "Dummy"]
 
 
