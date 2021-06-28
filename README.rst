@@ -81,7 +81,7 @@ Source code
 
 You can check the latest sources with the command::
 
-    git clone https://github.com/robinthibaut/skbel/skbel.git
+    git clone https://github.com/robinthibaut/skbel.git
 
 Contributing
 ~~~~~~~~~~~~
