@@ -191,7 +191,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_pc, self.Y_pc = _xt, _yt
 
         # Canonical variates
-        _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
+        try:
+            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
+        except ValueError:
+            _xc, _yc = _xt, _yt
 
         self.X_c, self.Y_c = _xc, _yc
 
