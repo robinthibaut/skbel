@@ -147,7 +147,7 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
 
 
 def explained_variance(
-    bel,
+    bel_pca,
     n_comp: int = 0,
     thr: float = 1.0,
     annotation: list = None,
@@ -166,17 +166,17 @@ def explained_variance(
     """
     plt.grid(alpha=0.1)
     if not n_comp:
-        n_comp = bel.X_pre_processing["pca"].n_components_
+        n_comp = bel_pca.n_components_
 
     # Index where explained variance is below threshold:
     ny = len(
         np.where(
-            np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_) < thr
+            np.cumsum(bel_pca.explained_variance_ratio_) < thr
         )[0]
     )
     # Explained variance vector:
     cum = (
-        np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100
+        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100
     )
     # x-ticks
     plt.xticks(
@@ -190,14 +190,14 @@ def explained_variance(
     # bars for aesthetics
     plt.bar(
         np.arange(n_comp),
-        np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100,
+        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100,
         color="m",
         alpha=0.1,
     )
     # line for aesthetics
     plt.plot(
         np.arange(n_comp),
-        np.cumsum(bel.X_pre_processing["pca"].explained_variance_ratio_[:n_comp]) * 100,
+        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100,
         "-o",
         linewidth=0.5,
         markersize=1.5,
@@ -413,7 +413,7 @@ def pca_vision(
             fig_file = os.path.join(fig_dir, "d_exvar.png")
             try:
                 explained_variance(
-                    bel,
+                    bel.X_pre_processing["pca"],
                     n_comp=bel.X_pc.shape[1],
                     thr=0.8,
                     # annotation=["E"],
@@ -448,7 +448,7 @@ def pca_vision(
             fig_file = os.path.join(fig_dir, "h_pca_exvar.png")
             try:
                 explained_variance(
-                    bel,
+                    bel.Y_pre_processing["pca"],
                     n_comp=bel.Y_pc.shape[1],
                     thr=0.8,
                     # annotation=["F"],
@@ -844,10 +844,9 @@ def _kde_cca(
             )
             if show:
                 plt.show()
-                plt.close()
         if show:
             plt.show()
-            plt.close()
+        plt.close()
 
         def posterior_distribution():
             # prior
@@ -906,10 +905,9 @@ def _kde_cca(
                 )
                 if show:
                     plt.show()
-                    plt.close()
             if show:
                 plt.show()
-                plt.close()
+            plt.close()
 
         if dist_plot:
             posterior_distribution()
