@@ -253,17 +253,52 @@ def kde_params(
     bw_adjust: int = 1,
 ):
     """
-    Obtain density and support (grid) of the bivariate KDE
-    :param x:
-    :param y:
-    :param bw:
-    :param gridsize:
-    :param cut:
-    :param clip:
-    :param cumulative:
-    :param bw_method:
-    :param bw_adjust:
-    :return:
+    Computes the kernel density estimate (KDE) of one or two data sets.
+
+    Parameters
+    ----------
+    x : array_like
+        The x-coordinates of the input data.
+    y : array_like, optional
+        The y-coordinates of the input data.
+    bw_method : str, scalar or callable, optional
+        The method used to calculate the estimator bandwidth.  This can be
+        'scott', 'silverman', a scalar constant or a callable.  If a
+        scalar, this will be used directly as `kde.factor`.  If a
+        callable, it should take a `GaussianKDE` instance as its only
+        parameter and return a scalar. If None (default), 'scott' is used.
+    gridsize : int, optional
+        Number of discrete points in the evaluation grid.
+    cut : scalar, optional
+        Draw the estimate to cut * bw from the extreme data points.
+    clip : pair of scalars, or pair of pair of scalars, optional
+        Lower and upper bounds for datapoints used to fit KDE. Can provide
+        a pair of (low, high) bounds for bivariate plots.
+    cumulative : bool, optional
+        If True, then a histogram is computed where each bin gives the
+        counts in that bin plus all bins for smaller values. The last bin
+        gives the total number of datapoints.  If `normed` is also True
+        then the histogram is normalized such that the last bin equals 1.
+        Otherwise, the histogram is normalized such that the sum of all
+        bins equals 1. If `cumulative` evaluates to less than 0
+        (e.g., -1), the direction of accumulation is reversed.
+        In this case, if `normed` is also True, then the histogram is
+        normalized such that the first bin equals 1.
+        If `cumulative` is False, this argument is ignored.
+    bw_adjust : float, optional
+        Adjusts the value of the bandwidth for the inner KDE based on the
+        number of points in the outer KDE. The bandwidth is automatically
+        determined using Scott’s Rule if bw_adjust=0.
+        Adjusting the bandwidth helps match the inner KDE with the outer
+        KDE when there are few points in the outer KDE.
+        Ignored when bw_method is a scalar.
+    Returns
+    -------
+    density : ndarray
+        The estimated probability density function evaluated at the support.
+    support : ndarray
+        The support of the density function, the x-axis of the KDE.
+
     """
 
     data = {"x": x, "y": y}
