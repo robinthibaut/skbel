@@ -93,6 +93,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Original dataset
         self._X_shape, self._Y_shape = x_dim, y_dim
+        self.x_dim, self.y_dim = x_dim, y_dim
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
         # TODO: It is not necessary to save all this.
