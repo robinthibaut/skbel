@@ -34,7 +34,7 @@ class KDE:
             self,
             *,
             kernel_type: str = None,
-            bw: float = 1.0,
+            bandwidth: float = 1.0,
             gridsize: int = 200,
             cut: float = 0.2,
             clip: list = None,
@@ -59,7 +59,7 @@ class KDE:
         self.kernel_type = kernel_type
         if kernel_type is None:
             self.kernel_type = "gaussian"
-        self.bw = bw
+        self.bw = bandwidth
         self.gridsize = gridsize
         self.cut = cut
         self.clip = clip
@@ -89,8 +89,6 @@ class KDE:
             clip = (clip, clip)
         grid1 = self._define_support_grid(x1, self.bw, self.cut, clip[0], self.gridsize)
         grid2 = self._define_support_grid(x2, self.bw, self.cut, clip[1], self.gridsize)
-        # X, Y = np.meshgrid(grid1, grid2[::-1])
-        # support = np.vstack([Y.ravel(), X.ravel()]).T
 
         return grid1, grid2
 
@@ -113,7 +111,8 @@ class KDE:
 
     def _fit(self, fit_data: np.array, grid_search: bool = False):
         """Fit the scikit-learn kde"""
-        fit_kws = {"bandwidth": self.bw, "algorithm": 'auto', "kernel": self.kernel_type, "metric": 'euclidean', "atol": 0,
+        fit_kws = {"bandwidth": self.bw, "algorithm": 'auto', "kernel": self.kernel_type, "metric": 'euclidean',
+                   "atol": 0,
                    "rtol": 0, "breadth_first": True, "leaf_size": 40, "metric_params": None}
         kde = KernelDensity(**fit_kws)
         if grid_search:
@@ -151,8 +150,14 @@ class KDE:
 
         kde = self._fit(X_train)
 
-        xx1, xx2 = np.meshgrid(*support)
-        density = kde.score_samples([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
+        # xx1, xx2 = np.meshgrid(*support)
+        grid1, grid2 = support
+        X, Y = np.meshgrid(grid1, grid2[::-1])
+        grid = np.vstack([Y.ravel(), X.ravel()]).T
+
+        density = kde.score_samples(grid)
+        density = density.reshape(X.shape)
+        # density = kde.score_samples([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
 
         return density, support
 
@@ -215,10 +220,10 @@ def _bivariate_density(
     observations = observations["x"], observations["y"]
     density, support = estimator(*observations)
 
-    # Transform the support grid back to the original scale
-    xx, yy = support
-
-    support = xx, yy
+    # # Transform the support grid back to the original scale
+    # xx, yy = support
+    #
+    # support = xx, yy
 
     return density, support
 
