@@ -35,6 +35,7 @@ class KDE:
             *,
             kernel_type: str = None,
             bandwidth: float = 1.0,
+            grid_search: bool = True,
             gridsize: int = 200,
             cut: float = 0.2,
             clip: list = None,
@@ -60,6 +61,7 @@ class KDE:
         if kernel_type is None:
             self.kernel_type = "gaussian"
         self.bw = bandwidth
+        self.grid_search = grid_search
         self.gridsize = gridsize
         self.cut = cut
         self.clip = clip
@@ -109,15 +111,21 @@ class KDE:
 
         return support
 
-    def _fit(self, fit_data: np.array, grid_search: bool = False):
+    def _fit(self, fit_data: np.array):
         """Fit the scikit-learn kde"""
-        fit_kws = {"bandwidth": self.bw, "algorithm": 'auto', "kernel": self.kernel_type, "metric": 'euclidean',
-                   "atol": 0,
-                   "rtol": 0, "breadth_first": True, "leaf_size": 40, "metric_params": None}
+        fit_kws = {"bandwidth": self.bw,
+                   "algorithm": 'auto',
+                   "kernel": self.kernel_type,
+                   "metric": 'euclidean',
+                   "atol": 1e-4,
+                   "rtol": 1e-4,
+                   "breadth_first": True,
+                   "leaf_size": 40,
+                   "metric_params": None}
         kde = KernelDensity(**fit_kws)
-        if grid_search:
+        if self.grid_search:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(-1.0, 1.0, 100)},
+                                {'bandwidth': np.linspace(-1.0, 1.0, 10)},
                                 cv=20)  # 20-fold cross-validation
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
