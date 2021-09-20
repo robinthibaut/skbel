@@ -125,7 +125,7 @@ class KDE:
         kde = KernelDensity(**fit_kws)
         if self.grid_search:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(-1.0, 1.0, 10)},
+                                {'bandwidth': np.linspace(-1.0, 1.0, 100)},
                                 cv=20)  # 20-fold cross-validation
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
@@ -144,7 +144,7 @@ class KDE:
 
         kde = self._fit(x)
 
-        density = kde.score_samples(support)
+        density = np.exp(kde.score_samples(support))
 
         return density, support
 
@@ -163,7 +163,7 @@ class KDE:
         X, Y = np.meshgrid(grid1, grid2[::-1])
         grid = np.vstack([Y.ravel(), X.ravel()]).T
 
-        density = kde.score_samples(grid)
+        density = np.exp(kde.score_samples(grid))
         density = density.reshape(X.shape)
         # density = kde.score_samples([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
 
