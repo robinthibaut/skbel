@@ -8,6 +8,7 @@ from numpy.polynomial.chebyshev import chebfit, chebval, chebint
 from numpy.random import uniform
 from scipy import integrate, ndimage, stats, interpolate
 from scipy.optimize import root
+from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
 
 from skbel.algorithms.extmath import get_block
@@ -32,8 +33,8 @@ class KDE:
     def __init__(
         self,
         *,
-        bw_method: str = None,
-        bw_adjust: float = 1,
+        kernel_type: str = None,
+        bw: float = 1.0,
         gridsize: int = 200,
         cut: float = 3,
         clip: list = None,
@@ -43,12 +44,6 @@ class KDE:
 
         Parameters
         ----------
-        bw_method : string, scalar, or callable, optional
-            Method for determining the smoothing bandwidth to use; passed to
-            :class:`scipy.stats.gaussian_kde`.
-        bw_adjust : number, optional
-            Factor that multiplicatively scales the value chosen using
-            ``bw_method``. Increasing will make the curve smoother. See Notes.
         gridsize : int, optional
             Number of points on each dimension of the evaluation grid.
         cut : number, optional
@@ -64,8 +59,10 @@ class KDE:
         if clip is None:
             clip = None, None
 
-        self.bw_method = bw_method
-        self.bw_adjust = bw_adjust
+        self.kernel_type = kernel_type
+        if kernel_type is None:
+            self.kernel_type = "gaussian"
+        self.bw = bw
         self.gridsize = gridsize
         self.cut = cut
         self.clip = clip
@@ -84,20 +81,20 @@ class KDE:
         gridmax = min(x.max() + bw * cut, clip_hi)
         return np.linspace(gridmin, gridmax, gridsize)
 
-    def _define_support_univariate(self, x: np.array, weights: np.array):
+    def _define_support_univariate(self, x: np.array):
         """Create a 1D grid of evaluation points."""
-        kde = self._fit(x, weights)
+        kde = self._fit(x)
         bw = np.sqrt(kde.covariance.squeeze())
         grid = self._define_support_grid(x, bw, self.cut, self.clip, self.gridsize)
         return grid
 
-    def _define_support_bivariate(self, x1: np.array, x2: np.array, weights: np.array):
+    def _define_support_bivariate(self, x1: np.array, x2: np.array):
         """Create a 2D grid of evaluation points."""
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):
             clip = (clip, clip)
 
-        kde = self._fit([x1, x2], weights)
+        kde = self._fit([x1, x2])
         bw = np.sqrt(np.diag(kde.covariance).squeeze())
 
         grid1 = self._define_support_grid(x1, bw[0], self.cut, clip[0], self.gridsize)
@@ -109,38 +106,37 @@ class KDE:
         self,
         x1: np.array,
         x2: np.array = None,
-        weights: np.array = None,
         cache: bool = True,
     ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
-            support = self._define_support_univariate(x1, weights)
+            support = self._define_support_univariate(x1)
         else:
-            support = self._define_support_bivariate(x1, x2, weights)
+            support = self._define_support_bivariate(x1, x2)
 
         if cache:
             self.support = support
 
         return support
 
-    def _fit(self, fit_data: np.array, weights: np.array = None):
-        """Fit the scipy kde"""
-        fit_kws = {"bw_method": self.bw_method}
-        if weights is not None:
-            fit_kws["weights"] = weights
+    def _fit(self, fit_data: np.array):
+        """Fit the scikit-learn kde"""
+        fit_kws = {"bw": self.bw}
+
+        kde = KernelDensity(**fit_kws)
 
         kde = stats.gaussian_kde(fit_data, **fit_kws)
-        kde.set_bandwidth(kde.factor * self.bw_adjust)
+        kde.set_bandwidth(kde.factor * self.bw)
 
         return kde
 
-    def _eval_univariate(self, x: np.array, weights=None):
+    def _eval_univariate(self, x: np.array):
         """Fit and evaluate on univariate data."""
         support = self.support
         if support is None:
             support = self.define_support(x, cache=True)
 
-        kde = self._fit(x, weights)
+        kde = self._fit(x)
 
         if self.cumulative:
             s_0 = support[0]
@@ -150,13 +146,13 @@ class KDE:
 
         return density, support
 
-    def _eval_bivariate(self, x1: np.array, x2: np.array, weights: np.array = None):
+    def _eval_bivariate(self, x1: np.array, x2: np.array):
         """Fit and evaluate on bivariate data."""
         support = self.support
         if support is None:
             support = self.define_support(x1, x2, cache=False)
 
-        kde = self._fit([x1, x2], weights)
+        kde = self._fit([x1, x2])
 
         if self.cumulative:
             grid1, grid2 = support
@@ -172,12 +168,12 @@ class KDE:
 
         return density, support
 
-    def __call__(self, x1, x2=None, weights=None):
+    def __call__(self, x1, x2=None):
         """Fit and evaluate on univariate or bivariate data."""
         if x2 is None:
-            return self._eval_univariate(x1, weights)
+            return self._eval_univariate(x1)
         else:
-            return self._eval_bivariate(x1, x2, weights)
+            return self._eval_bivariate(x1, x2)
 
 
 def _univariate_density(
@@ -199,7 +195,7 @@ def _univariate_density(
         warnings.warn(msg, UserWarning)
 
     # Estimate the density of observations at this level
-    density, support = estimator(observations, weights=None)
+    density, support = estimator(observations)
 
     return density, support
 
@@ -231,7 +227,7 @@ def _bivariate_density(
 
     # Estimate the density of observations at this level
     observations = observations["x"], observations["y"]
-    density, support = estimator(*observations, weights=None)
+    density, support = estimator(*observations)
 
     # Transform the support grid back to the original scale
     xx, yy = support
