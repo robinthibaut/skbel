@@ -125,8 +125,7 @@ class KDE:
         kde = KernelDensity(**fit_kws)
         if self.grid_search:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(-1.0, 1.0, 100)},
-                                cv=20)  # 20-fold cross-validation
+                                {'bandwidth': np.linspace(-1.0, 1.0, 100)})  # 20-fold cross-validation
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
             fit_kws["bandwidth"] = self.bw
