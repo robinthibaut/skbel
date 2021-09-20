@@ -6,7 +6,7 @@ import pandas as pd
 import warnings
 from numpy.polynomial.chebyshev import chebfit, chebval, chebint
 from numpy.random import uniform
-from scipy import integrate, ndimage, stats, interpolate
+from scipy import integrate, ndimage, interpolate
 from scipy.optimize import root
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
@@ -36,9 +36,8 @@ class KDE:
             kernel_type: str = None,
             bw: float = 1.0,
             gridsize: int = 200,
-            cut: float = 3,
+            cut: float = 0.2,
             clip: list = None,
-            # cumulative: bool = False,
     ):
         """Initialize the estimator with its parameters.
 
@@ -52,8 +51,6 @@ class KDE:
             set to 0, truncate the curve at the data limits.
         clip : pair of numbers None, or a pair of such pairs
             Do not evaluate the density outside of these limits.
-        cumulative : bool, optional
-            If True, estimate a cumulative distribution function.
 
         """
         if clip is None:
@@ -66,7 +63,6 @@ class KDE:
         self.gridsize = gridsize
         self.cut = cut
         self.clip = clip
-        # self.cumulative = cumulative
 
         self.support = None
 
@@ -83,9 +79,7 @@ class KDE:
 
     def _define_support_univariate(self, x: np.array):
         """Create a 1D grid of evaluation points."""
-        kde = self._fit(x)
-        bw = np.sqrt(kde.covariance.squeeze())
-        grid = self._define_support_grid(x, bw, self.cut, self.clip, self.gridsize)
+        grid = self._define_support_grid(x, self.bw, self.cut, self.clip, self.gridsize)
         return grid
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array):
@@ -93,12 +87,10 @@ class KDE:
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):
             clip = (clip, clip)
-
-        kde = self._fit([x1, x2])
-        bw = np.sqrt(np.diag(kde.covariance).squeeze())
-
-        grid1 = self._define_support_grid(x1, bw[0], self.cut, clip[0], self.gridsize)
-        grid2 = self._define_support_grid(x2, bw[1], self.cut, clip[1], self.gridsize)
+        grid1 = self._define_support_grid(x1, self.bw, self.cut, clip[0], self.gridsize)
+        grid2 = self._define_support_grid(x2, self.bw, self.cut, clip[1], self.gridsize)
+        # X, Y = np.meshgrid(grid1, grid2[::-1])
+        # support = np.vstack([Y.ravel(), X.ravel()]).T
 
         return grid1, grid2
 
@@ -145,11 +137,7 @@ class KDE:
 
         kde = self._fit(x)
 
-        if self.cumulative:
-            s_0 = support[0]
-            density = np.array([kde.integrate_box_1d(s_0, s_i) for s_i in support])
-        else:
-            density = kde(support)
+        density = kde.score_samples(support)
 
         return density, support
 
@@ -159,19 +147,12 @@ class KDE:
         if support is None:
             support = self.define_support(x1, x2, cache=False)
 
-        kde = self._fit([x1, x2])
+        X_train = np.vstack([x1, x2]).T
 
-        if self.cumulative:
-            grid1, grid2 = support
-            density = np.zeros((grid1.size, grid2.size))
-            p0 = min(grid1), min(grid2)
-            for i, xi in enumerate(grid1):
-                for j, xj in enumerate(grid2):
-                    density[i, j] = kde.integrate_box(p0, (xi, xj))
+        kde = self._fit(X_train)
 
-        else:
-            xx1, xx2 = np.meshgrid(*support)
-            density = kde([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
+        xx1, xx2 = np.meshgrid(*support)
+        density = kde.score_samples([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
 
         return density, support
 
@@ -313,8 +294,6 @@ def kde_params(
 
     # Pack the kwargs for statistics.KDE
     estimate_kws = dict(
-        bw_method=bw_method,
-        bw_adjust=bw_adjust,
         gridsize=gridsize,
         cut=cut,
         clip=clip,
