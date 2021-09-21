@@ -127,7 +127,7 @@ class KDE:
         kde = KernelDensity(**fit_kws)
         if self.grid_search and not self.bw:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(1e-3, 1, 100)})
+                                {'bandwidth': 10**np.linspace(-1, 1, 100)})
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
             fit_kws["bandwidth"] = self.bw
@@ -583,7 +583,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
         elif x > upper_bd:
             return 1.0
         else:
-            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-4, limit=50)[0]
+            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-3, limit=50)[0]
 
     def cdf_vector(x):
         try:
