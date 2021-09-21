@@ -34,9 +34,9 @@ class KDE:
             self,
             *,
             kernel_type: str = None,
-            bandwidth: float = 1.0,
+            bandwidth: float = None,
             grid_search: bool = True,
-            gridsize: int = 200,
+            gridsize: int = 100,
             cut: float = 0.2,
             clip: list = None,
     ):
@@ -70,11 +70,12 @@ class KDE:
 
     @staticmethod
     def _define_support_grid(
-            x: np.array, bw: float, cut: float, clip: list, gridsize: int
+            x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
+        bw = 1 if bandwidth is None else bandwidth
         gridmin = max(x.min() - bw * cut, clip_lo)
         gridmax = min(x.max() + bw * cut, clip_hi)
         return np.linspace(gridmin, gridmax, gridsize)
@@ -113,7 +114,8 @@ class KDE:
 
     def _fit(self, fit_data: np.array):
         """Fit the scikit-learn kde"""
-        fit_kws = {"bandwidth": self.bw,
+        bw = 1 if self.bw is None else self.bw
+        fit_kws = {"bandwidth": bw,
                    "algorithm": 'auto',
                    "kernel": self.kernel_type,
                    "metric": 'euclidean',
@@ -123,10 +125,9 @@ class KDE:
                    "leaf_size": 40,
                    "metric_params": None}
         kde = KernelDensity(**fit_kws)
-        if self.grid_search:
+        if self.grid_search and not self.bw:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(0.1, 10.0, 50)},
-                                error_score=0,
+                                {'bandwidth': np.linspace(1e-2, 1.5, 50)},
                                 refit=False)
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
@@ -143,9 +144,9 @@ class KDE:
         if support is None:
             support = self.define_support(x, cache=True)
 
-        kde = self._fit(x)
+        kde = self._fit(x.reshape(-1, 1))
 
-        density = np.exp(kde.score_samples(support))
+        density = np.exp(kde.score_samples(support.reshape(-1, 1)))
 
         return density, support
 
@@ -160,9 +161,11 @@ class KDE:
         kde = self._fit(X_train)
 
         # xx1, xx2 = np.meshgrid(*support)
-        grid1, grid2 = support
-        X, Y = np.meshgrid(grid1, grid2[::-1])
-        grid = np.vstack([Y.ravel(), X.ravel()]).T
+        # grid1, grid2 = support
+        # X, Y = np.meshgrid(grid1, grid2[::-1])
+        X, Y = np.meshgrid(*support)
+        # grid = np.vstack([Y.ravel(), X.ravel()]).T
+        grid = np.vstack([X.ravel(), Y.ravel()]).T
 
         density = np.exp(kde.score_samples(grid))
         density = density.reshape(X.shape)
@@ -199,7 +202,7 @@ def _univariate_density(
     # Estimate the density of observations at this level
     density, support = estimator(observations)
 
-    return density, support
+    return density, support, estimator.bw
 
 
 def _bivariate_density(
@@ -234,14 +237,14 @@ def _bivariate_density(
     #
     # support = xx, yy
 
-    return density, support
+    return density, support, estimator.bw
 
 
 def kde_params(
         x: np.array = None,
         y: np.array = None,
-        bw: float = 1.0,
-        gridsize: int = 200,
+        bw: float = None,
+        gridsize: int = 100,
         cut: float = 0.2,
         clip=None,
 ):
@@ -282,17 +285,17 @@ def kde_params(
     )
 
     if y is None:
-        density, support = _univariate_density(
+        density, support, bw = _univariate_density(
             data_variable=frame, estimate_kws=estimate_kws
         )
 
     else:
-        density, support = _bivariate_density(
+        density, support, bw = _bivariate_density(
             data=frame,
             estimate_kws=estimate_kws,
         )
 
-    return density, support
+    return density, support, bw
 
 
 def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
@@ -310,7 +313,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 200
+    num = 100
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col
@@ -383,7 +386,7 @@ def posterior_conditional(
     """
 
     # Compute KDE
-    dens, support = kde_params(x=X, y=Y)
+    dens, support, bw = kde_params(x=X, y=Y)
     # Grid parameters
     xg, yg = support
 
@@ -411,7 +414,7 @@ def posterior_conditional(
 
     post = _normalize_distribution(post, support)
 
-    return post, support
+    return post, support, bw
 
 
 def mvn_inference(
@@ -741,7 +744,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
             )
 
         cdf = chebcdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 100))
         inverse_cdf = interpolate.interp1d(
             cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
         )
@@ -769,7 +772,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
             return np.array(samples)
     else:
         cdf = get_cdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 100))
         inverse_cdf = interpolate.interp1d(
             cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
         )

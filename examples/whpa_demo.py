@@ -100,7 +100,7 @@ if __name__ == "__main__":
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
-    model.n_posts = 50
+    model.n_posts = 400
 
     # %% Train the model
     # Fit BEL model
@@ -122,13 +122,13 @@ if __name__ == "__main__":
     myvis.plot_results(
         model, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
     )
-
-    # Plot PCA
-    pca_vision(
-        model,
-        Y_obs=y_test,
-        fig_dir=fig_pca_dir,
-    )
+    #
+    # # Plot PCA
+    # pca_vision(
+    #     model,
+    #     Y_obs=y_test,
+    #     fig_dir=fig_pca_dir,
+    # )
 
     # Plot CCA
     cca_vision(bel=model, Y_obs=y_test, fig_dir=fig_cca_dir)

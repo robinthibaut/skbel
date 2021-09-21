@@ -392,7 +392,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             # KDE inference
             from scipy import interpolate
-
+            self.kde_bw = []
             for comp_n in range(self.cca.n_components):
 
                 # If the relation is almost perfectly linear, it doesn't make sense to perform a
@@ -407,14 +407,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         self.X_f.T[comp_n].reshape(-1, 1),
                         self.Y_f.T[comp_n].reshape(-1, 1),
                     )
+                    self.kde_bw.append(None)
 
                 else:
                     # Conditional:
-                    hp, sup = posterior_conditional(
+                    hp, sup, bw = posterior_conditional(
                         X=self.X_f.T[comp_n],
                         Y=self.Y_f.T[comp_n],
                         X_obs=self.X_obs_f.T[comp_n],
                     )
+                    self.kde_bw.append(bw)
                     hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
                     kind = "pdf"
                     fun = interpolate.interp1d(sup, hp, kind="cubic")

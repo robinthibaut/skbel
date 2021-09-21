@@ -265,7 +265,7 @@ def pca_scores(
         # Select observation
         pc_obs = prediction[sample_n]
         # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
+        xnew = np.linspace(1, n_comp, 100)  # New points for plotting curve
         spl = make_interp_spline(
             np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
         )  # type: BSpline
@@ -639,26 +639,26 @@ def _kde_cca(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
     # Find max kde value (absolutely not optimal)
-    vmax = 0
-    if bel.cca.n_components < 10:
-        cmax = bel.cca.n_components
-    else:
-        cmax = 10
-    for comp_n in range(cmax):
-
-        if cca_coefficient[comp_n] >= 0.999:
-            pass
-        else:
-            # Working with final product of BEL (not with raw cca scores)
-            hp, sup = posterior_conditional(
-                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
-            )
-
-            # Plot h posterior given d
-            density, _ = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n])
-            maxloc = np.max(density)
-            if vmax < maxloc:
-                vmax = maxloc
+    vmax = 1
+    # if bel.cca.n_components < 10:
+    #     cmax = bel.cca.n_components
+    # else:
+    #     cmax = 10
+    # for comp_n in range(cmax):
+    #
+    #     if cca_coefficient[comp_n] >= 0.999:
+    #         pass
+    #     else:
+    #         # Working with final product of BEL (not with raw cca scores)
+    #         hp, sup, _ = posterior_conditional(
+    #             X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
+    #         )
+    #
+    #         # Plot h posterior given d
+    #         density, *_ = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n])
+    #         maxloc = np.max(density)
+    #         if vmax < maxloc:
+    #             vmax = maxloc
 
     try:
         Y_obs = check_array(Y_obs, allow_nd=True)
@@ -672,27 +672,27 @@ def _kde_cca(
     bel.Y_obs_f = bel.transform(Y=Y_obs)
 
     # load prediction object
-    post_test = bel.random_sample(n_posts=400)
+    post_test = bel.random_sample(n_posts=bel.n_posts)
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
-        marginal_eval_x = KDE()
-        marginal_eval_y = KDE()
+        marginal_eval_x = KDE(bandwidth=bel.kde_bw[comp_n])
+        marginal_eval_y = KDE(bandwidth=bel.kde_bw[comp_n])
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
             # Conditional:
-            hp, sup = posterior_conditional(
-                X=bel.X_f.T[comp_n].reshape(1, -1), Y=bel.Y_f.T[comp_n].reshape(1, -1), X_obs=bel.X_obs_f.T[comp_n].reshape(1, -1)
+            hp, sup, _ = posterior_conditional(
+                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
             )
 
             # Plot h posterior given d
-            density, support = kde_params(
-                x=bel.X_f.T[comp_n].reshape(1, -1), y=bel.Y_f.T[comp_n].reshape(1, -1), gridsize=200
+            density, support, _ = kde_params(
+                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=100
             )
             xx, yy = support
 
@@ -709,7 +709,7 @@ def _kde_cca(
                 xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
             )
             cb = plt.colorbar(cf, ax=[ax_cb], location="left")
-            cb.ax.set_title("$KDE_{Gaussian}$", fontsize=10)
+            cb.ax.set_title("$KDE$", fontsize=10)
 
         try:
             reg = bel.kde_functions[comp_n]["function"]
@@ -796,16 +796,16 @@ def _kde_cca(
             )
             # Conditional distribution
             #  - Line plot
-            ax_marg_y.plot(hp, sup, color="red", alpha=0)
+            # ax_marg_y.plot(hp, sup, color="red", alpha=0)
             #  - Fill to axis
-            ax_marg_y.fill_betweenx(
-                sup,
-                0,
-                hp,
-                color="mediumorchid",
-                alpha=0.5,
-                label="$p(h^{c}|d^{c}_{*})_{KDE}$",
-            )
+            # ax_marg_y.fill_betweenx(
+            #     sup,
+            #     0,
+            #     hp,
+            #     color="mediumorchid",
+            #     alpha=0.5,
+            #     label="$p(h^{c}|d^{c}_{*})_{KDE}$",
+            # )
         ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
