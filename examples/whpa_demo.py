@@ -100,7 +100,7 @@ if __name__ == "__main__":
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
-    model.n_posts = 400
+    model.n_posts = 50
 
     # %% Train the model
     # Fit BEL model

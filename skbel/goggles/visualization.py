@@ -681,18 +681,18 @@ def _kde_cca(
         marginal_eval_x = KDE()
         marginal_eval_y = KDE()
         # support is cached
-        kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n])
-        kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n])
+        kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
+        kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
             # Conditional:
             hp, sup = posterior_conditional(
-                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
+                X=bel.X_f.T[comp_n].reshape(1, -1), Y=bel.Y_f.T[comp_n].reshape(1, -1), X_obs=bel.X_obs_f.T[comp_n].reshape(1, -1)
             )
 
             # Plot h posterior given d
             density, support = kde_params(
-                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
+                x=bel.X_f.T[comp_n].reshape(1, -1), y=bel.Y_f.T[comp_n].reshape(1, -1), gridsize=200
             )
             xx, yy = support
 

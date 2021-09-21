@@ -282,7 +282,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if self.mode == "kde":
             Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
-            # PArses the functions dict
+            # Parses the functions dict
             for i, fun in enumerate(self.kde_functions):
                 if fun["kind"] == "pdf":
                     pdf = fun["function"]
