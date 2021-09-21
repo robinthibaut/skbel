@@ -266,7 +266,7 @@ def pca_scores(
         # Select observation
         pc_obs = prediction[sample_n]
         # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, n_comp, 100)  # New points for plotting curve
+        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
         spl = make_interp_spline(
             np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
         )  # type: BSpline
@@ -664,7 +664,7 @@ def _kde_cca(
 
             # Plot h posterior given d
             density, support, _ = kde_params(
-                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=100
+                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
             )
             xx, yy = support
 

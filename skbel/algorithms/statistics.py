@@ -59,7 +59,7 @@ class KDE:
 
         self.kernel_type = kernel_type
         if kernel_type is None:
-            self.kernel_type = "epanechnikov"
+            self.kernel_type = "gaussian"
         self.bw = bandwidth
         self.grid_search = grid_search
         self.gridsize = gridsize
@@ -119,16 +119,15 @@ class KDE:
                    "algorithm": 'auto',
                    "kernel": self.kernel_type,
                    "metric": 'euclidean',
-                   "atol": 0,
-                   "rtol": 0,
+                   "atol": 1e-4,
+                   "rtol": 1e-4,
                    "breadth_first": True,
                    "leaf_size": 40,
                    "metric_params": None}
         kde = KernelDensity(**fit_kws)
         if self.grid_search and not self.bw:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(1e-2, 20, 50)},
-                                refit=False)
+                                {'bandwidth': np.linspace(1e-3, 1, 100)})
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
             fit_kws["bandwidth"] = self.bw
@@ -244,7 +243,7 @@ def kde_params(
         x: np.array = None,
         y: np.array = None,
         bw: float = None,
-        gridsize: int = 100,
+        gridsize: int = 200,
         cut: float = 0.2,
         clip=None,
 ):
@@ -313,7 +312,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 100
+    num = 200
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col
@@ -584,7 +583,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
         elif x > upper_bd:
             return 1.0
         else:
-            return integrate.quad(pdf_norm, lower_bd, x, limit=50 * 5)[0]
+            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-4, limit=50)[0]
 
     def cdf_vector(x):
         try:
@@ -744,7 +743,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
             )
 
         cdf = chebcdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 100))
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
         inverse_cdf = interpolate.interp1d(
             cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
         )
@@ -772,7 +771,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
             return np.array(samples)
     else:
         cdf = get_cdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 100))
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
         inverse_cdf = interpolate.interp1d(
             cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
         )
