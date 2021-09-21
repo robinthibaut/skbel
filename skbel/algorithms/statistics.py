@@ -59,7 +59,7 @@ class KDE:
 
         self.kernel_type = kernel_type
         if kernel_type is None:
-            self.kernel_type = "gaussian"
+            self.kernel_type = "epanechnikov"
         self.bw = bandwidth
         self.grid_search = grid_search
         self.gridsize = gridsize
@@ -119,15 +119,15 @@ class KDE:
                    "algorithm": 'auto',
                    "kernel": self.kernel_type,
                    "metric": 'euclidean',
-                   "atol": 1e-4,
-                   "rtol": 1e-4,
+                   "atol": 0,
+                   "rtol": 0,
                    "breadth_first": True,
                    "leaf_size": 40,
                    "metric_params": None}
         kde = KernelDensity(**fit_kws)
         if self.grid_search and not self.bw:
             grid = GridSearchCV(kde,
-                                {'bandwidth': np.linspace(1e-2, 1.5, 50)},
+                                {'bandwidth': np.linspace(1e-2, 20, 50)},
                                 refit=False)
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
