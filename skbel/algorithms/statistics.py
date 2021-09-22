@@ -129,6 +129,15 @@ class KDE:
         kde = KernelDensity(**fit_kws)
         if self.grid_search and not self.bw:
             # GridSearchCV maximizes the total log probability density under the model.
+
+            # The data X will be be divided into train-test splits based on folds defined in cv param
+
+            # For each combination of parameters that you specified in param_grid, the model
+            # will be trained on the train part from the step above and then scoring will be used on test part.
+
+            # The scores for each parameter combination will be combined for all the folds and averaged.
+            # Highest performing parameter combination will be selected.
+
             grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-1, 1, 100)})
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]

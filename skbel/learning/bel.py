@@ -46,6 +46,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         cca=None,
         x_dim=None,
         y_dim=None,
+        random_state=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -57,6 +58,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param cca: sklearn cca object
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
+        :param random_state: Random state.
         """
         self.copy = copy
         # How to infer the posterior parameters
@@ -82,29 +84,29 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Posterior parameters
         # MVN inference
-        self.posterior_mean = None
-        self.posterior_covariance = None
+        # self.posterior_mean = None
+        # self.posterior_covariance = None
         # KDE inference
-        self.kde_functions = None
+        # self.kde_functions = None
 
         # Parameters for sampling
-        self._seed = None
-        self._n_posts = None
+        self.random_state = random_state
+        # self._n_posts = None
 
         # Original dataset
-        self._X_shape, self._Y_shape = x_dim, y_dim
+        # self._X_shape, self._Y_shape = x_dim, y_dim
         self.x_dim, self.y_dim = x_dim, y_dim
 
         # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
         # TODO: It is not necessary to save all this.
-        self.X_pc, self.Y_pc = None, None
-        self.X_obs_pc, self.Y_obs_pc = None, None
-        # Dataset after learning
-        self.X_c, self.Y_c = None, None
-        self.X_obs_c, self.Y_obs_c = None, None
-        # Dataset after postprocessing
-        self.X_f, self.Y_f = None, None
-        self.X_obs_f, self.Y_obs_f = None, None
+        # self.X_pc, self.Y_pc = None, None
+        # self.X_obs_pc, self.Y_obs_pc = None, None
+        # # Dataset after learning
+        # self.X_c, self.Y_c = None, None
+        # self.X_obs_c, self.Y_obs_c = None, None
+        # # Dataset after postprocessing
+        # self.X_f, self.Y_f = None, None
+        # self.X_obs_f, self.Y_obs_f = None, None
 
     # The following properties are central to the BEL framework
     @property
@@ -137,12 +139,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @property
     def seed(self):
         """Seed a.k.a. random state to reproduce the same samples"""
-        return self._seed
+        return self.random_state
 
     @seed.setter
     def seed(self, s):
-        self._seed = s
-        np.random.seed(self._seed)
+        self.random_state = s
+        np.random.seed(self.random_state)
 
     def fit(self, X, Y):
         """
