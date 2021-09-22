@@ -170,15 +170,9 @@ def explained_variance(
         n_comp = bel_pca.n_components_
 
     # Index where explained variance is below threshold:
-    ny = len(
-        np.where(
-            np.cumsum(bel_pca.explained_variance_ratio_) < thr
-        )[0]
-    )
+    ny = len(np.where(np.cumsum(bel_pca.explained_variance_ratio_) < thr)[0])
     # Explained variance vector:
-    cum = (
-        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100
-    )
+    cum = np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100
     # x-ticks
     plt.xticks(
         np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),

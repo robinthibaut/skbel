@@ -299,7 +299,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         np.array([self.X_obs_f.T[i]])
                     )
 
-                Y_samples[:, i] = uniform_samples # noqa
+                Y_samples[:, i] = uniform_samples  # noqa
 
         if self.mode == "kde_chebyshev":
             Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
@@ -319,7 +319,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                 Y_samples[:, i] = uniform_samples
 
-        return Y_samples # noqa
+        return Y_samples  # noqa
 
     def fit_transform(self, X, y=None, **fit_params):
         """
@@ -392,6 +392,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             # KDE inference
             from scipy import interpolate
+
             self.kde_bw = []
             for comp_n in range(self.cca.n_components):
 
@@ -425,11 +426,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 sample_fun = {"kind": kind, "function": fun}
 
                 if comp_n > 0:
-                    functions = np.concatenate((functions, [sample_fun]), axis=0) # noqa
+                    functions = np.concatenate(
+                        (functions, [sample_fun]), axis=0
+                    )  # noqa
                 else:
                     functions = [sample_fun]
 
-            self.kde_functions = functions # noqa
+            self.kde_functions = functions  # noqa
 
             return self.kde_functions
 

@@ -3,9 +3,13 @@
 import os
 from os.path import join as jp
 
+import joblib
 import pandas as pd
+from loguru import logger
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import GridSearchCV
 from sklearn.cross_decomposition import CCA
-from sklearn.decomposition import PCA, KernelPCA
+from sklearn.decomposition import KernelPCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
@@ -110,9 +114,10 @@ if __name__ == "__main__":
     model.predict(X_test)
 
     # Save the fitted BEL model
-    # joblib.dump(model, jp(obj_dir, "bel.pkl"))
-    # msg = f"model trained and saved in {obj_dir}"
-    # logger.info(msg)
+    joblib.dump(model, jp(obj_dir, "bel.pkl"))
+
+    msg = f"model trained and saved in {obj_dir}"
+    logger.info(msg)
 
     # %% Visualization
 
