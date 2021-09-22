@@ -113,6 +113,7 @@ if __name__ == "__main__":
 
     # Save the fitted BEL model
     joblib.dump(model, jp(obj_dir, "bel.pkl"))
+
     msg = f"model trained and saved in {obj_dir}"
     logger.info(msg)
 
