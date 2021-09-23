@@ -138,7 +138,7 @@ class KDE:
             # The scores for each parameter combination will be combined for all the folds and averaged.
             # Highest performing parameter combination will be selected.
 
-            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-1, 1, 100)})
+            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 100)})
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
             fit_kws["bandwidth"] = self.bw
@@ -406,7 +406,7 @@ def posterior_conditional(
     if X_obs is not None:
         support = yg
         # Extract the density values along the line, using cubic interpolation
-        if type(X_obs) is list or tuple:
+        if type(X_obs) is list or type(X_obs) is tuple:
             X_obs = X_obs[0]
         post = _conditional_distribution(
             x=X_obs, x_array=xg, y_array=yg, kde_array=dens

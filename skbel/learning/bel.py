@@ -265,9 +265,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         return self.fit(X, y).transform(X, y)
 
-    def predict(self, X_obs: np.array, n_posts: int = None, mode: str = None) -> (np.array, np.array):
+    def predict(
+        self, X_obs: np.array, n_posts: int = None, mode: str = None
+    ) -> np.array:
         """
         Make predictions, in the BEL fashion.
+        :param X_obs: The observed data
+        :param n_posts: The number of posterior samples to draw
+        :param mode: The mode of inferrence to use.
+        :return: The posterior samples
         """
         if mode is not None:
             self.mode = mode
@@ -297,78 +303,82 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_obs = self.X_post_processing.transform(X_obs)
         self.X_obs_f = X_obs
 
-        # Estimate the posterior mean and covariance
-        if self.mode == "mvn":
+        if self.X_obs_f.ndim < 3:
+            self.X_obs_f = self.X_obs_f.reshape(1, -1)
 
-            # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-            # Number of PCA components for the curves
-            x_dim = self.X_pc.shape[1]
-            noise = 0.01
-            # I matrix. (n_comp_PCA, n_comp_PCA)
-            x_cov = np.eye(x_dim) * noise
-            # (n_comp_CCA, n_comp_CCA)
-            # Get the rotation matrices
-            x_rotations = self.cca.x_rotations_
-            x_cov = x_rotations.T @ x_cov @ x_rotations
-            dict_args = {"x_cov": x_cov}
+        self.posterior_mean, self.posterior_covariance = [], []
+        self.kde_functions = []
+        for n, dp in enumerate(self.X_obs_f):
+            # Estimate the posterior mean and covariance
+            if self.mode == "mvn":
+                # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
+                # Number of PCA components for the curves
+                x_dim = self.X_pc.shape[1]
+                noise = 0.01
+                # I matrix. (n_comp_PCA, n_comp_PCA)
+                x_cov = np.eye(x_dim) * noise
+                # (n_comp_CCA, n_comp_CCA)
+                # Get the rotation matrices
+                x_rotations = self.cca.x_rotations_
+                x_cov = x_rotations.T @ x_cov @ x_rotations
+                dict_args = {"x_cov": x_cov}
 
-            X, Y = self.X_f, self.Y_f
-            # mvn_inference is designed to accept 1 observation at a time.
-            self.posterior_mean, self.posterior_covariance = mvn_inference(
-                X=X,
-                Y=Y,
-                X_obs=X_obs,
-                **dict_args,
-            )
-            # return self.posterior_mean, self.posterior_covariance
+                X, Y = self.X_f, self.Y_f
+                # mvn_inference is designed to accept 1 observation at a time.
+                post_mean, post_cov = mvn_inference(
+                    X=X,
+                    Y=Y,
+                    X_obs=dp,
+                    **dict_args,
+                )
+                self.posterior_mean.append(post_mean)
+                self.posterior_covariance.append(post_cov)
 
-        else:
-            # KDE inference
-            from scipy import interpolate
+            else:
+                # KDE inference
+                from scipy import interpolate
 
-            self.kde_bw = []
-            for comp_n in range(self.cca.n_components):
+                for comp_n in range(self.cca.n_components):
 
-                # If the relation is almost perfectly linear, it doesn't make sense to perform a
-                # KDE estimation.
-                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
-                    offset=1
-                )[0]
-                # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
-                if corr >= 0.999:
-                    kind = "linear"
-                    fun = LinearRegression().fit(
-                        self.X_f.T[comp_n].reshape(-1, 1),
-                        self.Y_f.T[comp_n].reshape(-1, 1),
-                    )
-                    self.kde_bw.append(None)
+                    # If the relation is almost perfectly linear, it doesn't make sense to perform a
+                    # KDE estimation.
+                    corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
+                        offset=1
+                    )[0]
+                    # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
+                    if corr >= 0.999:
+                        kind = "linear"
+                        fun = LinearRegression().fit(
+                            self.X_f.T[comp_n].reshape(-1, 1),
+                            self.Y_f.T[comp_n].reshape(-1, 1),
+                        )
+                        bw = 0
+                    else:
+                        # Conditional:
+                        hp, sup, bw = posterior_conditional(
+                            X=self.X_f.T[comp_n],
+                            Y=self.Y_f.T[comp_n],
+                            X_obs=dp.T[comp_n],
+                        )
+                        hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
+                        kind = "pdf"
+                        fun = interpolate.interp1d(sup, hp, kind="cubic")
 
-                else:
-                    # Conditional:
-                    hp, sup, bw = posterior_conditional(
-                        X=self.X_f.T[comp_n],
-                        Y=self.Y_f.T[comp_n],
-                        X_obs=self.X_obs_f.T[comp_n],
-                    )
-                    self.kde_bw.append(bw)
-                    hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
-                    kind = "pdf"
-                    fun = interpolate.interp1d(sup, hp, kind="cubic")
+                    # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
+                    sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
 
-                # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
-                sample_fun = {"kind": kind, "function": fun}
+                    if comp_n > 0:
+                        functions = np.concatenate(
+                            (functions, [sample_fun]), axis=0
+                        )  # noqa
+                    else:
+                        functions = [sample_fun]
 
-                if comp_n > 0:
-                    functions = np.concatenate(
-                        (functions, [sample_fun]), axis=0
-                    )  # noqa
-                else:
-                    functions = [sample_fun]
+                # Shape = (n_obs, n_comp_CCA)
+                self.kde_functions.append(functions)  # noqa
 
-            self.kde_functions = functions  # noqa
-
-            # return self.kde_functions
-        return self.random_sample(n_posts, mode)
+                # return self.kde_functions
+            return self.random_sample(n_posts, mode)
 
     def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
         """
@@ -394,56 +404,71 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         np.random.seed(self.seed)
 
         if self.mode == "mvn":
-            Y_samples = np.random.multivariate_normal(
-                mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
-            )
+            Y_samples = []
+            for n, (mean, cov) in enumerate(
+                zip(self.posterior_mean, self.posterior_covariance)
+            ):
+                Y_samples.append(
+                    np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
+                )
 
         if self.mode == "kde":
-            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))  #
+            n_obs = self.X_obs_f.shape[0]
+            Y_samples = np.zeros((n_obs, self.n_posts, self.X_obs_f.shape[-1]))  #
             # Parses the functions dict
-            for i, fun in enumerate(self.kde_functions):
-                if fun["kind"] == "pdf":
-                    pdf = fun["function"]
-                    uniform_samples = it_sampling(
-                        pdf=pdf,
-                        num_samples=self.n_posts,
-                        lower_bd=pdf.x.min(),
-                        upper_bd=pdf.x.max(),
-                        chebyshev=False,
-                    )
-                elif fun["kind"] == "linear":
-                    rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                        np.array([self.X_obs_f.T[i]])
-                    )  # Shape X_obs_f = (n_obs, n_components)
+            for i, fun_per_comp in enumerate(self.kde_functions):
+                for j, fun in enumerate(fun_per_comp):
+                    if fun["kind"] == "pdf":
+                        pdf = fun["function"]
+                        uniform_samples = it_sampling(
+                            pdf=pdf,
+                            num_samples=self.n_posts,
+                            lower_bd=pdf.x.min(),
+                            upper_bd=pdf.x.max(),
+                            chebyshev=False,
+                        )
+                    elif fun["kind"] == "linear":
+                        rel1d = fun["function"]
+                        uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+                            np.array([self.X_obs_f.T[i, j]])  # check this line
+                        )  # Shape X_obs_f = (n_obs, n_components)
 
-                Y_samples[:, i] = uniform_samples  # noqa
+                    Y_samples[i, :, j] = uniform_samples  # noqa
 
-        return Y_samples  # noqa
+        return np.array(Y_samples)  # noqa
 
     def inverse_transform(
         self,
-        Y_pred,
+        Y_pred: np.array,
     ) -> np.array:
         """
-        Back-transforms the sampled gaussian distributed posterior Y to their physical space.
+        Back-transforms the posterior samples Y_pred to their physical space.
         :param Y_pred:
         :return: forecast_posterior
         """
         check_is_fitted(self.cca)
-        Y_pred = check_array(Y_pred)
 
-        y_post = self.Y_post_processing.inverse_transform(
-            Y_pred
-        )  # Posterior CCA scores
-        y_post = (
-            np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-            + self.cca._y_mean  # noqa
-        )  # Posterior PC scores
+        if Y_pred.ndim < 3:
+            Y_pred = Y_pred.reshape(1, -1)
 
-        # Back transform PC scores
-        y_post_raw = self.Y_pre_processing.inverse_transform(
-            y_post
-        )  # Inverse transform
+        Y_post = []
 
-        return y_post_raw
+        for i, yp in enumerate(Y_pred):  # For each observed data
+
+            yp = check_array(yp)
+
+            y_post = self.Y_post_processing.inverse_transform(
+                yp
+            )  # Posterior CCA scores
+            y_post = (
+                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
+                + self.cca._y_mean  # noqa
+            )  # Posterior PC scores
+
+            # Back transform PC scores
+            y_post_raw = self.Y_pre_processing.inverse_transform(
+                y_post
+            )  # Inverse transform
+            Y_post.append(y_post_raw)
+
+        return np.array(Y_post)
