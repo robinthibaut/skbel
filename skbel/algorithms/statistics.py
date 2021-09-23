@@ -378,7 +378,10 @@ def _normalize_distribution(post: np.array, support: np.array):
     a = integrate.simps(y=np.abs(post), x=support)
 
     if np.abs(a - 1) > 1e-4:  # Rule of thumb
-        post *= 1 / a
+        try:
+            post *= 1 / a
+        except RuntimeWarning as rw:  # Division by zero
+            warnings.warn(rw)
 
     return post
 
