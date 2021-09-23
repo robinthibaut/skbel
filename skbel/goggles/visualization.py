@@ -274,7 +274,7 @@ def pca_scores(
         markeredgecolor="k",
         markeredgewidth=0.4,
         alpha=0.8,
-        label=str(sample_n),
+        # label=str(sample_n),
     )
 
     if labels:
