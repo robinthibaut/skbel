@@ -664,7 +664,9 @@ def _kde_cca(
 
             # Conditional:
             hp, sup, _ = posterior_conditional(
-                X_obs=bel.X_obs_f[obs_n].T[comp_n]
+                X_obs=bel.X_obs_f[obs_n].T[comp_n],
+                dens=density,
+                support=support
             )
 
             # Filled contour plot
