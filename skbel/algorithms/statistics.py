@@ -387,19 +387,16 @@ def _normalize_distribution(post: np.array, support: np.array):
 
 
 def posterior_conditional(
-    X: np.array, Y: np.array, X_obs: float = None, Y_obs: float = None
-):
+    X_obs: float = None, Y_obs: float = None, dens: np.array = None, support: np.array = None) -> (np.array, np.array):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
-    :param X: Predictor (x-axis)
-    :param Y: Target (y-axis)
     :param X_obs: Observation (predictor, x-axis)
     :param Y_obs: Observation (target, y-axis)
+    :param dens: The density values of the KDE of (X, Y).
+    :param support: The support grid of the KDE of (X, Y).
+    :param bw: The bandwidth of the KDE of (X, Y).
     :return:
     """
-
-    # Compute KDE
-    dens, support, bw = kde_params(x=X, y=Y)
     # Grid parameters
     xg, yg = support
 
@@ -427,7 +424,7 @@ def posterior_conditional(
 
     post = _normalize_distribution(post, support)
 
-    return post, support, bw
+    return post, support
 
 
 def mvn_inference(

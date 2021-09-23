@@ -644,8 +644,8 @@ def _kde_cca(
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
-        marginal_eval_x = KDE(bandwidth=bel.kde_bw[comp_n])
-        marginal_eval_y = KDE(bandwidth=bel.kde_bw[comp_n])
+        marginal_eval_x = KDE(bandwidth=bel.kde_functions[comp_n]["bandwidth"])
+        marginal_eval_y = KDE(bandwidth=bel.kde_functions[comp_n]["bandwidth"])
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))

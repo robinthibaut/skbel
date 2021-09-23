@@ -26,7 +26,7 @@ from sklearn.utils.validation import (
     check_consistent_length,
 )
 
-from ..algorithms import mvn_inference, posterior_conditional, it_sampling
+from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -306,11 +306,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.X_obs_f.ndim < 3:
             self.X_obs_f = self.X_obs_f.reshape(1, -1)
 
-        self.posterior_mean, self.posterior_covariance = [], []
-        self.kde_functions = []
-        for n, dp in enumerate(self.X_obs_f):
-            # Estimate the posterior mean and covariance
-            if self.mode == "mvn":
+        # Estimate the posterior mean and covariance
+        if self.mode == "mvn":
+            self.posterior_mean, self.posterior_covariance = [], []
+            for n, dp in enumerate(self.X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
                 x_dim = self.X_pc.shape[1]
@@ -334,48 +333,49 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.posterior_mean.append(post_mean)
                 self.posterior_covariance.append(post_cov)
 
-            else:
-                # KDE inference
-                from scipy import interpolate
-
-                for comp_n in range(self.cca.n_components):
-
-                    # If the relation is almost perfectly linear, it doesn't make sense to perform a
-                    # KDE estimation.
-                    corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
-                        offset=1
-                    )[0]
-                    # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
-                    if corr >= 0.999:
-                        kind = "linear"
-                        fun = LinearRegression().fit(
-                            self.X_f.T[comp_n].reshape(-1, 1),
-                            self.Y_f.T[comp_n].reshape(-1, 1),
-                        )
-                        bw = 0
-                    else:
+        elif self.mode == "kde":
+            n_obs = self.X_obs_f.shape[0]
+            n_cca = self.cca.n_components
+            self.kde_functions = np.zeros((n_obs, n_cca))
+            # KDE inference
+            from scipy import interpolate
+            for comp_n in range(n_cca):
+                # If the relation is almost perfectly linear, it doesn't make sense to perform a
+                # KDE estimation.
+                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
+                    offset=1
+                )[0]
+                # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
+                if corr >= 0.999:
+                    kind = "linear"
+                    fun = LinearRegression().fit(
+                        self.X_f.T[comp_n].reshape(-1, 1),
+                        self.Y_f.T[comp_n].reshape(-1, 1),
+                    )
+                    bw = 0
+                    # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
+                    sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
+                    functions = [sample_fun] * n_obs
+                else:
+                    # Compute KDE
+                    dens, support, bw = kde_params(x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n])
+                    functions = []
+                    for n, dp in enumerate(self.X_obs_f):  # For each observation point
                         # Conditional:
-                        hp, sup, bw = posterior_conditional(
-                            X=self.X_f.T[comp_n],
-                            Y=self.Y_f.T[comp_n],
+                        hp, sup = posterior_conditional(
                             X_obs=dp.T[comp_n],
+                            dens=dens,
+                            support=support,
                         )
                         hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
                         kind = "pdf"
                         fun = interpolate.interp1d(sup, hp, kind="cubic")
-
-                    # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
-                    sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
-
-                    if comp_n > 0:
-                        functions = np.concatenate(
-                            (functions, [sample_fun]), axis=0
-                        )  # noqa
-                    else:
-                        functions = [sample_fun]
+                        # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
+                        sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
+                        functions.append(sample_fun)
 
                 # Shape = (n_obs, n_comp_CCA)
-                self.kde_functions.append(functions)  # noqa
+                self.kde_functions[:, comp_n] = functions # noqa
 
                 # return self.kde_functions
             return self.random_sample(n_posts, mode)
