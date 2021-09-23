@@ -387,7 +387,11 @@ def _normalize_distribution(post: np.array, support: np.array):
 
 
 def posterior_conditional(
-    X_obs: float = None, Y_obs: float = None, dens: np.array = None, support: np.array = None) -> (np.array, np.array):
+    X_obs: float = None,
+    Y_obs: float = None,
+    dens: np.array = None,
+    support: np.array = None,
+) -> (np.array, np.array):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
     :param X_obs: Observation (predictor, x-axis)

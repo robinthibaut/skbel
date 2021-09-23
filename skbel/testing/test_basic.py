@@ -88,7 +88,9 @@ def test_mvn():
     np.testing.assert_allclose(bel.posterior_mean[0], ref_mean, atol=1e-3, err_msg=msg1)
 
     msg2 = "The posterior covariances are different"
-    np.testing.assert_allclose(bel.posterior_covariance[0], ref_covariance, atol=1e-3, err_msg=msg2)
+    np.testing.assert_allclose(
+        bel.posterior_covariance[0], ref_covariance, atol=1e-3, err_msg=msg2
+    )
 
 
 def test_kde():
@@ -124,4 +126,4 @@ def test_kde():
     y_samples_ref = np.load(jp(my_path, "y_samples_kde.npy"))
 
     msg1 = "The posterior samples are different"
-    np.testing.assert_allclose(y_samples, y_samples_ref, atol=55e-1, err_msg=msg1)
+    np.testing.assert_allclose(y_samples[0], y_samples_ref, atol=55e-1, err_msg=msg1)

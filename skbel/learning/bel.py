@@ -310,7 +310,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         n_obs = self.X_obs_f.shape[0]
         n_cca = self.cca.n_components
         if self.mode == "mvn":
-            self.posterior_mean, self.posterior_covariance = np.zeros((n_obs, n_cca)), np.zeros((n_obs, n_cca, n_cca))
+            self.posterior_mean, self.posterior_covariance = np.zeros(
+                (n_obs, n_cca)
+            ), np.zeros((n_obs, n_cca, n_cca))
             for n, dp in enumerate(self.X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
@@ -339,6 +341,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")
             # KDE inference
             from scipy import interpolate
+
             for comp_n in range(n_cca):
                 # If the relation is almost perfectly linear, it doesn't make sense to perform a
                 # KDE estimation.
@@ -358,7 +361,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     functions = [sample_fun] * n_obs
                 else:
                     # Compute KDE
-                    dens, support, bw = kde_params(x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n])
+                    dens, support, bw = kde_params(
+                        x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
+                    )
                     functions = []
                     for n, dp in enumerate(self.X_obs_f):  # For each observation point
                         # Conditional:
@@ -375,7 +380,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         functions.append(sample_fun)
 
                 # Shape = (n_obs, n_comp_CCA)
-                self.kde_functions[:, comp_n] = functions # noqa
+                self.kde_functions[:, comp_n] = functions  # noqa
 
                 # return self.kde_functions
         return self.random_sample(n_posts, mode)
@@ -430,7 +435,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]
                         uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                            np.array(self.X_obs_f[i][j].reshape(1, -1))  # check this line
+                            np.array(
+                                self.X_obs_f[i][j].reshape(1, -1)
+                            )  # check this line
                         )  # Shape X_obs_f = (n_obs, n_components)
 
                     Y_samples[i, :, j] = uniform_samples  # noqa
