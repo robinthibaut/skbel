@@ -256,27 +256,26 @@ def pca_scores(
     # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
 
     # For each sample used for prediction:
-    for sample_n in range(len(prediction)):
-        # Select observation
-        pc_obs = prediction[sample_n].reshape(1, -1)
-        # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        spl = make_interp_spline(
-            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-        )  # type: BSpline
-        power_smooth = spl(xnew)
-        # I forgot why I had to put '-1'
-        plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
+    # Select observation
+    pc_obs = prediction.reshape(1, -1)
+    # Create beautiful spline to follow prediction scores
+    xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
+    spl = make_interp_spline(
+        np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
+    )  # type: BSpline
+    power_smooth = spl(xnew)
+    # I forgot why I had to put '-1'
+    plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
 
-        plt.plot(
-            pc_obs.T[:n_comp],  # Plot observations scores
-            "ro",
-            markersize=3,
-            markeredgecolor="k",
-            markeredgewidth=0.4,
-            alpha=0.8,
-            label=str(sample_n),
-        )
+    plt.plot(
+        pc_obs.T[:n_comp],  # Plot observations scores
+        "ro",
+        markersize=3,
+        markeredgecolor="k",
+        markeredgewidth=0.4,
+        alpha=0.8,
+        label=str(sample_n),
+    )
 
     if labels:
         plt.title("Principal Components of training and test dataset")
