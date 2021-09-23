@@ -64,6 +64,8 @@ def test_mvn():
     # Set seed
     seed = 123456
     bel.seed = seed
+    bel.mode = "mvn"
+    bel.n_posts = 10
 
     # Get file path
     my_path = os.path.dirname(os.path.abspath(__file__))
@@ -76,17 +78,17 @@ def test_mvn():
     # Fit
     bel.fit(X=X_train, Y=y_train)
     # Predict posterior mean and covariance
-    post_mean, post_cov = bel.predict(X_test)
+    samples = bel.predict(X_obs=X_test)
 
     # Compare with reference
     ref_mean = np.load(jp(my_path, "ref_mean.npy"))
     ref_covariance = np.load(jp(my_path, "ref_covariance.npy"))
 
     msg1 = "The posterior means are different"
-    np.testing.assert_allclose(post_mean, ref_mean, atol=1e-3, err_msg=msg1)
+    np.testing.assert_allclose(bel.posterior_mean[0], ref_mean, atol=1e-3, err_msg=msg1)
 
     msg2 = "The posterior covariances are different"
-    np.testing.assert_allclose(post_cov, ref_covariance, atol=1e-3, err_msg=msg2)
+    np.testing.assert_allclose(bel.posterior_covariance[0], ref_covariance, atol=1e-3, err_msg=msg2)
 
 
 def test_kde():

@@ -307,8 +307,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.X_obs_f = self.X_obs_f.reshape(1, -1)
 
         # Estimate the posterior mean and covariance
+        n_obs = self.X_obs_f.shape[0]
+        n_cca = self.cca.n_components
         if self.mode == "mvn":
-            self.posterior_mean, self.posterior_covariance = [], []
+            self.posterior_mean, self.posterior_covariance = np.zeros((n_obs, n_cca)), np.zeros((n_obs, n_cca, n_cca))
             for n, dp in enumerate(self.X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
@@ -330,12 +332,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs=dp,
                     **dict_args,
                 )
-                self.posterior_mean.append(post_mean)
-                self.posterior_covariance.append(post_cov)
+                self.posterior_mean[n] = post_mean
+                self.posterior_covariance[n] = post_cov
 
         elif self.mode == "kde":
-            n_obs = self.X_obs_f.shape[0]
-            n_cca = self.cca.n_components
             self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")
             # KDE inference
             from scipy import interpolate
@@ -378,7 +378,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.kde_functions[:, comp_n] = functions # noqa
 
                 # return self.kde_functions
-            return self.random_sample(n_posts, mode)
+        return self.random_sample(n_posts, mode)
 
     def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
         """
@@ -430,7 +430,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]
                         uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                            np.array([self.X_obs_f.T[i, j]])  # check this line
+                            np.array(self.X_obs_f[i][j].reshape(1, -1))  # check this line
                         )  # Shape X_obs_f = (n_obs, n_components)
 
                     Y_samples[i, :, j] = uniform_samples  # noqa

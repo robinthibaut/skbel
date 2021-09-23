@@ -258,7 +258,7 @@ def pca_scores(
     # For each sample used for prediction:
     for sample_n in range(len(prediction)):
         # Select observation
-        pc_obs = prediction[sample_n]
+        pc_obs = prediction[sample_n].reshape(1, -1)
         # Create beautiful spline to follow prediction scores
         xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
         spl = make_interp_spline(
