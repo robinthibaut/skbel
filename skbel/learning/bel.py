@@ -336,7 +336,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif self.mode == "kde":
             n_obs = self.X_obs_f.shape[0]
             n_cca = self.cca.n_components
-            self.kde_functions = np.zeros((n_obs, n_cca))
+            self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")
             # KDE inference
             from scipy import interpolate
             for comp_n in range(n_cca):

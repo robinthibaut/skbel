@@ -368,6 +368,7 @@ def pca_vision(
     fig_dir: str = None,
     d: bool = True,
     h: bool = True,
+    obs_n: int = 0,
     X_obs: np.array = None,
     Y_obs: np.array = None,
     scores: bool = True,
@@ -396,7 +397,7 @@ def pca_vision(
         if scores:
             pca_scores(
                 training=bel.X_pc,
-                prediction=bel.X_obs_pc,
+                prediction=bel.X_obs_pc[obs_n],
                 n_comp=bel.X_pc.shape[1],
                 # annotation=["C"],
                 labels=labels,
@@ -621,6 +622,7 @@ def _get_defaults_kde_plot():
 
 def _kde_cca(
     bel,
+    obs_n: int = 0,
     Y_obs: np.array = None,
     sdir: str = None,
     show: bool = False,
@@ -644,23 +646,26 @@ def _kde_cca(
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
-        marginal_eval_x = KDE(bandwidth=bel.kde_functions[comp_n]["bandwidth"])
-        marginal_eval_y = KDE(bandwidth=bel.kde_functions[comp_n]["bandwidth"])
+        bw = bel.kde_functions[obs_n, comp_n]["bandwidth"]
+
+        marginal_eval_x = KDE(bandwidth=bw)
+        marginal_eval_y = KDE(bandwidth=bw)
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
-            # Conditional:
-            hp, sup, _ = posterior_conditional(
-                X=bel.X_f.T[comp_n], Y=bel.Y_f.T[comp_n], X_obs=bel.X_obs_f.T[comp_n]
-            )
 
             # Plot h posterior given d
-            density, support, _ = kde_params(
-                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
+            density, support, bw = kde_params(
+                x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200, bw=bw
             )
             xx, yy = support
+
+            # Conditional:
+            hp, sup, _ = posterior_conditional(
+                X_obs=bel.X_obs_f[obs_n].T[comp_n]
+            )
 
             # Filled contour plot
             # Mask values under threshold
@@ -682,7 +687,7 @@ def _kde_cca(
             pass
         # Vertical line
         ax_joint.axvline(
-            x=bel.X_obs_f.T[comp_n],
+            x=bel.X_obs_f[obs_n].T[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -690,7 +695,7 @@ def _kde_cca(
         )
         # Horizontal line
         ax_joint.axhline(
-            y=bel.Y_obs_f.T[comp_n],
+            y=bel.Y_obs_f[obs_n].T[comp_n],
             color="deepskyblue",
             linewidth=1,
             alpha=0.5,
@@ -708,8 +713,8 @@ def _kde_cca(
         )
         # Point
         ax_joint.plot(
-            bel.X_obs_f.T[comp_n],
-            bel.Y_obs_f.T[comp_n],
+            bel.X_obs_f[obs_n].T[comp_n],
+            bel.Y_obs_f[obs_n].T[comp_n],
             "wo",
             markersize=5,
             markeredgecolor="k",
