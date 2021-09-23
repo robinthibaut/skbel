@@ -254,75 +254,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             return _xp, _yp
 
-    def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
-        """
-        Random sample the inferred posterior Gaussian distribution
-        :param n_posts: int
-        :param mode: str
-        :return:
-        """
-        if mode is not None:
-            self.mode = mode
-
-        # Set the seed for later use
-        if self.seed is None:
-            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
-
-        check_is_fitted(self.cca)
-        if n_posts is None:
-            n_posts = self.n_posts
-        else:
-            self.n_posts = n_posts
-        # Draw n_posts random samples from the multivariate normal distribution :
-        # Pay attention to the transpose operator
-        np.random.seed(self.seed)
-
-        if self.mode == "mvn":
-            Y_samples = np.random.multivariate_normal(
-                mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
-            )
-
-        if self.mode == "kde":
-            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
-            # Parses the functions dict
-            for i, fun in enumerate(self.kde_functions):
-                if fun["kind"] == "pdf":
-                    pdf = fun["function"]
-                    uniform_samples = it_sampling(
-                        pdf=pdf,
-                        num_samples=self.n_posts,
-                        lower_bd=pdf.x.min(),
-                        upper_bd=pdf.x.max(),
-                        chebyshev=False,
-                    )
-                elif fun["kind"] == "linear":
-                    rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                        np.array([self.X_obs_f.T[i]])
-                    )
-
-                Y_samples[:, i] = uniform_samples  # noqa
-
-        if self.mode == "kde_chebyshev":
-            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))
-            for i, fun in enumerate(self.kde_functions):
-                if fun["kind"] == "pdf":
-                    pdf = fun["function"]
-                    uniform_samples = it_sampling(
-                        pdf=pdf,
-                        num_samples=self.n_posts,
-                        lower_bd=pdf.x.min(),
-                        upper_bd=pdf.x.max(),
-                        chebyshev=True,
-                    )
-                elif fun["kind"] == "linear":
-                    rel1d = fun["function"]
-                    uniform_samples = np.ones(self.n_posts) * rel1d(self.X_obs_f)
-
-                Y_samples[:, i] = uniform_samples
-
-        return Y_samples  # noqa
-
     def fit_transform(self, X, y=None, **fit_params):
         """
         Fit-Transform across all pipelines
@@ -382,7 +313,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             dict_args = {"x_cov": x_cov}
 
             X, Y = self.X_f, self.Y_f
-
+            # mvn_inference is designed to accept 1 observation at a time.
             self.posterior_mean, self.posterior_covariance = mvn_inference(
                 X=X,
                 Y=Y,
@@ -438,6 +369,57 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             # return self.kde_functions
         return self.random_sample(n_posts, mode)
+
+    def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
+        """
+        Random sample the inferred posterior Gaussian distribution
+        :param n_posts: int
+        :param mode: str
+        :return:
+        """
+        if mode is not None:
+            self.mode = mode
+
+        # Set the seed for later use
+        if self.seed is None:
+            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+
+        check_is_fitted(self.cca)
+        if n_posts is None:
+            n_posts = self.n_posts
+        else:
+            self.n_posts = n_posts
+        # Draw n_posts random samples from the multivariate normal distribution :
+        # Pay attention to the transpose operator
+        np.random.seed(self.seed)
+
+        if self.mode == "mvn":
+            Y_samples = np.random.multivariate_normal(
+                mean=self.posterior_mean, cov=self.posterior_covariance, size=n_posts
+            )
+
+        if self.mode == "kde":
+            Y_samples = np.zeros((self.n_posts, self.kde_functions.shape[0]))  #
+            # Parses the functions dict
+            for i, fun in enumerate(self.kde_functions):
+                if fun["kind"] == "pdf":
+                    pdf = fun["function"]
+                    uniform_samples = it_sampling(
+                        pdf=pdf,
+                        num_samples=self.n_posts,
+                        lower_bd=pdf.x.min(),
+                        upper_bd=pdf.x.max(),
+                        chebyshev=False,
+                    )
+                elif fun["kind"] == "linear":
+                    rel1d = fun["function"]
+                    uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+                        np.array([self.X_obs_f.T[i]])
+                    )  # Shape X_obs_f = (n_obs, n_components)
+
+                Y_samples[:, i] = uniform_samples  # noqa
+
+        return Y_samples  # noqa
 
     def inverse_transform(
         self,
