@@ -110,3 +110,8 @@ Communication
 ~~~~~~~~~~~~~
 
 - Github Discussions: https://github.com/robinthibaut/skbel/discussions
+
+How to cite
+----------------
+
+Thibaut, R., 2021. SKBEL – Bayesian Evidential Learning framework built on top of Scikit-learn. Zenodo. https://doi.org/10.5281/zenodo.5526609
