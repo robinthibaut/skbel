@@ -427,7 +427,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             num_samples=self.n_posts,
                             lower_bd=pdf.x.min(),
                             upper_bd=pdf.x.max(),
-                            chebyshev=False,
                         )
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]

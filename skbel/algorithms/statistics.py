@@ -611,107 +611,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
     return cdf_vector
 
 
-def _chebnodes(a, b, n):
-    """Chebyshev nodes of rank n on integral [a,b]."""
-    if not a < b:
-        raise ValueError("Lower bound must be less than upper bound.")
-    return np.array(
-        [
-            1 / 2 * ((a + b) + (b - a) * np.cos((2 * k - 1) * np.pi / (2 * n)))
-            for k in range(1, n + 1)
-        ]
-    )
-
-
-def adaptive_chebfit(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
-    """Fit a chebyshev polynomial, increasing sampling rate until coefficient
-    tail falls below provided tolerance.
-    Copyright (c) 2017 Peter Wills
-
-    Parameters
-    ----------
-    pdf : function, float -> float
-        The probability density function (not necessarily normalized). Must take
-        floats or ints as input, and return floats as an output.
-    lower_bd : float
-        Lower bound of the support of the pdf. This parameter allows one to
-        manually establish cutoffs for the density.
-    upper_bd : float
-        Upper bound of the support of the pdf.
-    eps: float
-        Error tolerance of Chebyshev polynomial fit of PDF.
-
-    Returns
-    -------
-    x : array
-        The nodes at which the polynomial interpolation takes place. These are
-        adaptively chosen based on the provided tolerance.
-    coeffs : array
-        Coefficients in Chebyshev approximation of the PDF.
-
-    Notes
-    -----
-    This fit defines the "error" as the magnitude of the tail of the Chebyshev
-    coefficients. Computing the true error (i.e. discrepancy between the PDF and
-    it's approximant) would be much slower, so we avoid it and use this rough
-    approximation in its place.
-
-    """
-    i = 4
-    error = eps + 1  # so that it runs the first time through
-    while error > eps:
-        n = 2 ** i + 1
-        x = _chebnodes(lower_bd, upper_bd, n)
-        y = pdf(x)
-        coeffs = chebfit(x, y, n - 1)
-        error = max(np.abs(coeffs[-5:]))
-        i += 1
-
-    return x, coeffs
-
-
-def chebcdf(pdf, lower_bd, upper_bd, eps=10 ** (-15)):
-    """Get Chebyshev approximation of the CDF.
-    Copyright (c) 2017 Peter Wills
-
-    Parameters
-    ----------
-    pdf : function, float -> float
-        The probability density function (not necessarily normalized). Must take
-        floats or ints as input, and return floats as an output.
-    lower_bd : float
-        Lower bound of the support of the pdf. This parameter allows one to
-        manually establish cutoffs for the density.
-    upper_bd : float
-        Upper bound of the support of the pdf.
-    eps: float
-        Error tolerance of Chebyshev polynomial fit of PDF.
-
-    Returns
-    -------
-    cdf : function
-        The cumulative density function of the (normalized version of the)
-        provided pdf. The function cdf() takes an iterable of floats or doubles
-        as an argument, and returns an iterable of floats of the same length.
-    """
-    if not (np.isfinite(lower_bd) and np.isfinite(upper_bd)):
-        raise ValueError("Bounds must be finite.")
-    if not lower_bd < upper_bd:
-        raise ValueError("Lower bound must be less than upper bound.")
-
-    x, coeffs = adaptive_chebfit(pdf, lower_bd, upper_bd, eps)
-    int_coeffs = chebint(coeffs)
-    # offset and scale so that it goes from 0 to 1, i.e. is a true CDF.
-    offset = chebval(lower_bd, int_coeffs)
-    scale = chebval(upper_bd, int_coeffs) - chebval(lower_bd, int_coeffs)
-
-    def cdf(x_):
-        return (chebval(x_, int_coeffs) - offset) / scale
-
-    return cdf
-
-
-def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=False):
+def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
     """Sample from an arbitrary, unnormalized PDF.
     Copyright (c) 2017 Peter Wills
 
@@ -727,8 +627,6 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
         manually establish cutoffs for the density.
     upper_bd : float
         Upper bound of the support of the pdf.
-    chebyshev: Boolean, optional (default=False)
-        If True, then the CDF is approximated using Chebyshev polynomials.
 
     Returns
     -------
@@ -751,47 +649,10 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, chebyshev=F
 
     """
     seeds = uniform(0, 1, num_samples)
-
-    if chebyshev:
-
-        if not (np.isfinite(lower_bd) and np.isfinite(upper_bd)):
-            raise ValueError(
-                "Bounds must be finite for Chebyshev approximation of CDF."
-            )
-
-        cdf = chebcdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
-        inverse_cdf = interpolate.interp1d(
-            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
-        )
-        simple_samples = inverse_cdf(seeds)
-
-        # Compute empirical mean and standard deviation
-        mean = sum(pdf.x * pdf.y) / sum(pdf.y)
-        estd = np.sqrt(sum(pdf.y * (pdf.x - mean) ** 2) / sum(pdf.y))
-        # If distribution is too tight (small std) then use of simple inverse transform sampling
-        if estd <= 0.6:
-            return simple_samples
-        # Otherwise, use Chebyshev approach
-        else:
-            samples = []
-
-            guess = np.mean(simple_samples)
-
-            for seed in seeds:
-
-                def shifted(x):
-                    return cdf(x) - seed
-
-                soln = root(shifted, guess)
-                samples.append(soln.x[0])
-
-            return np.array(samples)
-    else:
-        cdf = get_cdf(pdf, lower_bd, upper_bd)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
-        inverse_cdf = interpolate.interp1d(
-            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
-        )
-        simple_samples = inverse_cdf(seeds)
-        return simple_samples
+    cdf = get_cdf(pdf, lower_bd, upper_bd)
+    cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+    inverse_cdf = interpolate.interp1d(
+        cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+    )
+    simple_samples = inverse_cdf(seeds)
+    return simple_samples
