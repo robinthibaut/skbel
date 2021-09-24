@@ -439,7 +439,8 @@ def mvn_inference(
            SIAM, 2005. Pages: 70-71
     :param X: Canonical Variate of the training data
     :param Y: Canonical Variate of the training target, gaussian-distributed
-    :param X_obs: Canonical Variate of the observation
+    :param X_obs: Canonical Variate of the observation (n_samples, n_features).
+    Note that in this implementation, n_samples must be = 1.
     :return: y_posterior_mean, y_posterior_covariance
     """
 
