@@ -303,9 +303,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_obs = self.X_post_processing.transform(X_obs)
         self.X_obs_f = X_obs
 
-        if self.X_obs_f.ndim < 3:
-            self.X_obs_f = self.X_obs_f.reshape(1, -1)
-
         # Estimate the posterior mean and covariance
         n_obs = self.X_obs_f.shape[0]
         n_cca = self.cca.n_components
@@ -331,7 +328,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 post_mean, post_cov = mvn_inference(
                     X=X,
                     Y=Y,
-                    X_obs=dp,
+                    X_obs=dp.reshape(1, -1),
                     **dict_args,
                 )
                 self.posterior_mean[n] = post_mean

@@ -377,11 +377,11 @@ def _normalize_distribution(post: np.array, support: np.array):
     """
     a = integrate.simps(y=np.abs(post), x=support)
 
-    if np.abs(a - 1) > 1e-4:  # Rule of thumb
+    if np.abs(a - 1) > 1e-4 and a > 0:  # Rule of thumb
         try:
             post *= 1 / a
-        except RuntimeWarning as rw:  # Division by zero
-            warnings.warn(rw)
+        except RuntimeWarning:  # Division by zero
+            pass
 
     return post
 
@@ -398,7 +398,6 @@ def posterior_conditional(
     :param Y_obs: Observation (target, y-axis)
     :param dens: The density values of the KDE of (X, Y).
     :param support: The support grid of the KDE of (X, Y).
-    :param bw: The bandwidth of the KDE of (X, Y).
     :return:
     """
     # Grid parameters

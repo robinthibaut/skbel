@@ -78,7 +78,7 @@ def test_mvn():
     # Fit
     bel.fit(X=X_train, Y=y_train)
     # Predict posterior mean and covariance
-    samples = bel.predict(X_obs=X_test)
+    bel.predict(X_obs=X_test)
 
     # Compare with reference
     ref_mean = np.load(jp(my_path, "ref_mean.npy"))
