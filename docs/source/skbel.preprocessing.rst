@@ -1,5 +1,5 @@
-skbel.preprocessing
-===================
+skbel.preprocessing package
+===========================
 
 Submodules
 ----------
@@ -20,3 +20,18 @@ skbel.preprocessing.dct module
    :undoc-members:
    :show-inheritance:
 
+skbel.preprocessing.kernel module
+---------------------------------
+
+.. automodule:: skbel.preprocessing.kernel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: skbel.preprocessing
+   :members:
+   :undoc-members:
+   :show-inheritance:

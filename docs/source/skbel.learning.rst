@@ -1,5 +1,5 @@
-skbel.learning
-==============
+skbel.learning package
+======================
 
 Submodules
 ----------
@@ -12,11 +12,10 @@ skbel.learning.bel module
    :undoc-members:
    :show-inheritance:
 
-skbel.learning.kcca module
---------------------------
+Module contents
+---------------
 
-.. automodule:: skbel.learning.kcca
+.. automodule:: skbel.learning
    :members:
    :undoc-members:
    :show-inheritance:
-

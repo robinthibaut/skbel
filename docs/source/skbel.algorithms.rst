@@ -1,5 +1,5 @@
-skbel.algorithms
-=================
+skbel.algorithms package
+========================
 
 Submodules
 ----------
@@ -20,3 +20,10 @@ skbel.algorithms.statistics module
    :undoc-members:
    :show-inheritance:
 
+Module contents
+---------------
+
+.. automodule:: skbel.algorithms
+   :members:
+   :undoc-members:
+   :show-inheritance:
