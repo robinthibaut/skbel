@@ -36,7 +36,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def __init__(
         self,
-        mode: str = "mvn",
+        mode: str = "kde",
         copy: bool = True,
         *,
         X_pre_processing=None,
@@ -82,31 +82,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.Y_post_processing = Y_post_processing
         self.cca = cca
 
-        # Posterior parameters
-        # MVN inference
-        # self.posterior_mean = None
-        # self.posterior_covariance = None
-        # KDE inference
-        # self.kde_functions = None
-
         # Parameters for sampling
         self.random_state = random_state
-        # self._n_posts = None
 
         # Original dataset
-        # self._X_shape, self._Y_shape = x_dim, y_dim
         self.x_dim, self.y_dim = x_dim, y_dim
-
-        # Dataset after preprocessing (dimension-reduced by self.X_n_pc, self.Y_n_pc)
-        # TODO: It is not necessary to save all this.
-        # self.X_pc, self.Y_pc = None, None
-        # self.X_obs_pc, self.Y_obs_pc = None, None
-        # # Dataset after learning
-        # self.X_c, self.Y_c = None, None
-        # self.X_obs_c, self.Y_obs_c = None, None
-        # # Dataset after postprocessing
-        # self.X_f, self.Y_f = None, None
-        # self.X_obs_f, self.Y_obs_f = None, None
 
     # The following properties are central to the BEL framework
     @property
@@ -190,24 +170,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.Y_pre_processing.fit_transform(_Y),
         )
 
-        # Dataset after preprocessing
-        self.X_pc, self.Y_pc = _xt, _yt
-
         # Canonical variates
         try:
             _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
         except ValueError:
             _xc, _yc = _xt, _yt
 
-        self.X_c, self.Y_c = _xc, _yc
-
         # CV Normalized
         _xf, _yf = (
             self.X_post_processing.fit_transform(_xc),
-            self.Y_post_processing.fit_transform(_yc),
+            self.Y_post_processing.fit_transform(_yc)
         )
 
-        self.X_f, self.Y_f = _xf, _yf
+        self.X_f, self.Y_f = _xf, _yf  # At the moment we have to save those
 
         return self
 
@@ -233,8 +208,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
             dummy = np.zeros(
-                self.X_pc.shape
-            )  # Assumes the predictor's PC have already been computed
+                self.X_pre_processing["pca"].n_components_
+            )
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -272,8 +247,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Make predictions, in the BEL fashion.
         :param X_obs: The observed data
         :param n_posts: The number of posterior samples to draw
-        :param mode: The mode of inferrence to use.
-        :return: The posterior samples
+        :param mode: The mode of inference to use.
+        :return: The posterior samples in the original space
         """
         if mode is not None:
             self.mode = mode
@@ -296,24 +271,21 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     X_obs = check_array(X_obs.reshape(1, -1))
 
         # Project observed data into canonical space.
-        X_obs = self.X_pre_processing.transform(X_obs)
-        self.X_obs_pc = X_obs
-        X_obs = self.cca.transform(X_obs)
-        self.X_obs_c = X_obs
-        X_obs = self.X_post_processing.transform(X_obs)
-        self.X_obs_f = X_obs
+        X_obs_pc = self.X_pre_processing.transform(X_obs)
+        X_obs_c = self.cca.transform(X_obs_pc)
+        X_obs_f = self.X_post_processing.transform(X_obs_c)
 
         # Estimate the posterior mean and covariance
-        n_obs = self.X_obs_f.shape[0]
+        n_obs = X_obs_f.shape[0]
         n_cca = self.cca.n_components
         if self.mode == "mvn":
             self.posterior_mean, self.posterior_covariance = np.zeros(
                 (n_obs, n_cca)
             ), np.zeros((n_obs, n_cca, n_cca))
-            for n, dp in enumerate(self.X_obs_f):  # For each observation point
+            for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
-                x_dim = self.X_pc.shape[1]
+                x_dim = self.X_pre_processing["pca"].n_components_
                 noise = 0.01
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = np.eye(x_dim) * noise
@@ -362,7 +334,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
                     )
                     functions = []
-                    for n, dp in enumerate(self.X_obs_f):  # For each observation point
+                    for n, dp in enumerate(X_obs_f):  # For each observation point
                         # Conditional:
                         hp, sup = posterior_conditional(
                             X_obs=dp.T[comp_n],
@@ -380,13 +352,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.kde_functions[:, comp_n] = functions  # noqa
 
                 # return self.kde_functions
-        samples = self._random_sample(n_posts, mode)
+        samples = self._random_sample(X_obs_f, n_posts, mode)
         
         return self.inverse_transform(samples)
 
-    def _random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
+    def _random_sample(self, X_obs_f: np.array, n_posts: int = None, mode: str = None) -> np.array:
         """
         Random sample the inferred posterior distribution
+        :param X_obs_f: np.array: Observed data points
         :param n_posts: int
         :param mode: str
         :return:
@@ -417,8 +390,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )
 
         if self.mode == "kde":
-            n_obs = self.X_obs_f.shape[0]
-            Y_samples = np.zeros((n_obs, self.n_posts, self.X_obs_f.shape[-1]))  #
+            n_obs = X_obs_f.shape[0]
+            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))  #
             # Parses the functions dict
             for i, fun_per_comp in enumerate(self.kde_functions):
                 for j, fun in enumerate(fun_per_comp):
@@ -434,7 +407,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         rel1d = fun["function"]
                         uniform_samples = np.ones(self.n_posts) * rel1d.predict(
                             np.array(
-                                self.X_obs_f[i][j].reshape(1, -1)
+                                X_obs_f[i][j].reshape(1, -1)
                             )  # check this line
                         )  # Shape X_obs_f = (n_obs, n_components)
 

@@ -677,13 +677,13 @@ def _kde_cca(
             cb = plt.colorbar(cf, ax=[ax_cb], location="left")
             cb.ax.set_title("$KDE$", fontsize=10)
 
-        try:
-            reg = bel.kde_functions[obs_n][comp_n]["function"]  # check this line
-            check_is_fitted(reg)
-            reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-            ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
-        except Exception:
-            pass
+        # try:
+        #     reg = bel.kde_functions[obs_n][comp_n]["function"]  # check this line
+        #     check_is_fitted(reg)
+        #     reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
+        #     ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
+        # except Exception:
+        #     pass
         # Vertical line
         ax_joint.axvline(
             x=bel.X_obs_f[obs_n].T[comp_n],
