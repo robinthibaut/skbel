@@ -641,6 +641,13 @@ def _kde_cca(
     )  # Gets correlation coefficient
     vmax = 1
     try:
+        X_obs = check_array(X_obs, allow_nd=True)
+    except ValueError:
+        try:
+            X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
+        except AttributeError:
+            X_obs = check_array(X_obs.reshape(1, -1))
+    try:
         Y_obs = check_array(Y_obs, allow_nd=True)
     except ValueError:
         try:
