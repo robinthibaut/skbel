@@ -5,7 +5,7 @@ with open("README.rst") as f:
     LONG_DESCRIPTION = f.read()
 setup(
     name="skbel",
-    version="2.0.0",
+    version="2.0.1",
     packages=my_pckg,
     include_package_data=True,
     url="https://github.com/robinthibaut/skbel",

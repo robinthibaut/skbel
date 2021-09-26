@@ -95,12 +95,12 @@ if __name__ == "__main__":
     model = init_bel()
 
     # %% Set model parameters
-    model.mode = "mvn"  # How to compute the posterior conditional distribution
+    model.mode = "kde"  # How to compute the posterior conditional distribution
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (100, 87)  # 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
-    model.n_posts = 400
+    model.n_posts = 10
 
     # %% Train the model
     # Fit BEL model
@@ -120,16 +120,16 @@ if __name__ == "__main__":
     # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(
-        model, y_predicted=y_predicted, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
-    )
+    # myvis.plot_results(
+    #     model, y_predicted=y_predicted, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
+    # )
 
-    # Plot PCA
-    pca_vision(
-        model,
-        Y_obs=y_test,
-        fig_dir=fig_pca_dir,
-    )
-
-    # Plot CCA
-    cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
+    # # Plot PCA
+    # pca_vision(
+    #     model,
+    #     Y_obs=y_test,
+    #     fig_dir=fig_pca_dir,
+    # )
+    #
+    # # Plot CCA
+    # cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)

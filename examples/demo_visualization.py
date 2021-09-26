@@ -587,6 +587,7 @@ def plot_posterior(
 
 def plot_results(
     bel,
+    y_predicted: np.array = None,
     X: np.array = None,
     X_obs: np.array = None,
     Y: np.array = None,
@@ -715,7 +716,7 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
-        forecast_posterior = bel.predict(X_obs).reshape(
+        forecast_posterior = y_predicted.reshape(
             (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
         )
 
