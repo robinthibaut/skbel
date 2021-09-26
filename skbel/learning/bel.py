@@ -380,11 +380,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.kde_functions[:, comp_n] = functions  # noqa
 
                 # return self.kde_functions
-        return self.random_sample(n_posts, mode)
+        samples = self._random_sample(n_posts, mode)
+        
+        return self.inverse_transform(samples)
 
-    def random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
+    def _random_sample(self, n_posts: int = None, mode: str = None) -> np.array:
         """
-        Random sample the inferred posterior Gaussian distribution
+        Random sample the inferred posterior distribution
         :param n_posts: int
         :param mode: str
         :return:

@@ -121,7 +121,7 @@ def test_kde():
     # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
     model.predict(X_test)
-    y_samples = model.random_sample()
+    y_samples = model._random_sample()
     # np.save(jp(my_path, "y_samples_kde.npy"), y_samples)
     y_samples_ref = np.load(jp(my_path, "y_samples_kde.npy"))
 
