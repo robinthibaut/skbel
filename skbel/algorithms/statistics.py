@@ -4,10 +4,8 @@ import math
 import numpy as np
 import pandas as pd
 import warnings
-from numpy.polynomial.chebyshev import chebfit, chebval, chebint
 from numpy.random import uniform
 from scipy import integrate, ndimage, interpolate
-from scipy.optimize import root
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
 from sklearn.model_selection import GridSearchCV
