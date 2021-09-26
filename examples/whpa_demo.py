@@ -98,7 +98,7 @@ if __name__ == "__main__":
     model.mode = "mvn"  # How to compute the posterior conditional distribution
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
-    model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
+    model.Y_shape = (100, 87)  # 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 
