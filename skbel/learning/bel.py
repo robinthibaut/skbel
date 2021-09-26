@@ -179,7 +179,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # CV Normalized
         _xf, _yf = (
             self.X_post_processing.fit_transform(_xc),
-            self.Y_post_processing.fit_transform(_yc)
+            self.Y_post_processing.fit_transform(_yc),
         )
 
         self.X_f, self.Y_f = _xf, _yf  # At the moment we have to save those
@@ -207,9 +207,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros(
-                self.X_pre_processing["pca"].n_components_
-            )
+            dummy = np.zeros(self.X_pre_processing["pca"].n_components_)
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -353,10 +351,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                 # return self.kde_functions
         samples = self._random_sample(X_obs_f, n_posts, mode)
-        
+
         return self.inverse_transform(samples)
 
-    def _random_sample(self, X_obs_f: np.array, n_posts: int = None, mode: str = None) -> np.array:
+    def _random_sample(
+        self, X_obs_f: np.array, n_posts: int = None, mode: str = None
+    ) -> np.array:
         """
         Random sample the inferred posterior distribution
         :param X_obs_f: np.array: Observed data points
@@ -406,9 +406,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]
                         uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                            np.array(
-                                X_obs_f[i][j].reshape(1, -1)
-                            )  # check this line
+                            np.array(X_obs_f[i][j].reshape(1, -1))  # check this line
                         )  # Shape X_obs_f = (n_obs, n_components)
 
                     Y_samples[i, :, j] = uniform_samples  # noqa

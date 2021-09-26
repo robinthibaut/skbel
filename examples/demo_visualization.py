@@ -692,8 +692,8 @@ def plot_results(
             Y_obs = check_array(Y_obs, allow_nd=True)
         except ValueError:
             Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
-        h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
-        h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
+        h_test = Y_obs.reshape((bel.Y_shape[0], bel.Y_shape[1]))
+        h_training = Y.reshape((-1,) + (bel.Y_shape[0], bel.Y_shape[1]))
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -715,10 +715,8 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
-        forecast_posterior = bel._random_sample(n_posts=Setup.HyperParameters.n_posts)
-        forecast_posterior = bel.inverse_transform(forecast_posterior)
-        forecast_posterior = forecast_posterior.reshape(
-            (-1,) + (bel.Y_shape[1], bel.Y_shape[2])
+        forecast_posterior = bel.predict(X_obs).reshape(
+            (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
         )
 
         # I display here the prior h behind the forecasts sampled from the posterior.

@@ -93,7 +93,7 @@ References
 
 `Scheidt, C., Li, L., Caers, J., 2018. Quantifying Uncertainty in Subsurface Systems, Geophysical Monograph Series. John Wiley & Sons, Inc., Hoboken, NJ, USA. <https://doi.org/10.1002/9781119325888>`_
 
-`Thibaut, R., Laloy, E., Hermans, T., 2021. A new framework for experimental design using Bayesian Evidential Learning: the case of wellhead protection area. arXiv:2105.05539 [cs]. <https://arxiv.org/abs/2105.05539>`_
+`Thibaut, R., Laloy, E., Hermans, T., 2021. A new framework for experimental design using Bayesian Evidential Learning: the case of wellhead protection area. Journal of Hydrology. <https://doi.org/10.1016/j.jhydrol.2021.126903>`_
 
 
 Issues and contributing
