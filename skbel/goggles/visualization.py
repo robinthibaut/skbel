@@ -631,7 +631,7 @@ def _get_defaults_kde_plot():
 def _kde_cca(
     bel,
     obs_n: int = 0,
-    X_obs: np.array=None,
+    X_obs: np.array = None,
     Y_obs: np.array = None,
     sdir: str = None,
     show: bool = False,
@@ -821,7 +821,9 @@ def _kde_cca(
         plt.close()
 
 
-def cca_vision(bel, X_obs: np.array, Y_obs: np.array, fig_dir: str = None, show: bool = False):
+def cca_vision(
+    bel, X_obs: np.array, Y_obs: np.array, fig_dir: str = None, show: bool = False
+):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
