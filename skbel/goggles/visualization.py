@@ -365,8 +365,8 @@ def cca_plot(
 def pca_vision(
     bel,
     fig_dir: str = None,
-    d: bool = True,
-    h: bool = True,
+    d: np.array = None,
+    h: np.array = None,
     obs_n: int = 0,
     X_obs: np.array = None,
     Y_obs: np.array = None,
@@ -377,6 +377,9 @@ def pca_vision(
 ):
     """
     Loads PCA pickles and plot scores for all folders
+    :param show:
+    :param X_obs:
+    :param obs_n:
     :param Y_obs: np.array: "True" target array
     :param fig_dir:
     :param bel: BEL model
@@ -391,13 +394,19 @@ def pca_vision(
     if fig_dir is None:
         fig_dir = ""
 
-    if d:
+    if d is None:
+        d = np.array([])
+    if h is None:
+        h = np.array([])
+    if d.any():
+        X_pc = bel.X_pre_processing.transform(d)
+        X_obs_pc = bel.X_pre_processing.transform(X_obs)
         fig_file = os.path.join(fig_dir, "d_scores.png")
         if scores:
             pca_scores(
-                training=bel.X_pc,
-                prediction=bel.X_obs_pc[obs_n],
-                n_comp=bel.X_pc.shape[1],
+                training=X_pc,
+                prediction=X_obs_pc[obs_n],
+                n_comp=X_pc.shape[1],
                 # annotation=["C"],
                 labels=labels,
                 fig_file=fig_file,
@@ -409,7 +418,7 @@ def pca_vision(
             try:
                 explained_variance(
                     bel.X_pre_processing["pca"],
-                    n_comp=bel.X_pc.shape[1],
+                    n_comp=X_pc.shape[1],
                     thr=0.8,
                     # annotation=["E"],
                     fig_file=fig_file,
@@ -418,9 +427,9 @@ def pca_vision(
             except AttributeError:
                 pass
 
-    if h:
+    if h.any():
+        h_pc_training = bel.Y_pre_processing.transform(h)
         # Transform and split
-        h_pc_training = bel.Y_pc
         try:
             Y_obs = check_array(Y_obs, allow_nd=True)
         except ValueError:
@@ -432,7 +441,7 @@ def pca_vision(
             pca_scores(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
-                n_comp=bel.Y_pc.shape[1],
+                n_comp=h_pc_training.shape[1],
                 # annotation=["D"],
                 labels=labels,
                 fig_file=fig_file,
@@ -444,7 +453,7 @@ def pca_vision(
             try:
                 explained_variance(
                     bel.Y_pre_processing["pca"],
-                    n_comp=bel.Y_pc.shape[1],
+                    n_comp=h_pc_training.shape[1],
                     thr=0.8,
                     # annotation=["F"],
                     fig_file=fig_file,
@@ -622,6 +631,7 @@ def _get_defaults_kde_plot():
 def _kde_cca(
     bel,
     obs_n: int = 0,
+    X_obs: np.array=None,
     Y_obs: np.array = None,
     sdir: str = None,
     show: bool = False,
@@ -638,7 +648,8 @@ def _kde_cca(
         except AttributeError:
             Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
 
-    # Transform Y obs
+    # Transform X obs, Y obs
+    bel.X_obs_f = bel.transform(X=X_obs)
     bel.Y_obs_f = bel.transform(Y=Y_obs)
 
     for comp_n in range(bel.cca.n_components):
@@ -677,13 +688,13 @@ def _kde_cca(
             cb = plt.colorbar(cf, ax=[ax_cb], location="left")
             cb.ax.set_title("$KDE$", fontsize=10)
 
-        # try:
-        #     reg = bel.kde_functions[obs_n][comp_n]["function"]  # check this line
-        #     check_is_fitted(reg)
-        #     reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-        #     ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
-        # except Exception:
-        #     pass
+        try:
+            reg = bel.kde_functions[obs_n][comp_n]["function"]  # check this line
+            check_is_fitted(reg)
+            reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
+            ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
+        except Exception:
+            pass
         # Vertical line
         ax_joint.axvline(
             x=bel.X_obs_f[obs_n].T[comp_n],
@@ -803,7 +814,7 @@ def _kde_cca(
         plt.close()
 
 
-def cca_vision(bel, Y_obs: np.array, fig_dir: str = None, show: bool = False):
+def cca_vision(bel, X_obs: np.array, Y_obs: np.array, fig_dir: str = None, show: bool = False):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
@@ -814,7 +825,7 @@ def cca_vision(bel, Y_obs: np.array, fig_dir: str = None, show: bool = False):
     if fig_dir is None:
         fig_dir = ""
     # CCA coefficient plot
-    cca_coefficient = np.corrcoef(bel.X_c.T, bel.Y_c.T).diagonal(
+    cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
     plt.plot(cca_coefficient, "lightblue", zorder=1)
@@ -852,4 +863,4 @@ def cca_vision(bel, Y_obs: np.array, fig_dir: str = None, show: bool = False):
     plt.close()
 
     # KDE plots which consume a lot of time.
-    _kde_cca(bel, Y_obs=Y_obs, sdir=fig_dir, show=show)
+    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, sdir=fig_dir, show=show)

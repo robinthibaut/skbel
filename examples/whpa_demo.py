@@ -132,4 +132,4 @@ if __name__ == "__main__":
     )
 
     # Plot CCA
-    cca_vision(bel=model, Y_obs=y_test, fig_dir=fig_cca_dir)
+    cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
