@@ -118,8 +118,8 @@ class KDE:
             "algorithm": "auto",
             "kernel": self.kernel_type,
             "metric": "euclidean",
-            "atol": 1e-4,
-            "rtol": 1e-4,
+            "atol": 0,
+            "rtol": 0,
             "breadth_first": True,
             "leaf_size": 40,
             "metric_params": None,
@@ -136,7 +136,7 @@ class KDE:
             # The scores for each parameter combination will be combined for all the folds and averaged.
             # Highest performing parameter combination will be selected.
 
-            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 100)})
+            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)})
             grid.fit(fit_data)
             self.bw = grid.best_params_["bandwidth"]
             fit_kws["bandwidth"] = self.bw

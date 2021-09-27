@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # %% Set directories
     data_dir = jp(os.getcwd(), "dataset")
     # Directory in which to unload forecasts
-    sub_dir = jp(os.getcwd(), "results")
+    sub_dir = jp(os.getcwd(), "results_dev")
 
     # Folders
     obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (100, 87)  # 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
-    model.n_posts = 10
+    model.n_posts = 400
 
     # %% Train the model
     # Fit BEL model
@@ -120,9 +120,9 @@ if __name__ == "__main__":
     # %% Visualization
 
     # Plot raw data
-    # myvis.plot_results(
-    #     model, y_predicted=y_predicted, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
-    # )
+    myvis.plot_results(
+        model, y_predicted=y_predicted, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
+    )
 
     # # Plot PCA
     # pca_vision(
@@ -132,4 +132,4 @@ if __name__ == "__main__":
     # )
     #
     # # Plot CCA
-    # cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
+    cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
