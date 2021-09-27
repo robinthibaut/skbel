@@ -391,7 +391,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if self.mode == "kde":
             n_obs = X_obs_f.shape[0]
-            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))  #
+            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))
             # Parses the functions dict
             for i, fun_per_comp in enumerate(self.kde_functions):
                 for j, fun in enumerate(fun_per_comp):

@@ -375,7 +375,7 @@ def _normalize_distribution(post: np.array, support: np.array):
     """
     a = integrate.simps(y=np.abs(post), x=support)
 
-    if np.abs(a - 1) > 1e-4 and a > 0:  # Rule of thumb
+    if np.abs(a - 1) > 1e-4:  # Rule of thumb
         try:
             post *= 1 / a
         except RuntimeWarning:  # Division by zero
@@ -597,7 +597,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
             return 1.0
         else:
             return integrate.quad(
-                pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-3, limit=50
+                pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-3, limit=200
             )[0]
 
     def cdf_vector(x):
