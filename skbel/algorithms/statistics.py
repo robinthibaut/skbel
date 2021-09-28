@@ -6,6 +6,7 @@ import pandas as pd
 import warnings
 from numpy.random import uniform
 from scipy import integrate, ndimage, interpolate
+from sklearn import preprocessing
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
 from sklearn.model_selection import GridSearchCV
@@ -34,7 +35,7 @@ class KDE:
         kernel_type: str = None,
         bandwidth: float = None,
         grid_search: bool = True,
-        gridsize: int = 100,
+        gridsize: int = 200,
         cut: float = 0.2,
         clip: list = None,
     ):
@@ -168,16 +169,11 @@ class KDE:
 
         kde = self._fit(X_train)
 
-        # xx1, xx2 = np.meshgrid(*support)
-        # grid1, grid2 = support
-        # X, Y = np.meshgrid(grid1, grid2[::-1])
         X, Y = np.meshgrid(*support)
-        # grid = np.vstack([Y.ravel(), X.ravel()]).T
         grid = np.vstack([X.ravel(), Y.ravel()]).T
 
         density = np.exp(kde.score_samples(grid))
         density = density.reshape(X.shape)
-        # density = kde.score_samples([xx1.ravel(), xx2.ravel()]).reshape(xx1.shape)
 
         return density, support
 
@@ -239,11 +235,6 @@ def _bivariate_density(
     # Estimate the density of observations at this level
     observations = observations["x"], observations["y"]
     density, support = estimator(*observations)
-
-    # # Transform the support grid back to the original scale
-    # xx, yy = support
-    #
-    # support = xx, yy
 
     return density, support, estimator.bw
 
@@ -373,15 +364,22 @@ def _normalize_distribution(post: np.array, support: np.array):
     :param support: Corresponding support
     :return:
     """
-    a = integrate.simps(y=np.abs(post), x=support)
+
+    post[np.abs(post) < 1e-8] = 0  # Rule of thumb
+    a = 1
+
+    if post.any():
+        min_max_scaler = preprocessing.MinMaxScaler()
+        post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
+        a = integrate.simps(y=post_minmax, x=support)
 
     if np.abs(a - 1) > 1e-4:  # Rule of thumb
         try:
-            post *= 1 / a
+            post_minmax *= 1 / a
         except RuntimeWarning:  # Division by zero
             pass
 
-    return post
+    return post_minmax
 
 
 def posterior_conditional(
