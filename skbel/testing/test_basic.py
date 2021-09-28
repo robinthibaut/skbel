@@ -125,4 +125,4 @@ def test_kde():
     y_samples_ref = np.load(jp(my_path, "y_samples_kde.npy"))
 
     msg1 = "The posterior samples are different"
-    np.testing.assert_allclose(y_samples, y_samples_ref, atol=0.9, err_msg=msg1)
+    np.testing.assert_allclose(y_samples, y_samples_ref, atol=2, err_msg=msg1)
