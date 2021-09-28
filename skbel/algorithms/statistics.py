@@ -356,30 +356,30 @@ def _conditional_distribution(
     return zi
 
 
-def _normalize_distribution(post: np.array, support: np.array):
+def _scale_distribution(post: np.array):
     """
-    When a cross-section is performed along a bivariate KDE, the integral might not = 1.
-    This function normalizes such functions so that their integral = 1.
     :param post: Values of the KDE cross-section
-    :param support: Corresponding support
     :return:
     """
 
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
-    a = 1
+    # a = 1
 
-    if post.any():
+    if post.any():  # Deals with the case where 'post' consists of an array filled with 0's
         min_max_scaler = preprocessing.MinMaxScaler()
         post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
-        a = integrate.simps(y=post_minmax, x=support)
+        # a = integrate.simps(y=post_minmax, x=support)
+        #
+        # if np.abs(a - 1) > 1e-4:  # Rule of thumb
+        #     try:
+        #         post_minmax *= 1 / a
+        #     except RuntimeWarning:  # Division by zero
+        #         pass
 
-    if np.abs(a - 1) > 1e-4:  # Rule of thumb
-        try:
-            post_minmax *= 1 / a
-        except RuntimeWarning:  # Division by zero
-            pass
+        return post_minmax
 
-    return post_minmax
+    else:
+        return post
 
 
 def posterior_conditional(
@@ -421,7 +421,7 @@ def posterior_conditional(
         warnings.warn(msg, UserWarning)
         return 0
 
-    post = _normalize_distribution(post, support)
+    post = _scale_distribution(post)
 
     return post, support
 
@@ -546,7 +546,10 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
 
     def pdf_normed(x):
         if lower_bd <= x <= upper_bd:
-            return pdf(x) / A
+            if np.allclose(A, 0):
+                return 0
+            else:
+                return pdf(x) / A
         else:
             return 0
 
@@ -595,7 +598,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
             return 1.0
         else:
             return integrate.quad(
-                pdf_norm, lower_bd, x, epsabs=1e-3, epsrel=1e-3, limit=200
+                pdf_norm, lower_bd, x, epsabs=1e-3, limit=200
             )[0]
 
     def cdf_vector(x):
@@ -636,19 +639,15 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
     guess. Any number for which the CDF is not extremely close to 0 or 1 should
     be acceptable. If the cdf(guess) is near 1 or 0, then its derivative is near 0,
     and so the numerical root finder will be very slow to converge.
-
-    This sampling technique is slow (~3 ms/sample for a unit normal with initial
-    guess of 0), since we re-integrate to get the CDF at every iteration of the
-    numerical root-finder. This is improved somewhat by using Chebyshev
-    approximations of the CDF, but the sampling rate is still prohibitively slow
-    for >100k samples.
-
     """
     seeds = uniform(0, 1, num_samples)
     cdf = get_cdf(pdf, lower_bd, upper_bd)
     cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
-    inverse_cdf = interpolate.interp1d(
-        cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
-    )
-    simple_samples = inverse_cdf(seeds)
+    if cdf_y.any():
+        inverse_cdf = interpolate.interp1d(
+            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+        )
+        simple_samples = inverse_cdf(seeds)
+    else:
+        simple_samples = np.zeros(num_samples)
     return simple_samples

@@ -207,7 +207,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.X_pre_processing["pca"].n_components_))
+            dummy = np.zeros((1, self.X_pre_processing["pca"].n_components))
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -339,7 +339,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             dens=dens,
                             support=support,
                         )
-                        hp[np.abs(hp) < 1e-12] = 0  # Set very small values to 0.
+                        hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                         kind = "pdf"
                         fun = interpolate.interp1d(sup, hp, kind="cubic")
                         # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
