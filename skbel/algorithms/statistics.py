@@ -36,7 +36,7 @@ class KDE:
         bandwidth: float = None,
         grid_search: bool = True,
         gridsize: int = 200,
-        cut: float = 0.2,
+        cut: float = 1,
         clip: list = None,
     ):
         """Initialize the estimator with its parameters.
@@ -119,7 +119,7 @@ class KDE:
             "algorithm": "auto",
             "kernel": self.kernel_type,
             "metric": "euclidean",
-            "atol": 0,
+            "atol": 1e-4,
             "rtol": 0,
             "breadth_first": True,
             "leaf_size": 40,
@@ -244,7 +244,7 @@ def kde_params(
     y: np.array = None,
     bw: float = None,
     gridsize: int = 200,
-    cut: float = 0.2,
+    cut: float = 1,
     clip=None,
 ):
     """
@@ -363,18 +363,12 @@ def _scale_distribution(post: np.array):
     """
 
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
-    # a = 1
 
-    if post.any():  # Deals with the case where 'post' consists of an array filled with 0's
+    if (
+        post.any()
+    ):  # Deals with the case where 'post' consists of an array filled with 0's
         min_max_scaler = preprocessing.MinMaxScaler()
         post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
-        # a = integrate.simps(y=post_minmax, x=support)
-        #
-        # if np.abs(a - 1) > 1e-4:  # Rule of thumb
-        #     try:
-        #         post_minmax *= 1 / a
-        #     except RuntimeWarning:  # Division by zero
-        #         pass
 
         return post_minmax
 
@@ -450,7 +444,7 @@ def mvn_inference(
     # Computation of the posterior mean in Canonical space
     y_mean = np.mean(Y, axis=0)  # (n_comp_CCA, 1)
     # Mean is 0, as expected.
-    y_mean = np.where(np.abs(y_mean) < 1e-12, 0, y_mean)
+    y_mean = np.where(np.abs(y_mean) < 1e-8, 0, y_mean)
 
     # Evaluate the covariance in h (in Canonical space)
     # Very close to the Identity matrix
@@ -467,7 +461,7 @@ def mvn_inference(
     # Computes the vector g that approximately solves the equation y @ g = x.
     g = np.linalg.lstsq(Y, X, rcond=None)[0].T
     # Replace values below threshold by 0.
-    g = np.where(np.abs(g) < 1e-12, 0, g)  # (n_comp_CCA, n_comp_CCA)
+    g = np.where(np.abs(g) < 1e-8, 0, g)  # (n_comp_CCA, n_comp_CCA)
 
     # Modeling error due to deviations from theory
     # (n_components_CCA, n_training)
@@ -597,9 +591,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
         elif x > upper_bd:
             return 1.0
         else:
-            return integrate.quad(
-                pdf_norm, lower_bd, x, epsabs=1e-3, limit=200
-            )[0]
+            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, limit=200)[0]
 
     def cdf_vector(x):
         try:

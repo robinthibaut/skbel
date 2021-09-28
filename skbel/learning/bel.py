@@ -283,7 +283,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
-                x_dim = self.X_pre_processing["pca"].n_components_
+                x_dim = self.X_pre_processing["pca"].n_components
                 noise = 0.01
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = np.eye(x_dim) * noise
@@ -331,6 +331,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     dens, support, bw = kde_params(
                         x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
                     )
+                    # Rule of thumb:
+                    dens[dens < 1e-8] = 0
                     functions = []
                     for n, dp in enumerate(X_obs_f):  # For each observation point
                         # Conditional:
