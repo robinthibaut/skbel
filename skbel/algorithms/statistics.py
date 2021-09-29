@@ -637,7 +637,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
     cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
     if cdf_y.any():
         inverse_cdf = interpolate.interp1d(
-            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+            cdf_y, pdf.x, kind="linear"
         )
         simple_samples = inverse_cdf(seeds)
     else:

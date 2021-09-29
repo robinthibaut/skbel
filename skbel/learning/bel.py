@@ -343,7 +343,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         )
                         hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                         kind = "pdf"
-                        fun = interpolate.interp1d(sup, hp, kind="cubic")
+                        fun = interpolate.interp1d(sup, hp, kind="linear")
                         # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                         sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
                         functions.append(sample_fun)

@@ -782,6 +782,7 @@ def _kde_cca(
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
         ax_joint.set_ylabel("$h^{c}$", fontsize=14)
+        ax_joint.grid(alpha=.5)
         plt.tick_params(labelsize=14)
 
         # Add custom artists
