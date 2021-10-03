@@ -659,6 +659,8 @@ def _kde_cca(
     bel.X_obs_f = bel.transform(X=X_obs)
     bel.Y_obs_f = bel.transform(Y=Y_obs)
 
+    samples = bel.random_sample(X_obs_f=bel.X_obs_f, n_posts=100)
+
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
@@ -728,6 +730,7 @@ def _kde_cca(
             markeredgewidth=0.2,
             alpha=0.9,
         )
+        ax_joint.plot(np.ones(samples.shape[1])*bel.X_obs_f[obs_n].T[comp_n], samples[obs_n].T[comp_n], "go", alpha=0.3)
         # Point
         ax_joint.plot(
             bel.X_obs_f[obs_n].T[comp_n],
@@ -778,6 +781,7 @@ def _kde_cca(
                 alpha=0.5,
                 label="$p(h^{c}|d^{c}_{*})_{KDE}$",
             )
+
         ax_marg_y.legend(fontsize=10)
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)

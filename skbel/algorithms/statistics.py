@@ -591,7 +591,7 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
         elif x > upper_bd:
             return 1.0
         else:
-            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, limit=200)[0]
+            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, limit=50*10)[0]
 
     def cdf_vector(x):
         try:

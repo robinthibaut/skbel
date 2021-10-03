@@ -715,7 +715,7 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
-        forecast_posterior = bel._random_sample(n_posts=Setup.HyperParameters.n_posts)
+        forecast_posterior = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
         forecast_posterior = bel.inverse_transform(forecast_posterior)
         forecast_posterior = forecast_posterior.reshape(
             (-1,) + (bel.Y_shape[1], bel.Y_shape[2])

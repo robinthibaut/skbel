@@ -207,7 +207,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         elif Y is not None and X is None:
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.X_pre_processing["pca"].n_components))
+            dummy = np.zeros((1, self.cca.x_rotations_.shape[1]))
             _, _yc = self.cca.transform(X=dummy, Y=_yt)
             _yp = self.Y_post_processing.transform(_yc)
 
@@ -239,13 +239,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-        self, X_obs: np.array, n_posts: int = None, mode: str = None
+        self, X_obs: np.array, n_posts: int = None, mode: str = None, return_samples: bool = True
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
         :param X_obs: The observed data
         :param n_posts: The number of posterior samples to draw
         :param mode: The mode of inference to use.
+        :param return_samples: Option to return samples or not. Default=True.
         :return: The posterior samples in the original space
         """
         if mode is not None:
@@ -352,11 +353,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.kde_functions[:, comp_n] = functions  # noqa
 
                 # return self.kde_functions
-        samples = self._random_sample(X_obs_f, n_posts, mode)
+        if return_samples:
+            samples = self.random_sample(X_obs_f, n_posts, mode)
+            return self.inverse_transform(samples)
 
-        return self.inverse_transform(samples)
-
-    def _random_sample(
+    def random_sample(
         self, X_obs_f: np.array, n_posts: int = None, mode: str = None
     ) -> np.array:
         """
