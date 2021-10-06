@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.base import TransformerMixin, BaseEstimator, MultiOutputMixin
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
 """
@@ -34,7 +34,7 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         [check_is_fitted(p) for p in self.pca_objects]
         scores = [pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]
         if self.scale:
-            scaler = MinMaxScaler()
+            scaler = StandardScaler()
             scores = [scaler.fit_transform(s) for s in scores]
         return np.concatenate(scores, axis=1)
 
