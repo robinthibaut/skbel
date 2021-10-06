@@ -272,9 +272,6 @@ def kde_params(
 
     """
 
-    data = {"x": x, "y": y}
-    frame = pd.DataFrame(data=data)
-
     # Pack the kwargs for KDE
     estimate_kws = dict(
         bandwidth=bw,
@@ -284,11 +281,15 @@ def kde_params(
     )
 
     if y is None:
+        data = {"x": x}
+        frame = pd.DataFrame(data=data)
         density, support, bw = _univariate_density(
             data_variable=frame, estimate_kws=estimate_kws
         )
 
     else:
+        data = {"x": x, "y": y}
+        frame = pd.DataFrame(data=data)
         density, support, bw = _bivariate_density(
             data=frame,
             estimate_kws=estimate_kws,
@@ -637,7 +638,7 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
     cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
     if cdf_y.any():
         inverse_cdf = interpolate.interp1d(
-            cdf_y, pdf.x, kind="linear"
+            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
         )
         simple_samples = inverse_cdf(seeds)
     else:

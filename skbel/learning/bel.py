@@ -239,7 +239,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-        self, X_obs: np.array, n_posts: int = None, mode: str = None, return_samples: bool = True
+        self, X_obs: np.array, n_posts: int = None, mode: str = None, return_samples: bool = True, inverse_transform: bool = True
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -355,7 +355,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 # return self.kde_functions
         if return_samples:
             samples = self.random_sample(X_obs_f, n_posts, mode)
-            return self.inverse_transform(samples)
+            if inverse_transform:
+                return self.inverse_transform(samples)
+            else:
+                return samples
 
     def random_sample(
         self, X_obs_f: np.array, n_posts: int = None, mode: str = None

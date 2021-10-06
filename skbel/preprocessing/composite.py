@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.base import TransformerMixin, BaseEstimator, MultiOutputMixin
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.utils.validation import check_is_fitted
 
 """
@@ -15,11 +16,12 @@ __all__ = ["CompositePCA", "CompositeTransformer", "Dummy"]
 
 
 class CompositePCA(TransformerMixin, BaseEstimator):
-    def __init__(self, n_components: list):
+    def __init__(self, n_components: list, scale: bool = False):
         """Initiate the class by specifying a list of number of components to keep for each
         different datasets.
         """
         self.n_components = n_components
+        self.scale = scale
         self.pca_objects = [PCA(n_components=n) for n in self.n_components]
 
     def fit(self, Xc: list, yc=None, **fit_params):
@@ -31,6 +33,9 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         """Transforms all datasets and concatenates the output"""
         [check_is_fitted(p) for p in self.pca_objects]
         scores = [pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]
+        if self.scale:
+            scaler = MinMaxScaler()
+            scores = [scaler.fit_transform(s) for s in scores]
         return np.concatenate(scores, axis=1)
 
     def fit_transform(self, Xc: list, yc=None, **fit_params):
