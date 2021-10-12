@@ -329,6 +329,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     functions = [sample_fun] * n_obs
                 else:
                     # Compute KDE
+                    # TODO: For RS, save the pre-computed kernels somewhere and reload them.
                     dens, support, bw = kde_params(
                         x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
                     )

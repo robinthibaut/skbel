@@ -192,11 +192,10 @@ def _univariate_density(
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
 
-    all_data = data_variable.dropna()
+    sub_data = data_variable.dropna()
 
-    # Extract the data points from this sub set and remove nulls
-    sub_data = all_data.dropna()
-    observations = sub_data[data_variable]
+    # # Extract the data points from this sub set and remove nulls
+    observations = sub_data["x"].to_numpy()
 
     observation_variance = observations.var()
     if math.isclose(observation_variance, 0) or np.isnan(observation_variance):
