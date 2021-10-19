@@ -29,11 +29,11 @@ def flatten_array(arr: np.array) -> np.array:
     return arr_flat.reshape(1, -1)
 
 
-def data_read(file: str = None, start: int = 0, end: int = None):
+def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
     # end must be set to None and NOT -1
     """Reads space-separated dat file"""
     with open(file, "r") as fr:
-        lines = np.copy(fr.readlines())[start:end]
+        lines = np.copy(fr.readlines())[start:end:step]
         try:
             op = np.array(
                 [list(map(float, line.split())) for line in lines], dtype=object
