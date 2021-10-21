@@ -583,7 +583,7 @@ def get_cdf(pdf):
         else:
             d = np.abs(x - lower_bound)
             if d > 1e-4:
-                samples = np.linspace(lower_bound, x, 2**8+1)
+                samples = np.linspace(lower_bound, x, 2**7+1)
                 dx = np.abs(samples[1] - samples[0])
                 y = np.array([pdf_norm(s) for s in samples])
                 return integrate.romb(y, dx)
@@ -635,10 +635,10 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, k: int = No
     cdf = get_cdf(pdf)
     cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
     if cdf_y.any():
-        inverse_cdf = interpolate.interp1d(
-            cdf_y, pdf.x, kind="linear", fill_value="extrapolate"
+        simple_samples = np.interp(
+            x=seeds, xp=cdf_y, fp=pdf.x
         )
-        simple_samples = inverse_cdf(seeds)
+        # simple_samples = inverse_cdf(seeds)
     else:
         simple_samples = np.zeros(num_samples)
     return simple_samples
