@@ -359,7 +359,12 @@ def _conditional_distribution(
     # Extract the values along the line, using cubic interpolation
     zi = ndimage.map_coordinates(kde_array, np.vstack((row, col)))
 
-    return zi
+    if x is not None:
+        line = np.linspace(min(y_array), max(y_array), k)
+    elif y is not None:
+        line = np.linspace(min(x_array), max(x_array), k)
+
+    return zi, line
 
 
 def _scale_distribution(post: np.array):
@@ -406,7 +411,7 @@ def posterior_conditional(
         # Extract the density values along the line, using cubic interpolation
         if type(X_obs) is list or type(X_obs) is tuple:
             X_obs = X_obs[0]
-        post = _conditional_distribution(
+        post, line = _conditional_distribution(
             x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
     elif Y_obs is not None:
@@ -414,7 +419,7 @@ def posterior_conditional(
         # Extract the density values along the line, using cubic interpolation
         if type(Y_obs) is list or tuple:
             Y_obs = X_obs[0]
-        post = _conditional_distribution(
+        post, line = _conditional_distribution(
             y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
 
@@ -425,7 +430,7 @@ def posterior_conditional(
 
     post = _scale_distribution(post)
 
-    return post, support
+    return post, line
 
 
 def mvn_inference(
@@ -534,7 +539,7 @@ def normalize(pdf):
 
     dx = np.abs(pdf.x[1] - pdf.x[0])
     quadrature = integrate.romb(pdf.y, dx)
-    A = quadrature[0]
+    A = quadrature
 
     def pdf_normed(x):
         b = pdf(x)
@@ -566,15 +571,28 @@ def get_cdf(pdf):
 
     """
     pdf_norm = normalize(pdf)
-    dx = np.abs(pdf.x[1] - pdf.x[0])
+    lower_bound = np.min(pdf.x)
+    upper_bound = np.max(pdf.x)
 
     def cdf_number(x):
         """Numerical cdf"""
-        return integrate.romb(pdf_norm(x), dx)[0]
+        if x <= lower_bound:
+            return 0
+        elif x >= upper_bound:
+            return 1
+        else:
+            d = np.abs(x - lower_bound)
+            if d > 1e-4:
+                samples = np.linspace(lower_bound, x, 2**8+1)
+                dx = np.abs(samples[1] - samples[0])
+                y = np.array([pdf_norm(s) for s in samples])
+                return integrate.romb(y, dx)
+            else:
+                return 0
 
     def cdf_vector(x):
         try:
-            return np.array([cdf_number(xi) for xi in pdf.x])
+            return np.array([cdf_number(xi) for xi in x])
         except AttributeError:
             return cdf_number(x)
 
