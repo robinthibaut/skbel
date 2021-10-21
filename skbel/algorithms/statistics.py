@@ -268,7 +268,6 @@ def kde_params(
         The estimated probability density function evaluated at the support.
     support : ndarray
         The support of the density function, the x-axis of the KDE.
-
     """
 
     # Pack the kwargs for KDE
@@ -297,14 +296,20 @@ def kde_params(
     return density, support, bw
 
 
-def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
+def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None):
     """
     Gets the pixel coordinate of the value x or y, in order to get posterior conditional probability given a KDE.
     :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
     :param x_1d: List of x coordinates along the axis
     :param y_1d: List of y coordinates along the axis
+    :param k: Used to set number of rows/columns
     :return:
     """
+    if k is None:
+        num = 200
+    else:
+        num = k
+
     # https://stackoverflow.com/questions/18920614/plot-cross-section-through-heat-map
     # Convert the line to pixel/index coordinates
     x_world, y_world = np.array(list(zip(*line)))
@@ -312,7 +317,6 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array):
     row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
 
     # Interpolate the line at "num" points...
-    num = 200
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
 
     return row, col
@@ -324,16 +328,18 @@ def _conditional_distribution(
     y_array: np.array,
     x: float = None,
     y: float = None,
+    k: int = None
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
     Provide only one observation ! Either x or y.
     Perform a cross-section in the KDE along the y axis.
-    :param x: Observed data (horizontal axis)
-    :param y: Observed data (vertical axis)
     :param kde_array: KDE of the prediction
     :param x_array: X grid (1D)
     :param y_array: Y grid (1D)
+    :param x: Observed data (horizontal axis)
+    :param y: Observed data (vertical axis)
+    :param k: Used to set number of rows/columns
     :return:
     """
 
@@ -348,7 +354,7 @@ def _conditional_distribution(
         return 0
 
     # Convert line to row/column
-    row, col = _pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array)
+    row, col = _pixel_coordinate(line=line, x_1d=x_array, y_1d=y_array, k=k)
 
     # Extract the values along the line, using cubic interpolation
     zi = ndimage.map_coordinates(kde_array, np.vstack((row, col)))
@@ -381,6 +387,7 @@ def posterior_conditional(
     Y_obs: float = None,
     dens: np.array = None,
     support: np.array = None,
+    k: int = None
 ) -> (np.array, np.array):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
@@ -388,6 +395,7 @@ def posterior_conditional(
     :param Y_obs: Observation (target, y-axis)
     :param dens: The density values of the KDE of (X, Y).
     :param support: The support grid of the KDE of (X, Y).
+    :param k: Used to set number of rows/columns
     :return:
     """
     # Grid parameters
@@ -399,7 +407,7 @@ def posterior_conditional(
         if type(X_obs) is list or type(X_obs) is tuple:
             X_obs = X_obs[0]
         post = _conditional_distribution(
-            x=X_obs, x_array=xg, y_array=yg, kde_array=dens
+            x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
     elif Y_obs is not None:
         support = xg
@@ -407,7 +415,7 @@ def posterior_conditional(
         if type(Y_obs) is list or tuple:
             Y_obs = X_obs[0]
         post = _conditional_distribution(
-            y=Y_obs, x_array=xg, y_array=yg, kde_array=dens
+            y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
 
     else:
@@ -508,7 +516,7 @@ def _convergent(quadrature):
         return True
 
 
-def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
+def normalize(pdf):
     """Normalize a non-normalized PDF.
 
     Parameters
@@ -516,14 +524,6 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
     pdf : function, float -> float
         The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
-    lower_bd : float
-        Lower bound of the support of the pdf. This parameter allows one to
-        manually establish cutoffs for the density.
-    upper_bd : float
-        Upper bound of the support of the pdf.
-    vectorize: boolean
-        Vectorize the function. This slows down function calls, and so is
-        generally set to False.
 
     Returns
     -------
@@ -531,36 +531,24 @@ def normalize(pdf, lower_bd=-np.inf, upper_bd=np.inf, vectorize=False):
         Function with same signature as pdf, but normalized so that the integral
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
-    if lower_bd >= upper_bd:
-        raise ValueError("Lower bound must be less than upper bound.")
-    quadrature = integrate.quad(pdf, lower_bd, upper_bd, full_output=1)
-    if not _convergent(quadrature):
-        raise ValueError("PDF integral likely divergent.")
+
+    dx = np.abs(pdf.x[1] - pdf.x[0])
+    quadrature = integrate.romb(pdf.y, dx)
     A = quadrature[0]
 
     def pdf_normed(x):
-        if lower_bd <= x <= upper_bd:
-            if np.allclose(A, 0):
-                return 0
-            else:
-                return pdf(x) / A
-        else:
+        b = pdf(x)
+        if A < 1e-3:  # Rule of thumb
             return 0
+        if b / A < 1e-3:
+            return 0
+        else:
+            return b / A
 
-    if vectorize:
-
-        def pdf_vectorized(x):
-            try:
-                return pdf_normed(x)
-            except ValueError:
-                return np.array([pdf_normed(xi) for xi in x])
-
-        return pdf_vectorized
-    else:
-        return pdf_normed
+    return pdf_normed
 
 
-def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
+def get_cdf(pdf):
     """Generate a CDF from a (possibly not normalized) pdf.
 
     Parameters
@@ -568,11 +556,6 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
     pdf : function, float -> float
         The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
-    lower_bd : float
-        Lower bound of the support of the pdf. This parameter allows one to
-        manually establish cutoffs for the density.
-    upper_bd : float
-        Upper bound of the support of the pdf.
 
     Returns
     -------
@@ -582,27 +565,23 @@ def get_cdf(pdf, lower_bd=-np.inf, upper_bd=np.inf):
         return a numpy array if provided with an iterable.
 
     """
-    pdf_norm = normalize(pdf, lower_bd, upper_bd)
+    pdf_norm = normalize(pdf)
+    dx = np.abs(pdf.x[1] - pdf.x[0])
 
     def cdf_number(x):
         """Numerical cdf"""
-        if x < lower_bd:
-            return 0.0
-        elif x > upper_bd:
-            return 1.0
-        else:
-            return integrate.quad(pdf_norm, lower_bd, x, epsabs=1e-3, limit=50*10)[0]
+        return integrate.romb(pdf_norm(x), dx)[0]
 
     def cdf_vector(x):
         try:
-            return np.array([cdf_number(xi) for xi in x])
+            return np.array([cdf_number(xi) for xi in pdf.x])
         except AttributeError:
             return cdf_number(x)
 
     return cdf_vector
 
 
-def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
+def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, k: int = None):
     """Sample from an arbitrary, unnormalized PDF.
     Copyright (c) 2017 Peter Wills
 
@@ -632,9 +611,11 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf):
     be acceptable. If the cdf(guess) is near 1 or 0, then its derivative is near 0,
     and so the numerical root finder will be very slow to converge.
     """
+    if k is None:
+        k = 200
     seeds = uniform(0, 1, num_samples)
-    cdf = get_cdf(pdf, lower_bd, upper_bd)
-    cdf_y = cdf(np.linspace(lower_bd, upper_bd, 200))
+    cdf = get_cdf(pdf)
+    cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
     if cdf_y.any():
         inverse_cdf = interpolate.interp1d(
             cdf_y, pdf.x, kind="linear", fill_value="extrapolate"

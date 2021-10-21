@@ -352,6 +352,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 X_obs=dp.T[comp_n],
                                 dens=dens,
                                 support=support,
+                                k=2**6+1
                             )
                             hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                             kind = "pdf"
@@ -418,6 +419,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             num_samples=self.n_posts,
                             lower_bd=pdf.x.min(),
                             upper_bd=pdf.x.max(),
+                            k=2**7+1
                         )
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]
