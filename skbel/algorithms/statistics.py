@@ -6,6 +6,7 @@ import pandas as pd
 import warnings
 from numpy.random import uniform
 from scipy import integrate, ndimage, interpolate
+from numba import jit, njit
 from sklearn import preprocessing
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
@@ -22,6 +23,56 @@ __all__ = [
 ]
 
 
+def tupleset(t, i, value):
+    l = list(t)
+    l[i] = value
+    return tuple(l)
+
+
+def numba_romb(y, dx=1.0):
+    """
+    Romberg integration using samples of a function.
+    Parameters
+    ----------
+    y : array_like
+        A vector of ``2**k + 1`` equally-spaced samples of a function.
+    dx : float, optional
+        The sample spacing. Default is 1.
+    """
+    y = np.asarray(y)
+    nd = len(y.shape)
+    axis = -1
+    Nsamps = y.shape[axis]
+    Ninterv = Nsamps-1
+    n = 1
+    k = 0
+    while n < Ninterv:
+        n <<= 1
+        k += 1
+    if n != Ninterv:
+        raise ValueError("Number of samples must be one plus a "
+                         "non-negative power of 2.")
+
+    R = {}
+    slice_all = (slice(None),) * nd
+    slice0 = tupleset(slice_all, axis, 0)
+    slicem1 = tupleset(slice_all, axis, -1)
+    h = Ninterv * np.asarray(dx, dtype=float)
+    R[(0, 0)] = (y[slice0] + y[slicem1])/2.0*h
+    slice_R = slice_all
+    start = stop = step = Ninterv
+    for i in range(1, k+1):
+        start >>= 1
+        slice_R = tupleset(slice_R, axis, slice(start, stop, step))
+        step >>= 1
+        R[(i, 0)] = 0.5*(R[(i-1, 0)] + h*y[slice_R].sum(axis=axis))
+        for j in range(1, i+1):
+            prev = R[(i, j-1)]
+            R[(i, j)] = prev + (prev-R[(i-1, j-1)]) / ((1 << (2*j))-1)
+        h /= 2.0
+    return R[(k, k)]
+
+
 class KDE:
     """
     Bivariate kernel density estimator.
@@ -30,14 +81,14 @@ class KDE:
     """
 
     def __init__(
-        self,
-        *,
-        kernel_type: str = None,
-        bandwidth: float = None,
-        grid_search: bool = True,
-        gridsize: int = 200,
-        cut: float = 1,
-        clip: list = None,
+            self,
+            *,
+            kernel_type: str = None,
+            bandwidth: float = None,
+            grid_search: bool = True,
+            gridsize: int = 200,
+            cut: float = 1,
+            clip: list = None,
     ):
         """Initialize the estimator with its parameters.
 
@@ -69,7 +120,7 @@ class KDE:
 
     @staticmethod
     def _define_support_grid(
-        x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
+            x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
@@ -95,10 +146,10 @@ class KDE:
         return grid1, grid2
 
     def define_support(
-        self,
-        x1: np.array,
-        x2: np.array = None,
-        cache: bool = True,
+            self,
+            x1: np.array,
+            x2: np.array = None,
+            cache: bool = True,
     ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
@@ -186,8 +237,8 @@ class KDE:
 
 
 def _univariate_density(
-    data_variable: pd.DataFrame,
-    estimate_kws: dict,
+        data_variable: pd.DataFrame,
+        estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -209,8 +260,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-    data: pd.DataFrame,
-    estimate_kws: dict,
+        data: pd.DataFrame,
+        estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -239,12 +290,12 @@ def _bivariate_density(
 
 
 def kde_params(
-    x: np.array = None,
-    y: np.array = None,
-    bw: float = None,
-    gridsize: int = 200,
-    cut: float = 1,
-    clip=None,
+        x: np.array = None,
+        y: np.array = None,
+        bw: float = None,
+        gridsize: int = 200,
+        cut: float = 1,
+        clip=None,
 ):
     """
     Computes the kernel density estimate (KDE) of one or two data sets.
@@ -323,12 +374,12 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None)
 
 
 def _conditional_distribution(
-    kde_array: np.array,
-    x_array: np.array,
-    y_array: np.array,
-    x: float = None,
-    y: float = None,
-    k: int = None
+        kde_array: np.array,
+        x_array: np.array,
+        y_array: np.array,
+        x: float = None,
+        y: float = None,
+        k: int = None
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -376,7 +427,7 @@ def _scale_distribution(post: np.array):
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
 
     if (
-        post.any()
+            post.any()
     ):  # Deals with the case where 'post' consists of an array filled with 0's
         min_max_scaler = preprocessing.MinMaxScaler()
         post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
@@ -388,11 +439,11 @@ def _scale_distribution(post: np.array):
 
 
 def posterior_conditional(
-    X_obs: float = None,
-    Y_obs: float = None,
-    dens: np.array = None,
-    support: np.array = None,
-    k: int = None
+        X_obs: float = None,
+        Y_obs: float = None,
+        dens: np.array = None,
+        support: np.array = None,
+        k: int = None
 ) -> (np.array, np.array):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
@@ -434,7 +485,7 @@ def posterior_conditional(
 
 
 def mvn_inference(
-    X: np.array, Y: np.array, X_obs: np.array, **kwargs
+        X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
     """
     Estimating posterior mean and covariance of the target.
@@ -481,7 +532,7 @@ def mvn_inference(
     x_ls_predicted = np.matmul(Y, g.T)
     x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
     x_modeling_error = (
-        X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
+            X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
     )
     # (n_comp_CCA, n_training)
 
@@ -507,7 +558,7 @@ def mvn_inference(
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (
-        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
+            d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
     )  # (n_comp_CCA,)
 
     return y_posterior_mean, y_posterior_covariance
@@ -538,7 +589,7 @@ def normalize(pdf):
     """
 
     dx = np.abs(pdf.x[1] - pdf.x[0])
-    quadrature = integrate.romb(pdf.y, dx)
+    quadrature = numba_romb(pdf.y, dx)
     A = quadrature
 
     def pdf_normed(x):
@@ -582,11 +633,11 @@ def get_cdf(pdf):
             return 1
         else:
             d = np.abs(x - lower_bound)
-            if d > 1e-4:
-                samples = np.linspace(lower_bound, x, 2**7+1)
+            if d > 1e-4:  # Check that spacing isn't too small
+                samples = np.linspace(lower_bound, x, 2 ** 7 + 1)
                 dx = np.abs(samples[1] - samples[0])
                 y = np.array([pdf_norm(s) for s in samples])
-                return integrate.romb(y, dx)
+                return numba_romb(y, dx)
             else:
                 return 0
 
@@ -638,7 +689,6 @@ def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, k: int = No
         simple_samples = np.interp(
             x=seeds, xp=cdf_y, fp=pdf.x
         )
-        # simple_samples = inverse_cdf(seeds)
     else:
         simple_samples = np.zeros(num_samples)
     return simple_samples
