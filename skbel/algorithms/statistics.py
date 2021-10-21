@@ -542,7 +542,7 @@ def normalize(pdf):
     A = quadrature
 
     def pdf_normed(x):
-        b = pdf(x)
+        b = np.interp(x=x, xp=pdf.x, fp=pdf.y)
         if A < 1e-3:  # Rule of thumb
             return 0
         if b / A < 1e-3:
