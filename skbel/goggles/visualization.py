@@ -730,7 +730,12 @@ def _kde_cca(
             markeredgewidth=0.2,
             alpha=0.9,
         )
-        ax_joint.plot(np.ones(samples.shape[1])*bel.X_obs_f[obs_n].T[comp_n], samples[obs_n].T[comp_n], "go", alpha=0.3)
+        ax_joint.plot(
+            np.ones(samples.shape[1]) * bel.X_obs_f[obs_n].T[comp_n],
+            samples[obs_n].T[comp_n],
+            "go",
+            alpha=0.3,
+        )
         # Point
         ax_joint.plot(
             bel.X_obs_f[obs_n].T[comp_n],
@@ -786,7 +791,7 @@ def _kde_cca(
         # Labels
         ax_joint.set_xlabel("$d^{c}$", fontsize=14)
         ax_joint.set_ylabel("$h^{c}$", fontsize=14)
-        ax_joint.grid(alpha=.5)
+        ax_joint.grid(alpha=0.5)
         plt.tick_params(labelsize=14)
 
         # Add custom artists

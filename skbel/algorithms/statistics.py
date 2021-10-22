@@ -5,8 +5,7 @@ import numpy as np
 import pandas as pd
 import warnings
 from numpy.random import uniform
-from scipy import integrate, ndimage, interpolate
-from numba import jit, njit
+from scipy import ndimage
 from sklearn import preprocessing
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
@@ -29,7 +28,7 @@ def tupleset(t, i, value):
     return tuple(l)
 
 
-def numba_romb(y, dx=1.0):
+def romb(y, dx=1.0):
     """
     Romberg integration using samples of a function.
     Parameters
@@ -43,32 +42,33 @@ def numba_romb(y, dx=1.0):
     nd = len(y.shape)
     axis = -1
     Nsamps = y.shape[axis]
-    Ninterv = Nsamps-1
+    Ninterv = Nsamps - 1
     n = 1
     k = 0
     while n < Ninterv:
         n <<= 1
         k += 1
     if n != Ninterv:
-        raise ValueError("Number of samples must be one plus a "
-                         "non-negative power of 2.")
+        raise ValueError(
+            "Number of samples must be one plus a " "non-negative power of 2."
+        )
 
     R = {}
     slice_all = (slice(None),) * nd
     slice0 = tupleset(slice_all, axis, 0)
     slicem1 = tupleset(slice_all, axis, -1)
     h = Ninterv * np.asarray(dx, dtype=float)
-    R[(0, 0)] = (y[slice0] + y[slicem1])/2.0*h
+    R[(0, 0)] = (y[slice0] + y[slicem1]) / 2.0 * h
     slice_R = slice_all
     start = stop = step = Ninterv
-    for i in range(1, k+1):
+    for i in range(1, k + 1):
         start >>= 1
         slice_R = tupleset(slice_R, axis, slice(start, stop, step))
         step >>= 1
-        R[(i, 0)] = 0.5*(R[(i-1, 0)] + h*y[slice_R].sum(axis=axis))
-        for j in range(1, i+1):
-            prev = R[(i, j-1)]
-            R[(i, j)] = prev + (prev-R[(i-1, j-1)]) / ((1 << (2*j))-1)
+        R[(i, 0)] = 0.5 * (R[(i - 1, 0)] + h * y[slice_R].sum(axis=axis))
+        for j in range(1, i + 1):
+            prev = R[(i, j - 1)]
+            R[(i, j)] = prev + (prev - R[(i - 1, j - 1)]) / ((1 << (2 * j)) - 1)
         h /= 2.0
     return R[(k, k)]
 
@@ -81,14 +81,14 @@ class KDE:
     """
 
     def __init__(
-            self,
-            *,
-            kernel_type: str = None,
-            bandwidth: float = None,
-            grid_search: bool = True,
-            gridsize: int = 200,
-            cut: float = 1,
-            clip: list = None,
+        self,
+        *,
+        kernel_type: str = None,
+        bandwidth: float = None,
+        grid_search: bool = True,
+        gridsize: int = 200,
+        cut: float = 1,
+        clip: list = None,
     ):
         """Initialize the estimator with its parameters.
 
@@ -120,7 +120,7 @@ class KDE:
 
     @staticmethod
     def _define_support_grid(
-            x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
+        x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x."""
         clip_lo = -np.inf if clip[0] is None else clip[0]
@@ -146,10 +146,10 @@ class KDE:
         return grid1, grid2
 
     def define_support(
-            self,
-            x1: np.array,
-            x2: np.array = None,
-            cache: bool = True,
+        self,
+        x1: np.array,
+        x2: np.array = None,
+        cache: bool = True,
     ):
         """Create the evaluation grid for a given data set."""
         if x2 is None:
@@ -237,8 +237,8 @@ class KDE:
 
 
 def _univariate_density(
-        data_variable: pd.DataFrame,
-        estimate_kws: dict,
+    data_variable: pd.DataFrame,
+    estimate_kws: dict,
 ):
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -260,8 +260,8 @@ def _univariate_density(
 
 
 def _bivariate_density(
-        data: pd.DataFrame,
-        estimate_kws: dict,
+    data: pd.DataFrame,
+    estimate_kws: dict,
 ):
     """
     Estimate bivariate KDE
@@ -290,12 +290,12 @@ def _bivariate_density(
 
 
 def kde_params(
-        x: np.array = None,
-        y: np.array = None,
-        bw: float = None,
-        gridsize: int = 200,
-        cut: float = 1,
-        clip=None,
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    gridsize: int = 200,
+    cut: float = 1,
+    clip=None,
 ):
     """
     Computes the kernel density estimate (KDE) of one or two data sets.
@@ -374,12 +374,12 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None)
 
 
 def _conditional_distribution(
-        kde_array: np.array,
-        x_array: np.array,
-        y_array: np.array,
-        x: float = None,
-        y: float = None,
-        k: int = None
+    kde_array: np.array,
+    x_array: np.array,
+    y_array: np.array,
+    x: float = None,
+    y: float = None,
+    k: int = None,
 ):
     """
     Compute the conditional posterior distribution p(x_array|y_array) given x or y.
@@ -427,7 +427,7 @@ def _scale_distribution(post: np.array):
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
 
     if (
-            post.any()
+        post.any()
     ):  # Deals with the case where 'post' consists of an array filled with 0's
         min_max_scaler = preprocessing.MinMaxScaler()
         post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
@@ -439,11 +439,11 @@ def _scale_distribution(post: np.array):
 
 
 def posterior_conditional(
-        X_obs: float = None,
-        Y_obs: float = None,
-        dens: np.array = None,
-        support: np.array = None,
-        k: int = None
+    X_obs: float = None,
+    Y_obs: float = None,
+    dens: np.array = None,
+    support: np.array = None,
+    k: int = None,
 ) -> (np.array, np.array):
     """
     Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
@@ -485,7 +485,7 @@ def posterior_conditional(
 
 
 def mvn_inference(
-        X: np.array, Y: np.array, X_obs: np.array, **kwargs
+    X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
     """
     Estimating posterior mean and covariance of the target.
@@ -532,7 +532,7 @@ def mvn_inference(
     x_ls_predicted = np.matmul(Y, g.T)
     x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
     x_modeling_error = (
-            X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
+        X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
     )
     # (n_comp_CCA, n_training)
 
@@ -558,18 +558,10 @@ def mvn_inference(
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (
-            d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
+        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
     )  # (n_comp_CCA,)
 
     return y_posterior_mean, y_posterior_covariance
-
-
-def _convergent(quadrature):
-    msg = "The integral is probably divergent, or slowly convergent."
-    if len(quadrature) > 3 and quadrature[3] == msg:
-        return False
-    else:
-        return True
 
 
 def normalize(pdf):
@@ -589,7 +581,7 @@ def normalize(pdf):
     """
 
     dx = np.abs(pdf.x[1] - pdf.x[0])
-    quadrature = numba_romb(pdf.y, dx)
+    quadrature = romb(pdf.y, dx)
     A = quadrature
 
     def pdf_normed(x):
@@ -637,7 +629,7 @@ def get_cdf(pdf):
                 samples = np.linspace(lower_bound, x, 2 ** 7 + 1)
                 dx = np.abs(samples[1] - samples[0])
                 y = np.array([pdf_norm(s) for s in samples])
-                return numba_romb(y, dx)
+                return romb(y, dx)
             else:
                 return 0
 
@@ -650,45 +642,41 @@ def get_cdf(pdf):
     return cdf_vector
 
 
-def it_sampling(pdf, num_samples, lower_bd=-np.inf, upper_bd=np.inf, k: int = None):
+def it_sampling(
+    pdf,
+    num_samples,
+    lower_bd=-np.inf,
+    upper_bd=np.inf,
+    k: int = None,
+    cdf_y: np.array = None,
+    return_cdf: bool = False,
+):
     """Sample from an arbitrary, unnormalized PDF.
-    Copyright (c) 2017 Peter Wills
-
-    Parameters
-    ----------
-    pdf : function, float -> float
-        The probability density function (not necessarily normalized). Must take
-        floats or ints as input, and return floats as an output.
-    num_samples : int
-        The number of samples to be generated.
-    lower_bd : float
-        Lower bound of the support of the pdf. This parameter allows one to
-        manually establish cutoffs for the density.
-    upper_bd : float
-        Upper bound of the support of the pdf.
-
-    Returns
-    -------
-    samples : numpy array
-        An array of samples from the provided PDF, with support between lower_bd
-        and upper_bd.
-
-    Notes
-    -----
-    For a unimodal distribution, the mode is a good choice for the parameter
-    guess. Any number for which the CDF is not extremely close to 0 or 1 should
-    be acceptable. If the cdf(guess) is near 1 or 0, then its derivative is near 0,
-    and so the numerical root finder will be very slow to converge.
+    :param pdf : function, float -> float The probability density
+    function (not necessarily normalized). Must take floats or ints as input, and return floats as an output.
+    :param num_samples : The number of samples to be generated.
+    :param lower_bd : Lower bound of the support of the pdf.
+    This parameter allows one to manually establish cutoffs for the density.
+    :param upper_bd : Upper bound of the support of the pdf.
+    :param k : Step number between lower_bd and upper_bd
+    :param cdf_y: precomputed values of the CDF
+    :param return_cdf: Option to return the computed CDF values
+    :return: samples : An array of samples from the provided PDF, with support between lower_bd and upper_bd.
     """
     if k is None:
         k = 200
-    seeds = uniform(0, 1, num_samples)
-    cdf = get_cdf(pdf)
-    cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
+
+    if cdf_y is None:
+        cdf = get_cdf(pdf)
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
+
     if cdf_y.any():
-        simple_samples = np.interp(
-            x=seeds, xp=cdf_y, fp=pdf.x
-        )
+        seeds = uniform(0, 1, num_samples)
+        simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)
     else:
         simple_samples = np.zeros(num_samples)
-    return simple_samples
+
+    if return_cdf:
+        return cdf_y
+    else:
+        return simple_samples

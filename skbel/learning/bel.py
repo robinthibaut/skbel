@@ -240,12 +240,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-        self, X_obs: np.array,
-            n_posts: int = None,
-            mode: str = None,
-            return_samples: bool = True,
-            inverse_transform: bool = True,
-            precomputed_kde: np.array = None
+        self,
+        X_obs: np.array,
+        n_posts: int = None,
+        mode: str = None,
+        return_samples: bool = True,
+        inverse_transform: bool = True,
+        precomputed_kde: np.array = None,
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -352,13 +353,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 X_obs=dp.T[comp_n],
                                 dens=dens,
                                 support=support,
-                                k=2**7+1
+                                k=2 ** 7 + 1,
                             )
                             hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                             kind = "pdf"
                             fun = interpolate.interp1d(sup, hp, kind="linear")
                             # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
-                            sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
+                            sample_fun = {
+                                "kind": kind,
+                                "function": fun,
+                                "bandwidth": bw,
+                            }
                             functions.append(sample_fun)
 
                     # Shape = (n_obs, n_comp_CCA)
@@ -419,7 +424,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             num_samples=self.n_posts,
                             lower_bd=pdf.x.min(),
                             upper_bd=pdf.x.max(),
-                            k=2**7+1
+                            k=2 ** 7 + 1,
                         )
                     elif fun["kind"] == "linear":
                         rel1d = fun["function"]
