@@ -479,6 +479,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )
 
                 init_samples[i, j] = pv  # noqa
+        return init_samples
 
     def inverse_transform(
             self,
