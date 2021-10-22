@@ -644,7 +644,7 @@ def get_cdf(pdf):
 
 def it_sampling(
     pdf,
-    num_samples,
+    num_samples: int = 1,
     lower_bd=-np.inf,
     upper_bd=np.inf,
     k: int = None,
@@ -670,13 +670,14 @@ def it_sampling(
         cdf = get_cdf(pdf)
         cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
 
-    if cdf_y.any():
-        seeds = uniform(0, 1, num_samples)
-        simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)
-    else:
-        simple_samples = np.zeros(num_samples)
-
     if return_cdf:
         return cdf_y
+
     else:
+        if cdf_y.any():
+            seeds = uniform(0, 1, num_samples)
+            simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)
+        else:
+            simple_samples = np.zeros(num_samples)
+
         return simple_samples

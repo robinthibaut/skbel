@@ -36,18 +36,18 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-        self,
-        mode: str = "kde",
-        copy: bool = True,
-        *,
-        X_pre_processing=None,
-        Y_pre_processing=None,
-        X_post_processing=None,
-        Y_post_processing=None,
-        cca=None,
-        x_dim=None,
-        y_dim=None,
-        random_state=None,
+            self,
+            mode: str = "kde",
+            copy: bool = True,
+            *,
+            X_pre_processing=None,
+            Y_pre_processing=None,
+            X_post_processing=None,
+            Y_post_processing=None,
+            cca=None,
+            x_dim=None,
+            y_dim=None,
+            random_state=None,
     ):
         """
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
@@ -135,7 +135,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return:
         """
         if (
-            type(X) is list
+                type(X) is list
         ):  # If more than one dataset used (several features of different nature)
             [check_consistent_length(x, Y) for x in X]
             _X = [
@@ -240,13 +240,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-        self,
-        X_obs: np.array,
-        n_posts: int = None,
-        mode: str = None,
-        return_samples: bool = True,
-        inverse_transform: bool = True,
-        precomputed_kde: np.array = None,
+            self,
+            X_obs: np.array,
+            n_posts: int = None,
+            mode: str = None,
+            return_samples: bool = True,
+            inverse_transform: bool = True,
+            precomputed_kde: np.array = None,
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -377,7 +377,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 return samples
 
     def random_sample(
-        self, X_obs_f: np.array, n_posts: int = None, mode: str = None
+            self, X_obs_f: np.array, n_posts: int = None, mode: str = None, init_kde: np.array = None
     ) -> np.array:
         """
         Random sample the inferred posterior distribution
@@ -405,7 +405,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.mode == "mvn":
             Y_samples = []
             for n, (mean, cov) in enumerate(
-                zip(self.posterior_mean, self.posterior_covariance)
+                    zip(self.posterior_mean, self.posterior_covariance)
             ):
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
@@ -414,31 +414,75 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.mode == "kde":
             n_obs = X_obs_f.shape[0]
             Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))
-            # Parses the functions dict
-            for i, fun_per_comp in enumerate(self.kde_functions):
-                for j, fun in enumerate(fun_per_comp):
-                    if fun["kind"] == "pdf":
-                        pdf = fun["function"]
-                        uniform_samples = it_sampling(
-                            pdf=pdf,
-                            num_samples=self.n_posts,
-                            lower_bd=pdf.x.min(),
-                            upper_bd=pdf.x.max(),
-                            k=2 ** 7 + 1,
-                        )
-                    elif fun["kind"] == "linear":
-                        rel1d = fun["function"]
-                        uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                            np.array(X_obs_f[i][j].reshape(1, -1))  # check this line
-                        )  # Shape X_obs_f = (n_obs, n_components)
 
-                    Y_samples[i, :, j] = uniform_samples  # noqa
+            if init_kde is None:
+                # Parses the functions dict
+                for i, fun_per_comp in enumerate(self.kde_functions):
+                    for j, fun in enumerate(fun_per_comp):
+                        if fun["kind"] == "pdf":
+                            pdf = fun["function"]
+                            uniform_samples = it_sampling(
+                                pdf=pdf,
+                                num_samples=self.n_posts,
+                                lower_bd=pdf.x.min(),
+                                upper_bd=pdf.x.max(),
+                                k=2 ** 7 + 1,
+                            )
+                        elif fun["kind"] == "linear":
+                            rel1d = fun["function"]
+                            uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+                                np.array(X_obs_f[i][j].reshape(1, -1))  # check this line
+                            )  # Shape X_obs_f = (n_obs, n_components)
+
+                        Y_samples[i, :, j] = uniform_samples  # noqa
+            else:
+                for i, fun_per_comp in enumerate(self.kde_functions):
+                    for j, fun in enumerate(fun_per_comp):
+                        pv = init_kde[i, j]
+                        if fun["kind"] == "pdf":
+                            pdf = fun["function"]
+                            uniform_samples = it_sampling(
+                                pdf=pdf,
+                                num_samples=self.n_posts,
+                                lower_bd=pdf.x.min(),
+                                upper_bd=pdf.x.max(),
+                                k=2 ** 7 + 1,
+                                cdf_y=pv
+                            )
+                        elif fun["kind"] == "linear":
+                            uniform_samples = np.ones(self.n_posts) * pv
+
+                        Y_samples[i, :, j] = uniform_samples  # noqa
 
         return np.array(Y_samples)  # noqa
 
+    def kde_init(self, X_obs_f):
+        n_obs = X_obs_f.shape[0]
+        n_comp = X_obs_f.shape[1]
+        init_samples = np.zeros((n_obs, n_comp), dtype="object")
+        # Parses the functions dict
+        for i, fun_per_comp in enumerate(self.kde_functions):
+            for j, fun in enumerate(fun_per_comp):
+                if fun["kind"] == "pdf":
+                    pdf = fun["function"]
+                    pv = it_sampling(
+                        pdf=pdf,
+                        lower_bd=pdf.x.min(),
+                        upper_bd=pdf.x.max(),
+                        k=2 ** 7 + 1,
+                        return_cdf=True,
+                    )
+                elif fun["kind"] == "linear":
+                    rel1d = fun["function"]
+                    pv = rel1d.predict(
+                        np.array(X_obs_f[i][j].reshape(1, -1))
+                    )
+
+                init_samples[i, j] = pv  # noqa
+
     def inverse_transform(
-        self,
-        Y_pred: np.array,
+            self,
+            Y_pred: np.array,
     ) -> np.array:
         """
         Back-transforms the posterior samples Y_pred to their physical space.
@@ -460,8 +504,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 yp
             )  # Posterior CCA scores
             y_post = (
-                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-                + self.cca._y_mean  # noqa
+                    np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
+                    + self.cca._y_mean  # noqa
             )  # Posterior PC scores
 
             # Back transform PC scores
