@@ -23,20 +23,23 @@ __all__ = [
 
 
 def tupleset(t, i, value):
+    """
+    Set the `i`th element of a tuple to `value`.
+    :param t: tuple
+    :param i: index
+    :param value: value
+    """
     l = list(t)
     l[i] = value
     return tuple(l)
 
 
-def romb(y, dx=1.0):
+def romb(y: np.array, dx: float = 1.0) -> np.array:
     """
     Romberg integration using samples of a function.
-    Parameters
-    ----------
-    y : array_like
-        A vector of ``2**k + 1`` equally-spaced samples of a function.
-    dx : float, optional
-        The sample spacing. Default is 1.
+    :param y: A vector of ``2**k + 1`` equally-spaced samples of a function.
+    :param dx: The sample spacing. Default is 1.
+    :return: The integral of the function.
     """
     y = np.asarray(y)
     nd = len(y.shape)
@@ -240,6 +243,7 @@ def _univariate_density(
     data_variable: pd.DataFrame,
     estimate_kws: dict,
 ):
+    """Estimate the density of a single variable."""
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
 
@@ -420,6 +424,7 @@ def _conditional_distribution(
 
 def _scale_distribution(post: np.array):
     """
+    Scale the distribution to have a maximum of 1.
     :param post: Values of the KDE cross-section
     :return:
     """
