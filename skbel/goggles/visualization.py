@@ -35,7 +35,7 @@ __all__ = [
 def _my_alphabet(az: int):
     """
     Method used to make custom figure annotations.
-    :param az: Index
+    :param az: Index of the alphabet
     :return:
     """
     alphabet = string.ascii_uppercase
@@ -157,12 +157,12 @@ def explained_variance(
 ):
     """
     PCA explained variance plot
-    :param bel
+    :param bel_pca: PCA object
     :param n_comp: Number of components to display
     :param thr: float: Threshold
     :param annotation: List of annotation(s)
-    :param fig_file:
-    :param show:
+    :param fig_file: Path to figure file
+    :param show: Show figure
     :return:
     """
     plt.grid(alpha=0.1)
@@ -227,13 +227,13 @@ def pca_scores(
 ):
     """
     PCA scores plot, displays scores of observations above those of training.
-    :param labels:
+    :param labels: labels for the plot
     :param training: Training scores
     :param prediction: Test scores
     :param n_comp: How many components to show
     :param annotation: List of annotation(s)
-    :param fig_file:
-    :param show:
+    :param fig_file: Path to figure file
+    :param show: Show figure
     :return:
     """
     # Scores plot
@@ -314,12 +314,12 @@ def cca_plot(
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-    :param bel
+    :param bel: BEL ôbject
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
-    :param sdir: str:
-    :param show: bool:
+    :param sdir: Path to save directory
+    :param show: Show figure
     :return:
     """
 
@@ -377,17 +377,17 @@ def pca_vision(
 ):
     """
     Loads PCA pickles and plot scores for all folders
-    :param show:
-    :param X_obs:
-    :param obs_n:
+    :param show: Show figure
+    :param X_obs: X_obs
+    :param obs_n: Observation number
     :param Y_obs: np.array: "True" target array
-    :param fig_dir:
+    :param fig_dir: Path to save directory
     :param bel: BEL model
-    :param labels:
-    :param d: bool:
-    :param h: bool:
-    :param scores: bool:
-    :param exvar: bool:
+    :param labels: Show labels
+    :param d: bool: Plot d scores
+    :param h: bool: Plot h scores
+    :param scores: bool: Plot scores
+    :param exvar: bool: Plot explained variance
     :return:
     """
 
@@ -560,6 +560,7 @@ def _despine(
 
 
 def _get_defaults_kde_plot():
+    """Get the default parameters for the kde plot."""
     height = 6
     ratio = 6
     space = 0
@@ -636,6 +637,15 @@ def _kde_cca(
     sdir: str = None,
     show: bool = False,
 ):
+    """
+    Plot the kernel density estimate of the CCA.
+    :param bel: The BEL object.
+    :param obs_n: The number of observations to use.
+    :param X_obs: The X observations.
+    :param Y_obs: The Y observations.
+    :param sdir: The directory to save the plot to.
+    :param show: Whether to show the plot.
+    """
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
@@ -837,8 +847,10 @@ def cca_vision(
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
+    :param X_obs: Observed X
     :param Y_obs: np.array: True target array
     :param fig_dir: Base directory path
+    :param show: Show figure
     :return:
     """
     if fig_dir is None:
