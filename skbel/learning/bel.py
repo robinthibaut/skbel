@@ -11,7 +11,6 @@ Alternative blueprints could be written in the same style as the BEL class imple
 """
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import joblib
 import numpy as np
 from sklearn.base import (
     BaseEstimator,
@@ -32,7 +31,7 @@ from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
-    Heart of the framework. Inherits from scikit-learn base classes.
+    Heart of the framework. Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian Evidential Learning.
     """
 
     def __init__(
@@ -50,16 +49,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             random_state=None,
     ):
         """
+        Initialize the BEL class.
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
         :param Y_pre_processing: sklearn pipeline for pre-processing the target.
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
-        :param cca: sklearn cca object
+        :param cca: sklearn pipeline for CCA.
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
-        :param random_state: Random state.
+        :param random_state: Seed to reproduce the same samples.
         """
         self.copy = copy
         # How to infer the posterior parameters
@@ -132,7 +132,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Fit all pipelines.
         :param X: Predictor array.
         :param Y: Target array.
-        :return:
+        :return: self
         """
         if (
                 type(X) is list
@@ -189,7 +189,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def transform(self, X=None, Y=None) -> (np.array, np.array):
         """
-        Transform data across all pipelines
+        Transform data across all pipelines.
         :param X: Predictor array.
         :param Y: Target array.
         :return: Post-processed variables
@@ -197,7 +197,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         check_is_fitted(self.cca)
 
-        if X is not None and Y is None:
+        if X is not None and Y is None:  # If only X is provided
             X = check_array(X, copy=self.copy)
             _xt = self.X_pre_processing.transform(X)
             _xc = self.cca.transform(X=_xt)
@@ -205,7 +205,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             return _xp
 
-        elif Y is not None and X is None:
+        elif Y is not None and X is None:  # If only Y is provided
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
             dummy = np.zeros((1, self.cca.x_rotations_.shape[1]))
@@ -214,7 +214,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             return _yp
 
-        else:
+        else:  # If both X and Y are provided
             _xt, _yt = (
                 self.X_pre_processing.transform(X),
                 self.Y_pre_processing.transform(Y),
@@ -230,9 +230,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def fit_transform(self, X, y=None, **fit_params):
         """
-        Fit-Transform across all pipelines
-        :param X:
-        :param y:
+        Fit-Transform across all pipelines.
+        :param X: Predictor array.
+        :param y: Target array.
         :return: If mode == "mvn" - returns the posterior mean and covariance. If mode == "kde" - returns a dictionary
         of functions.
         """
@@ -263,29 +263,29 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if type(X_obs) is list:
             try:
-                X_obs = [check_array(x, allow_nd=True) for x in X_obs]
-            except ValueError:
+                X_obs = [check_array(x, allow_nd=True) for x in X_obs]  # Check if it is a list of arrays
+            except ValueError:  # If it is not a list of arrays
                 try:
-                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in X_obs]
-                except AttributeError:
-                    X_obs = [check_array(x.reshape(1, -1)) for x in X_obs]
-        else:
+                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in X_obs]  # Check if it is a list of pd.Series
+                except AttributeError:  # If it is not a list of pd.Series
+                    X_obs = [check_array(x.reshape(1, -1)) for x in X_obs]  # Check if it is a list of arrays
+        else:  # If it is not a list
             try:
-                X_obs = check_array(X_obs, allow_nd=True)
+                X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
             except ValueError:
                 try:
-                    X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
+                    X_obs = check_array(X_obs.to_numpy().reshape(1, -1))  # Check if it is a pd.Series
                 except AttributeError:
-                    X_obs = check_array(X_obs.reshape(1, -1))
+                    X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
 
         # Project observed data into canonical space.
-        X_obs_pc = self.X_pre_processing.transform(X_obs)
-        X_obs_c = self.cca.transform(X_obs_pc)
+        X_obs_pc = self.X_pre_processing.transform(X_obs)  # Project observed data into PC space.
+        X_obs_c = self.cca.transform(X_obs_pc)  # Project observed data into Canonical space.
         X_obs_f = self.X_post_processing.transform(X_obs_c)
 
         # Estimate the posterior mean and covariance
-        n_obs = X_obs_f.shape[0]
-        n_cca = self.cca.n_components
+        n_obs = X_obs_f.shape[0]  # Number of observations
+        n_cca = self.cca.n_components  # Number of canonical variables
         if self.mode == "mvn":
             self.posterior_mean, self.posterior_covariance = np.zeros(
                 (n_obs, n_cca)
@@ -293,8 +293,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
-                x_dim = self.X_pre_processing["pca"].n_components
-                noise = 0.01
+                x_dim = self.X_pre_processing["pca"].n_components  # Number of PCA components
+                noise = 0.01  # Noise level
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = np.eye(x_dim) * noise
                 # (n_comp_CCA, n_comp_CCA)
@@ -310,17 +310,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     Y=Y,
                     X_obs=dp.reshape(1, -1),
                     **dict_args,
-                )
+                )  # Posterior mean and covariance
                 self.posterior_mean[n] = post_mean
                 self.posterior_covariance[n] = post_cov
 
-        elif self.mode == "kde":
-            self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")
+        elif self.mode == "kde":  # KDE
+            self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")  # KDE functions
 
-            if precomputed_kde is not None:
+            if precomputed_kde is not None:  # If precomputed KDE functions are provided
                 self.kde_functions = precomputed_kde
 
-            if not np.all(self.kde_functions):
+            if not np.all(self.kde_functions):  # If KDE functions are not provided
                 # KDE inference
                 for comp_n in range(n_cca):
                     # If the relation is almost perfectly linear, it doesn't make sense to perform a
@@ -329,7 +329,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         offset=1
                     )[0]
                     # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
-                    if corr >= 0.999:
+                    if corr >= 0.999:  # If the relation is almost perfectly linear
                         kind = "linear"
                         fun = LinearRegression().fit(
                             self.X_f.T[comp_n].reshape(-1, 1),
@@ -339,13 +339,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                         sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
                         functions = [sample_fun] * n_obs
-                    else:
+                    else:  # If the relation is not perfectly linear
                         # Compute KDE
                         dens, support, bw = kde_params(
                             x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
                         )
                         # Rule of thumb:
-                        dens[dens < 1e-8] = 0
+                        dens[dens < 1e-8] = 0  # Remove the small values
                         functions = []
                         for n, dp in enumerate(X_obs_f):  # For each observation point
                             # Conditional:
@@ -357,14 +357,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             )
                             hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                             kind = "pdf"
-                            fun = interpolate.interp1d(sup, hp, kind="linear")
+                            fun = interpolate.interp1d(sup, hp, kind="linear")  # Interpolate
                             # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                             sample_fun = {
                                 "kind": kind,
                                 "function": fun,
                                 "bandwidth": bw,
                             }
-                            functions.append(sample_fun)
+                            functions.append(sample_fun)  # Save the function
 
                     # Shape = (n_obs, n_comp_CCA)
                     self.kde_functions[:, comp_n] = functions  # noqa
@@ -381,10 +381,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ) -> np.array:
         """
         Random sample the inferred posterior distribution
-        :param X_obs_f: np.array: Observed data points
-        :param n_posts: int
-        :param mode: str
-        :return:
+        :param X_obs_f: Observed data points
+        :param n_posts: Number of posterior samples
+        :param mode: How to sample the posterior distribution
+        :return: Samples from the posterior distribution
         """
         if mode is not None:
             self.mode = mode
@@ -402,7 +402,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Pay attention to the transpose operator
         np.random.seed(self.seed)
 
-        if self.mode == "mvn":
+        if self.mode == "mvn":  # Multivariate normal distribution
             Y_samples = []
             for n, (mean, cov) in enumerate(
                     zip(self.posterior_mean, self.posterior_covariance)
@@ -411,31 +411,31 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )
 
-        if self.mode == "kde":
+        if self.mode == "kde":  # Kernel density estimation
             n_obs = X_obs_f.shape[0]
-            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))
+            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))  # Shape = (n_obs, n_posts, n_comp_CCA)
 
             if init_kde is None:
                 # Parses the functions dict
                 for i, fun_per_comp in enumerate(self.kde_functions):
                     for j, fun in enumerate(fun_per_comp):
-                        if fun["kind"] == "pdf":
+                        if fun["kind"] == "pdf":  # If the function is a pdf
                             pdf = fun["function"]
-                            uniform_samples = it_sampling(
+                            uniform_samples = it_sampling(  # Sample from the pdf
                                 pdf=pdf,
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
                                 k=2 ** 7 + 1,
                             )
-                        elif fun["kind"] == "linear":
+                        elif fun["kind"] == "linear":  # If the function is a linear interpolation
                             rel1d = fun["function"]
                             uniform_samples = np.ones(self.n_posts) * rel1d.predict(
                                 np.array(X_obs_f[i][j].reshape(1, -1))  # check this line
                             )  # Shape X_obs_f = (n_obs, n_components)
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
-            else:
+            else:  # If the KDE is already initialized
                 for i, fun_per_comp in enumerate(self.kde_functions):
                     for j, fun in enumerate(fun_per_comp):
                         pv = init_kde[i, j]
@@ -457,15 +457,20 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return np.array(Y_samples)  # noqa
 
     def kde_init(self, X_obs_f):
-        n_obs = X_obs_f.shape[0]
-        n_comp = X_obs_f.shape[1]
-        init_samples = np.zeros((n_obs, n_comp), dtype="object")
+        """
+        Initialize the KDEs
+        :param X_obs_f: Observed data points
+        :return: The initialized KDEs
+        """
+        n_obs = X_obs_f.shape[0]  # Number of observations
+        n_comp = X_obs_f.shape[1]  # Number of components
+        init_samples = np.zeros((n_obs, n_comp), dtype="object")  # Shape = (n_obs, n_comp)
         # Parses the functions dict
         for i, fun_per_comp in enumerate(self.kde_functions):
             for j, fun in enumerate(fun_per_comp):
                 if fun["kind"] == "pdf":
                     pdf = fun["function"]
-                    pv = it_sampling(
+                    pv = it_sampling(  # Sample from the pdf
                         pdf=pdf,
                         lower_bd=pdf.x.min(),
                         upper_bd=pdf.x.max(),
@@ -474,7 +479,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )
                 elif fun["kind"] == "linear":
                     rel1d = fun["function"]
-                    pv = rel1d.predict(
+                    pv = rel1d.predict(  # Sample from the linear interpolation
                         np.array(X_obs_f[i][j].reshape(1, -1))
                     )
 
@@ -487,7 +492,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ) -> np.array:
         """
         Back-transforms the posterior samples Y_pred to their physical space.
-        :param Y_pred:
+        :param Y_pred: The posterior samples
         :return: forecast_posterior
         """
         check_is_fitted(self.cca)
