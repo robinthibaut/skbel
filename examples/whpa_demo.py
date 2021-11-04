@@ -121,7 +121,13 @@ if __name__ == "__main__":
 
     # Plot raw data
     myvis.plot_results(
-        model, y_predicted=y_predicted, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
+        model,
+        y_predicted=y_predicted,
+        X=X_train,
+        X_obs=X_test,
+        Y=y_train,
+        Y_obs=y_test,
+        base_dir=sub_dir,
     )
 
     # Plot PCA
