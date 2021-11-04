@@ -35,18 +35,18 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-            self,
-            mode: str = "kde",
-            copy: bool = True,
-            *,
-            X_pre_processing=None,
-            Y_pre_processing=None,
-            X_post_processing=None,
-            Y_post_processing=None,
-            cca=None,
-            x_dim=None,
-            y_dim=None,
-            random_state=None,
+        self,
+        mode: str = "kde",
+        copy: bool = True,
+        *,
+        X_pre_processing=None,
+        Y_pre_processing=None,
+        X_post_processing=None,
+        Y_post_processing=None,
+        cca=None,
+        x_dim=None,
+        y_dim=None,
+        random_state=None,
     ):
         """
         Initialize the BEL class.
@@ -135,7 +135,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: self
         """
         if (
-                type(X) is list
+            type(X) is list
         ):  # If more than one dataset used (several features of different nature)
             [check_consistent_length(x, Y) for x in X]
             _X = [
@@ -240,13 +240,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-            self,
-            X_obs: np.array,
-            n_posts: int = None,
-            mode: str = None,
-            return_samples: bool = True,
-            inverse_transform: bool = True,
-            precomputed_kde: np.array = None,
+        self,
+        X_obs: np.array,
+        n_posts: int = None,
+        mode: str = None,
+        return_samples: bool = True,
+        inverse_transform: bool = True,
+        precomputed_kde: np.array = None,
     ) -> np.array:
         """
         Make predictions, in the BEL fashion.
@@ -263,24 +263,36 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if type(X_obs) is list:
             try:
-                X_obs = [check_array(x, allow_nd=True) for x in X_obs]  # Check if it is a list of arrays
+                X_obs = [
+                    check_array(x, allow_nd=True) for x in X_obs
+                ]  # Check if it is a list of arrays
             except ValueError:  # If it is not a list of arrays
                 try:
-                    X_obs = [check_array(x.to_numpy().reshape(1, -1)) for x in X_obs]  # Check if it is a list of pd.Series
+                    X_obs = [
+                        check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
+                    ]  # Check if it is a list of pd.Series
                 except AttributeError:  # If it is not a list of pd.Series
-                    X_obs = [check_array(x.reshape(1, -1)) for x in X_obs]  # Check if it is a list of arrays
+                    X_obs = [
+                        check_array(x.reshape(1, -1)) for x in X_obs
+                    ]  # Check if it is a list of arrays
         else:  # If it is not a list
             try:
                 X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
             except ValueError:
                 try:
-                    X_obs = check_array(X_obs.to_numpy().reshape(1, -1))  # Check if it is a pd.Series
+                    X_obs = check_array(
+                        X_obs.to_numpy().reshape(1, -1)
+                    )  # Check if it is a pd.Series
                 except AttributeError:
                     X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
 
         # Project observed data into canonical space.
-        X_obs_pc = self.X_pre_processing.transform(X_obs)  # Project observed data into PC space.
-        X_obs_c = self.cca.transform(X_obs_pc)  # Project observed data into Canonical space.
+        X_obs_pc = self.X_pre_processing.transform(
+            X_obs
+        )  # Project observed data into PC space.
+        X_obs_c = self.cca.transform(
+            X_obs_pc
+        )  # Project observed data into Canonical space.
         X_obs_f = self.X_post_processing.transform(X_obs_c)
 
         # Estimate the posterior mean and covariance
@@ -293,7 +305,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
-                x_dim = self.X_pre_processing["pca"].n_components  # Number of PCA components
+                x_dim = self.X_pre_processing[
+                    "pca"
+                ].n_components  # Number of PCA components
                 noise = 0.01  # Noise level
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = np.eye(x_dim) * noise
@@ -315,7 +329,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.posterior_covariance[n] = post_cov
 
         elif self.mode == "kde":  # KDE
-            self.kde_functions = np.zeros((n_obs, n_cca), dtype="object")  # KDE functions
+            self.kde_functions = np.zeros(
+                (n_obs, n_cca), dtype="object"
+            )  # KDE functions
 
             if precomputed_kde is not None:  # If precomputed KDE functions are provided
                 self.kde_functions = precomputed_kde
@@ -357,7 +373,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             )
                             hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                             kind = "pdf"
-                            fun = interpolate.interp1d(sup, hp, kind="linear")  # Interpolate
+                            fun = interpolate.interp1d(
+                                sup, hp, kind="linear"
+                            )  # Interpolate
                             # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                             sample_fun = {
                                 "kind": kind,
@@ -377,7 +395,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 return samples
 
     def random_sample(
-            self, X_obs_f: np.array, n_posts: int = None, mode: str = None, init_kde: np.array = None
+        self,
+        X_obs_f: np.array,
+        n_posts: int = None,
+        mode: str = None,
+        init_kde: np.array = None,
     ) -> np.array:
         """
         Random sample the inferred posterior distribution
@@ -405,7 +427,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.mode == "mvn":  # Multivariate normal distribution
             Y_samples = []
             for n, (mean, cov) in enumerate(
-                    zip(self.posterior_mean, self.posterior_covariance)
+                zip(self.posterior_mean, self.posterior_covariance)
             ):
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
@@ -413,7 +435,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if self.mode == "kde":  # Kernel density estimation
             n_obs = X_obs_f.shape[0]
-            Y_samples = np.zeros((n_obs, self.n_posts, X_obs_f.shape[-1]))  # Shape = (n_obs, n_posts, n_comp_CCA)
+            Y_samples = np.zeros(
+                (n_obs, self.n_posts, X_obs_f.shape[-1])
+            )  # Shape = (n_obs, n_posts, n_comp_CCA)
 
             if init_kde is None:
                 # Parses the functions dict
@@ -428,10 +452,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 upper_bd=pdf.x.max(),
                                 k=2 ** 7 + 1,
                             )
-                        elif fun["kind"] == "linear":  # If the function is a linear interpolation
+                        elif (
+                            fun["kind"] == "linear"
+                        ):  # If the function is a linear interpolation
                             rel1d = fun["function"]
                             uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                                np.array(X_obs_f[i][j].reshape(1, -1))  # check this line
+                                np.array(
+                                    X_obs_f[i][j].reshape(1, -1)
+                                )  # check this line
                             )  # Shape X_obs_f = (n_obs, n_components)
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
@@ -447,7 +475,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
                                 k=2 ** 7 + 1,
-                                cdf_y=pv
+                                cdf_y=pv,
                             )
                         elif fun["kind"] == "linear":
                             uniform_samples = np.ones(self.n_posts) * pv
@@ -464,7 +492,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         n_obs = X_obs_f.shape[0]  # Number of observations
         n_comp = X_obs_f.shape[1]  # Number of components
-        init_samples = np.zeros((n_obs, n_comp), dtype="object")  # Shape = (n_obs, n_comp)
+        init_samples = np.zeros(
+            (n_obs, n_comp), dtype="object"
+        )  # Shape = (n_obs, n_comp)
         # Parses the functions dict
         for i, fun_per_comp in enumerate(self.kde_functions):
             for j, fun in enumerate(fun_per_comp):
@@ -487,8 +517,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return init_samples
 
     def inverse_transform(
-            self,
-            Y_pred: np.array,
+        self,
+        Y_pred: np.array,
     ) -> np.array:
         """
         Back-transforms the posterior samples Y_pred to their physical space.
@@ -510,8 +540,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 yp
             )  # Posterior CCA scores
             y_post = (
-                    np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-                    + self.cca._y_mean  # noqa
+                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
+                + self.cca._y_mean  # noqa
             )  # Posterior PC scores
 
             # Back transform PC scores

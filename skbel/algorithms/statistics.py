@@ -125,7 +125,16 @@ class KDE:
     def _define_support_grid(
         x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
     ):
-        """Create the grid of evaluation points depending for vector x."""
+        """Create the grid of evaluation points depending for vector x.
+        :param x: vector of values
+        :param bandwidth: bandwidth
+        :param cut: factor, multiplied by the smoothing bandwidth, that determines how
+            far the evaluation grid extends past the extreme datapoints. When
+            set to 0, truncate the curve at the data limits.
+        :param clip: pair of numbers None, or a pair of such pairs
+            Do not evaluate the density outside of these limits.
+        :param gridsize: number of points on each dimension of the evaluation grid.
+        """
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
         bw = 1 if bandwidth is None else bandwidth
@@ -134,12 +143,17 @@ class KDE:
         return np.linspace(gridmin, gridmax, gridsize)
 
     def _define_support_univariate(self, x: np.array):
-        """Create a 1D grid of evaluation points."""
+        """Create a 1D grid of evaluation points.
+        :param x: 1D array of data
+        """
         grid = self._define_support_grid(x, self.bw, self.cut, self.clip, self.gridsize)
         return grid
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array):
-        """Create a 2D grid of evaluation points."""
+        """Create a 2D grid of evaluation points.
+        :param x1: 1st dimension of the evaluation grid
+        :param x2: 2nd dimension of the evaluation grid
+        """
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):
             clip = (clip, clip)
@@ -154,7 +168,11 @@ class KDE:
         x2: np.array = None,
         cache: bool = True,
     ):
-        """Create the evaluation grid for a given data set."""
+        """Create the evaluation grid for a given data set.
+        :param x1: 1D array of data
+        :param x2: 2D array of data
+        :param cache: if True, cache the support grid
+        """
         if x2 is None:
             support = self._define_support_univariate(x1)
         else:
@@ -166,7 +184,9 @@ class KDE:
         return support
 
     def _fit(self, fit_data: np.array):
-        """Fit the scikit-learn kde"""
+        """Fit the scikit-learn KDE
+        :param fit_data: Data to fit the KDE to
+        """
         bw = 1 if self.bw is None else self.bw
         fit_kws = {
             "bandwidth": bw,
@@ -202,7 +222,9 @@ class KDE:
         return kde
 
     def _eval_univariate(self, x: np.array):
-        """Fit and evaluate on univariate data."""
+        """Fit and evaluate on univariate data.
+        :param x: Data to evaluate.
+        """
         support = self.support
         if support is None:
             support = self.define_support(x, cache=True)
@@ -214,7 +236,10 @@ class KDE:
         return density, support
 
     def _eval_bivariate(self, x1: np.array, x2: np.array):
-        """Fit and evaluate on bivariate data."""
+        """Fit and evaluate on bivariate data.
+        :param x1: First data set.
+        :param x2: Second data set.
+        """
         support = self.support
         if support is None:
             support = self.define_support(x1, x2, cache=False)
@@ -243,7 +268,10 @@ def _univariate_density(
     data_variable: pd.DataFrame,
     estimate_kws: dict,
 ):
-    """Estimate the density of a single variable."""
+    """Estimate the density of a single variable.
+    :param data_variable: DataFrame with a single variable.
+    :param estimate_kws: Keyword arguments for the density estimator.
+    """
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
 
@@ -268,7 +296,7 @@ def _bivariate_density(
     estimate_kws: dict,
 ):
     """
-    Estimate bivariate KDE
+    Estimate bivariate KDE.
     :param data: DataFrame containing (x, y) data
     :param estimate_kws: KDE parameters
     :return:
@@ -303,26 +331,15 @@ def kde_params(
 ):
     """
     Computes the kernel density estimate (KDE) of one or two data sets.
-
-    Parameters
-    ----------
-    x : array_like
-        The x-coordinates of the input data.
-    y : array_like, optional
-        The y-coordinates of the input data.
-    gridsize : int, optional
-        Number of discrete points in the evaluation grid.
-    cut : scalar, optional
-        Draw the estimate to cut * bw from the extreme data points.
-    clip : pair of scalars, or pair of pair of scalars, optional
-        Lower and upper bounds for datapoints used to fit KDE. Can provide
-        a pair of (low, high) bounds for bivariate plots.
-    Returns
-    -------
-    density : ndarray
-        The estimated probability density function evaluated at the support.
-    support : ndarray
-        The support of the density function, the x-axis of the KDE.
+    :param x : The x-coordinates of the input data.
+    :param y : The y-coordinates of the input data.
+    :param gridsize : Number of discrete points in the evaluation grid.
+    :paran bw : The bandwidth of the kernel.
+    :param cut : Draw the estimate to cut * bw from the extreme data points.
+    :param clip : Lower and upper bounds for datapoints used to fit KDE. Can provide
+     a pair of (low, high) bounds for bivariate plots.
+    :return: density : The estimated probability density function evaluated at the support.
+              support : The support of the density function, the x-axis of the KDE.
     """
 
     # Pack the kwargs for KDE
@@ -572,16 +589,10 @@ def mvn_inference(
 def normalize(pdf):
     """Normalize a non-normalized PDF.
 
-    Parameters
-    ----------
-    pdf : function, float -> float
-        The probability density function (not necessarily normalized). Must take
+    :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
 
-    Returns
-    -------
-    pdf_norm : function
-        Function with same signature as pdf, but normalized so that the integral
+    :return: pdf_norm : Function with same signature as pdf, but normalized so that the integral
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
 
@@ -603,22 +614,15 @@ def normalize(pdf):
 
 def get_cdf(pdf):
     """Generate a CDF from a (possibly not normalized) pdf.
-
-    Parameters
-    ----------
-    pdf : function, float -> float
-        The probability density function (not necessarily normalized). Must take
+    :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
 
-    Returns
-    -------
-    cdf : function
-        The cumulative density function of the (normalized version of the)
+    :return: cdf: The cumulative density function of the (normalized version of the)
         provided pdf. Will return a float if provided with a float or int; will
         return a numpy array if provided with an iterable.
 
     """
-    pdf_norm = normalize(pdf)
+    pdf_norm = normalize(pdf)  # Calculate the normalized pdf
     lower_bound = np.min(pdf.x)
     upper_bound = np.max(pdf.x)
 
@@ -639,6 +643,7 @@ def get_cdf(pdf):
                 return 0
 
     def cdf_vector(x):
+        """Vectorized cdf"""
         try:
             return np.array([cdf_number(xi) for xi in x])
         except AttributeError:
@@ -669,20 +674,20 @@ def it_sampling(
     :return: samples : An array of samples from the provided PDF, with support between lower_bd and upper_bd.
     """
     if k is None:
-        k = 200
+        k = 200  # Default step size
 
     if cdf_y is None:
-        cdf = get_cdf(pdf)
-        cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))
+        cdf = get_cdf(pdf)  # CDF of the pdf
+        cdf_y = cdf(np.linspace(lower_bd, upper_bd, k))  # CDF values
 
     if return_cdf:
         return cdf_y
 
     else:
         if cdf_y.any():
-            seeds = uniform(0, 1, num_samples)
-            simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)
+            seeds = uniform(0, 1, num_samples)  # Uniformly distributed seeds
+            simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)  # Samples
         else:
-            simple_samples = np.zeros(num_samples)
+            simple_samples = np.zeros(num_samples)  # Samples
 
         return simple_samples

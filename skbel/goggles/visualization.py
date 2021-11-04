@@ -708,7 +708,7 @@ def _kde_cca(
             cb.ax.set_title("$KDE$", fontsize=10)
 
         try:
-            reg = bel.kde_functions[obs_n][comp_n]["function"]  # check this line
+            reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
             check_is_fitted(reg)
             reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
             ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
