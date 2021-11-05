@@ -334,7 +334,7 @@ def kde_params(
     :param x : The x-coordinates of the input data.
     :param y : The y-coordinates of the input data.
     :param gridsize : Number of discrete points in the evaluation grid.
-    :paran bw : The bandwidth of the kernel.
+    :param bw : The bandwidth of the kernel.
     :param cut : Draw the estimate to cut * bw from the extreme data points.
     :param clip : Lower and upper bounds for datapoints used to fit KDE. Can provide
      a pair of (low, high) bounds for bivariate plots.
