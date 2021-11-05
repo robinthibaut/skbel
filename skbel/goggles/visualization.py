@@ -2,12 +2,12 @@
 
 """Some visualization utilities"""
 
-from os.path import join as jp
-
 import itertools
-import numpy as np
 import os
 import string
+from os.path import join as jp
+
+import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import legend
 from numpy import ma
@@ -314,7 +314,7 @@ def cca_plot(
     """
     CCA plots.
     Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
-    :param bel: BEL ôbject
+    :param bel: BEL object
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
@@ -364,7 +364,6 @@ def cca_plot(
 
 def pca_vision(
     bel,
-    fig_dir: str = None,
     d: np.array = None,
     h: np.array = None,
     obs_n: int = 0,
@@ -373,21 +372,22 @@ def pca_vision(
     scores: bool = True,
     exvar: bool = True,
     labels: bool = True,
+    fig_dir: str = None,
     show: bool = False,
 ):
     """
     Loads PCA pickles and plot scores for all folders
-    :param show: Show figure
-    :param X_obs: X_obs
-    :param obs_n: Observation number
-    :param Y_obs: np.array: "True" target array
-    :param fig_dir: Path to save directory
-    :param bel: BEL model
-    :param labels: Show labels
+    :param bel: BEL object
     :param d: bool: Plot d scores
     :param h: bool: Plot h scores
+    :param obs_n: Observation number
+    :param X_obs: X_obs
+    :param Y_obs: np.array: "True" target array
     :param scores: bool: Plot scores
     :param exvar: bool: Plot explained variance
+    :param labels: Show labels
+    :param fig_dir: Path to save directory
+    :param show: Show figure
     :return:
     """
 
@@ -474,26 +474,15 @@ def _despine(
     trim=False,
 ):
     """Remove the top and right spines from plot(s).
-
-    fig : matplotlib figure, optional
-        Figure to despine all axes of, defaults to the current figure.
-    ax : matplotlib axes, optional
-        Specific axes object to despine. Ignored if fig is provided.
-    top, right, left, bottom : boolean, optional
-        If True, remove that spine.
-    offset : int or dict, optional
-        Absolute distance, in points, spines should be moved away
+    :param fig : Figure to despine all axes of, defaults to the current figure.
+    :param ax: Specific axes object to despine. Ignored if fig is provided.
+    :param top, right, left, bottom: If True, remove that spine.
+    :param offset: Absolute distance, in points, spines should be moved away
         from the axes (negative values move spines inward). A single value
         applies to all spines; a dict can be used to set offset values per
         side.
-    trim : bool, optional
-        If True, limit spines to the smallest and largest major tick
+    :param trim: If True, limit spines to the smallest and largest major tick
         on each non-despined axis.
-
-    Returns
-    -------
-    None
-
     """
     # Get references to the axes we want
     if fig is None and ax is None:
@@ -666,46 +655,47 @@ def _kde_cca(
             Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
 
     # Transform X obs, Y obs
-    bel.X_obs_f = bel.transform(X=X_obs)
-    bel.Y_obs_f = bel.transform(Y=Y_obs)
+    bel.X_obs_f = bel.transform(X=X_obs)  # Transform X obs
+    bel.Y_obs_f = bel.transform(Y=Y_obs)  # Transform Y obs
 
-    samples = bel.random_sample(X_obs_f=bel.X_obs_f, n_posts=100)
+    samples = bel.random_sample(X_obs_f=bel.X_obs_f, n_posts=100)  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
-        marginal_eval_x = KDE()
-        marginal_eval_y = KDE()
+        marginal_eval_x = KDE()  # KDE for the marginal x
+        marginal_eval_y = KDE()  # KDE for the marginal y
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
-
             # Plot h posterior given d
             density, support, bw = kde_params(
                 x=bel.X_f.T[comp_n],
                 y=bel.Y_f.T[comp_n],
                 gridsize=200,
-            )
+            )  # Get KDE parameters
             xx, yy = support
 
             # Conditional:
             hp, sup = posterior_conditional(
-                X_obs=bel.X_obs_f[obs_n].T[comp_n], dens=density, support=support
-            )
+                X_obs=bel.X_obs_f[obs_n].T[comp_n], dens=density, support=support, k=200
+            )  # Get posterior
 
             # Filled contour plot
             # Mask values under threshold
-            z = ma.masked_where(density <= np.finfo(np.float16).eps, density)
+            z = ma.masked_where(
+                density <= np.finfo(np.float16).eps, density
+            )  # Mask values under threshold
             # Filled contour plot
             # 'BuPu_r' is nice
             cf = ax_joint.contourf(
                 xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
-            )
-            cb = plt.colorbar(cf, ax=[ax_cb], location="left")
-            cb.ax.set_title("$KDE$", fontsize=10)
+            )  # Filled contour plot
+            cb = plt.colorbar(cf, ax=[ax_cb], location="left")  # Colorbar
+            cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
 
         try:
             reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
@@ -848,7 +838,7 @@ def cca_vision(
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
     :param X_obs: Observed X
-    :param Y_obs: np.array: True target array
+    :param Y_obs: True target array
     :param fig_dir: Base directory path
     :param show: Show figure
     :return:

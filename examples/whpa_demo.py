@@ -129,7 +129,7 @@ if __name__ == "__main__":
         Y_obs=y_test,
         base_dir=sub_dir,
     )
-
+    #
     # Plot PCA
     pca_vision(
         model,

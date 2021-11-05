@@ -480,7 +480,6 @@ def posterior_conditional(
     xg, yg = support
 
     if X_obs is not None:
-        support = yg
         # Extract the density values along the line, using cubic interpolation
         if type(X_obs) is list or type(X_obs) is tuple:
             X_obs = X_obs[0]
@@ -488,7 +487,6 @@ def posterior_conditional(
             x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
     elif Y_obs is not None:
-        support = xg
         # Extract the density values along the line, using cubic interpolation
         if type(Y_obs) is list or tuple:
             Y_obs = X_obs[0]

@@ -120,15 +120,15 @@ def whpa_plot(
     """
     Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
 
-    :param grid:
+    :param grid: Whether to plot the grid
     :param grf: Grid cell size
     :param well_comb: List of well combination
     :param highlight: Boolean to display lines on top of filling between contours or not.
     :param annotation: List of annotations (str)
-    :param xlabel:
-    :param ylabel:
-    :param cb_title:
-    :param well_ids:
+    :param xlabel: X axis label
+    :param ylabel: Y axis label
+    :param cb_title: Colorbar title
+    :param well_ids: List of well ids
     :param labelsize: Label size
     :param title: str: plot title
     :param show_wells: bool: whether to plot well coordinates or not
@@ -141,8 +141,8 @@ def whpa_plot(
     :param halpha: Alpha value for line plots if highlight is True
     :param lw: float: Line width
     :param color: str: Line color
-    :param fig_file: str:
-    :param show: bool:
+    :param fig_file: str: File name to save the figure
+    :param show: bool: Whether to show the figure or not
     :param x_lim: [x_min, x_max] For the figure
     :param y_lim: [y_min, y_max] For the figure
     """
@@ -311,8 +311,8 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
     """
     Plot used to compare the reproduction of the original physical space after PCA transformation
     :param bel: BEL model
-    :param fig_dir: str:
-    :param show: bool:
+    :param fig_dir: str: directory where to save the figure
+    :param show: bool: if True, show the figure
     :return:
     """
 
@@ -382,7 +382,6 @@ def plot_predictor(
     root: str = None,
     base_dir: str = None,
     folder: str = None,
-    annotation: list = None,
     show: bool = False,
 ):
     if base_dir is None:
@@ -605,14 +604,20 @@ def plot_results(
     """
     Plots forecasts results in the 'uq' folder
     :param bel: BEL model
+    :param y_predicted: Predicted values
+    :param X: Training set
+    :param X_obs: Observed training set
+    :param Y: Test set
+    :param Y_obs: Observed test set
     :param annotation: List of annotations
     :param X: Predictor array
     :param X_obs: "Observed" predictor array
     :param Y: Target array
     :param Y_obs: "True" target array
     :param root: str: Forward ID
-    :param base_dir:
+    :param base_dir: str: Base directory
     :param folder: str: Well combination. '123456', '1'...
+    :param show: bool: Show or not
     :return:
     """
     if root is None:
@@ -776,6 +781,7 @@ def plot_results(
         )
         if show:
             plt.show()
+        plt.close()
 
 
 def mode_histo(
@@ -788,12 +794,12 @@ def mode_histo(
 ):
     """
 
-    :param directory:
-    :param title:
-    :param colors:
+    :param directory: Path to the directory where the figure will be saved.
+    :param title: Title of the figure.
+    :param colors: List of colors to use for the histogram.
     :param an_i: Figure annotation
     :param wm: Arrays of metric
-    :param fig_name:
+    :param fig_name: Name of the figure.
     :return:
     """
     if directory is None:
@@ -949,6 +955,7 @@ def curves(
     elif show:
         plt.show()
         plt.close()
+    plt.close()
 
 
 def curves_i(
@@ -1008,6 +1015,7 @@ def curves_i(
         elif show:
             plt.show()
             plt.close()
+        plt.close()
 
 
 def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0):
