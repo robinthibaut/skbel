@@ -24,9 +24,9 @@ def grid_parameters(
 ) -> (np.array, int, int):
     """
     Generates grid parameters given dimensions.
-    :param x_lim:
-    :param y_lim:
-    :param grf:
+    :param x_lim: X limits
+    :param y_lim: Y limits
+    :param grf: Cell dimension
     :return:
     """
     if y_lim is None:
@@ -52,9 +52,11 @@ def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
     """
     Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
-
     If arr is a 2D array, the returned array should look like n sub-blocks with
     each sub-block preserving the "physical" layout of arr.
+    :param arr: Array
+    :param nrows: Number of rows
+    :param ncols: Number of columns
     """
     h, w = arr.shape
     assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
@@ -85,37 +87,37 @@ def refine_axis(
     :return: Refined axis (widths)
     """
 
-    x0 = widths
+    x0 = widths  # Initial widths
     x0s = np.cumsum(x0)  # Cumulative sum of the width of the cells
     pt = r_pt  # Point around which refining
     extx = ext  # Extent around the point
-    cdrx = cnd
-    dx = d_dim
-    xlim = a_lim
+    cdrx = cnd   # New cell size
+    dx = d_dim  # Base cell dimension
+    xlim = a_lim  # Axis limit
 
     # X range of the polygon
     xrp = [pt - extx, pt + extx]
 
     # Where to refine
-    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]
+    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]  # Indexes of the cells to refine
 
     # The algorithm must choose a 'flexible parameter', either the cell grid size, the dimensions of the grid or the
     # refined cells themselves... We choose to adapt the dimensions of the grid.
     exn = np.sum(x0[wherex])  # x-extent of the refinement zone
     fx = exn / cdrx  # divides the extent by the new cell spacing
     rx = exn % cdrx  # remainder
-    if rx == 0:
-        nwxs = np.ones(int(fx)) * cdrx
-        x0 = np.delete(x0, wherex)
-        x0 = np.insert(x0, wherex[0], nwxs)
+    if rx == 0:  # If the remainder is 0, we can simply add the new cells
+        nwxs = np.ones(int(fx)) * cdrx  # New widths
+        x0 = np.delete(x0, wherex)  # Delete the cells to refine
+        x0 = np.insert(x0, wherex[0], nwxs)  # Insert the new cells
     else:  # If the cells can not be exactly subdivided into the new cell dimension
         nwxs = np.ones(int(round(fx))) * cdrx  # Produce a new width vector
         x0 = np.delete(x0, wherex)  # Delete old cells
         x0 = np.insert(x0, wherex[0], nwxs)  # insert new
 
         # Cumulative width should equal x_lim, but it will not be the case, we have to adapt widths.
-        cs = np.cumsum(x0)
-        difx = xlim - cs[-1]
+        cs = np.cumsum(x0)  # Cumulative sum of the widths
+        difx = xlim - cs[-1]  # Difference between the cumulative sum and the limit
         # Location of cells whose widths will be adapted
         where_default = np.where(abs(x0 - dx) <= 5)[0]
         # Where do we have the default cell size on
@@ -124,10 +126,10 @@ def refine_axis(
         where_right = where_default[
             np.where((where_default >= wherex[0] + len(nwxs)))
         ]  # And on the right
-        lwl = len(where_left)
-        lwr = len(where_right)
+        lwl = len(where_left)  # Length of the left
+        lwr = len(where_right)  # Length of the right
 
-        if lwl > lwr:
+        if lwl > lwr:  # If the left is longer than the right
             rl = (
                 lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
@@ -135,7 +137,7 @@ def refine_axis(
             dal = difx / ((lwl + lwr) / lwl)
             dal = dal + (difx - dal) / rl
             dar = difx - dal
-        elif lwr > lwl:
+        elif lwr > lwl:  # If the right is longer than the left
             rl = (
                 lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
@@ -143,25 +145,25 @@ def refine_axis(
             dar = difx / ((lwl + lwr) / lwr)
             dar = dar + (difx - dar) / rl
             dal = difx - dar
-        else:
+        else:  # If the left and right are the same length
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
             dar = difx - dal
 
-        x0[where_left] = x0[where_left] + dal / lwl
-        x0[where_right] = x0[where_right] + dar / lwr
+        x0[where_left] = x0[where_left] + dal / lwl  # Adapt the left cells
+        x0[where_right] = x0[where_right] + dar / lwr  # Adapt the right cells
 
     return x0
 
 
 def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
     """
-    Computes the x and y dimensions of each block
-    :param blocks:
+    Computes the x and y dimensions of each block.
+    :param blocks: Array of blocks
     :return:
     """
-    dc = np.array([np.diff(b[:, 0]).max for b in blocks])
-    dr = np.array([np.diff(b[:, 1]).max for b in blocks])
+    dc = np.array([np.diff(b[:, 0]).max for b in blocks])  # x-dimensions
+    dr = np.array([np.diff(b[:, 1]).max for b in blocks])  # y-dimensions
 
     return dc, dr
 
@@ -169,16 +171,18 @@ def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
 def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
+    :param rows: Array of row widths
+    :param columns: Array of column widths
     """
 
-    nrow = len(rows)
-    ncol = len(columns)
-    delr = rows
-    delc = columns
-    r_sum = np.cumsum(delr)
-    c_sum = np.cumsum(delc)
+    nrow = len(rows)  # Number of rows
+    ncol = len(columns)  # Number of columns
+    delr = rows  # Row widths
+    delc = columns  # Column widths
+    r_sum = np.cumsum(delr)  # Cumulative sum of row widths
+    c_sum = np.cumsum(delc)  # Cumulative sum of column widths
 
-    blocks = []
+    blocks = []  # List of blocks
     for c in range(nrow):
         for n in range(ncol):
             b = [
@@ -186,7 +190,7 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
                 [c_sum[n] - delc[n], r_sum[c], 0.0],
                 [c_sum[n], r_sum[c], 0.0],
                 [c_sum[n], r_sum[c] - delr[c], 0.0],
-            ]
+            ]  # Block
             blocks.append(b)
     blocks = np.array(blocks)
 
@@ -196,6 +200,8 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
 def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
     """
     Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
+    :param rows: Array of row widths
+    :param columns: Array of column widths
     """
 
     nrow = len(rows)
@@ -236,7 +242,11 @@ def get_centroids(array: np.array, grf: float) -> np.array:
 # extract 0 contours
 def contour_extract(x_lim, y_lim, grf, Z):
     """
-    Extract the 0 contour from the sampled posterior, corresponding to the WHPA delineation
+    Extract the 0 contour from the sampled posterior, corresponding to the field delineation
+    :param x_lim: x limits of the grid
+    :param y_lim: y limits of the grid
+    :param grf: grid resolution
+    :param Z: sampled posterior
     """
     *_, x, y = refine_machine(x_lim, y_lim, grf)
     vertices = contours_vertices(x, y, Z)
@@ -249,8 +259,8 @@ def contours_vertices(
 ) -> np.array:
     """
     Extracts contour vertices from a list of matrices.
-    :param x:
-    :param y:
+    :param x: x coordinates of the grid
+    :param y: y coordinates of the grid
     :param arrays: list of matrices
     :param c: Contour value
     :param ignore: Bool value to consider multiple contours or not (see comments)
@@ -280,6 +290,12 @@ def contours_vertices(
 def refine_machine(
     xlim: list, ylim: list, new_grf: int or float
 ) -> (int, int, np.array, np.array):
+    """
+    Refines the grid to a new resolution.
+    :param xlim: x limits of the grid
+    :param ylim: y limits of the grid
+    :param new_grf: new grid resolution
+    """
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
     new_x, new_y = np.meshgrid(

@@ -11,10 +11,16 @@ __all__ = ["DiscreteCosineTransform2D"]
 
 
 def dct2(a):
+    """
+    Performs a 2D Discrete Cosine Transform (DCT) on a 2D array.
+    """
     return dct(dct(a.T, norm="ortho").T, norm="ortho")
 
 
 def idct2(a):
+    """
+    Performs a 2D Inverse Discrete Cosine Transform (IDCT) on a 2D array.
+    """
     return idct(idct(a.T, norm="ortho").T, norm="ortho")
 
 

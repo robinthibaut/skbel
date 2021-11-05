@@ -15,7 +15,7 @@ def get_block(pm: np.array, i: int) -> np.array:
     :param i: Block index
     1 2
     3 4
-    :return: Bock #b
+    :return: Block #b
     """
 
     b = pm.shape[0] // 2
@@ -33,6 +33,11 @@ def get_block(pm: np.array, i: int) -> np.array:
 
 
 def matrix_paste(c_big: np.array, c_small: np.array) -> list:
+    """
+    Pastes a small matrix into a big matrix.
+    :param c_big: Big matrix
+    :param c_small: Small matrix
+    """
     # Compute distance matrix between refined and dummy grid.
     dm = distance_matrix(c_big, c_small)
     inds = [
