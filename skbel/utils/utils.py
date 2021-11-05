@@ -25,13 +25,18 @@ Function = types.FunctionType
 
 
 def flatten_array(arr: np.array) -> np.array:
+    """Flattens a numpy array"""
     arr_flat = np.array([item for sublist in arr for item in sublist])
     return arr_flat.reshape(1, -1)
 
 
 def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
-    # end must be set to None and NOT -1
-    """Reads space-separated dat file"""
+    """Reads space-separated dat file
+    :param file: str: File path.
+    :param start: int: Starting line.
+    :param end: int: Ending line.
+    :param step: int: Step.
+    """
     with open(file, "r") as fr:
         lines = np.copy(fr.readlines())[start:end:step]
         try:
@@ -44,7 +49,10 @@ def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
 
 
 def folder_reset(folder: str, exceptions: list = None):
-    """Deletes files in folder"""
+    """Deletes files in folder
+    :param folder: str: Folder path.
+    :param exceptions: list: List of files to keep.
+    """
     if not isinstance(exceptions, (list, tuple)):
         exceptions = [exceptions]
     try:
@@ -84,6 +92,7 @@ def dirmaker(dird: str, erase: bool = False):
 def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
     'None' will indicate to use the original combination.
+    :param combi: list: List of size n.
     """
     cb = [
         list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)

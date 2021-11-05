@@ -1,4 +1,6 @@
-"""pytest unit"""
+"""
+pytest unit tests for skbel.basic
+"""
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
