@@ -91,7 +91,7 @@ def refine_axis(
     x0s = np.cumsum(x0)  # Cumulative sum of the width of the cells
     pt = r_pt  # Point around which refining
     extx = ext  # Extent around the point
-    cdrx = cnd   # New cell size
+    cdrx = cnd  # New cell size
     dx = d_dim  # Base cell dimension
     xlim = a_lim  # Axis limit
 
@@ -99,7 +99,9 @@ def refine_axis(
     xrp = [pt - extx, pt + extx]
 
     # Where to refine
-    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]  # Indexes of the cells to refine
+    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[
+        0
+    ]  # Indexes of the cells to refine
 
     # The algorithm must choose a 'flexible parameter', either the cell grid size, the dimensions of the grid or the
     # refined cells themselves... We choose to adapt the dimensions of the grid.

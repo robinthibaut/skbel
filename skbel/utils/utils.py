@@ -31,21 +31,25 @@ def flatten_array(arr: np.array) -> np.array:
 
 
 def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
-    """Reads space-separated dat file
-    :param file: str: File path.
-    :param start: int: Starting line.
-    :param end: int: Ending line.
-    :param step: int: Step.
     """
-    with open(file, "r") as fr:
-        lines = np.copy(fr.readlines())[start:end:step]
-        try:
+    Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab.
+    :param file: str: File path, such as 'data.txt'.
+    :param start: int: Starting line, default is 0.
+    :param end: int: Ending line, default is None (last line).
+    :param step: int: Step, default is 1 (every line).
+    :return: Data contained in file. np.array if data can be converted to float, else list.
+    """
+    with open(file, "r") as fr:  # Open file
+        lines = np.copy(fr.readlines())[
+            start:end:step
+        ]  # Read lines. We copy the lines to avoid changing the original file.
+        try:  # Try to convert to float
             op = np.array(
                 [list(map(float, line.split())) for line in lines], dtype=object
             )
-        except ValueError:
+        except ValueError:  # If not, keep as string
             op = [line.split() for line in lines]
-    return op
+    return op  # Return data
 
 
 def folder_reset(folder: str, exceptions: list = None):
@@ -73,7 +77,7 @@ def dirmaker(dird: str, erase: bool = False):
     Given a folder path, check if it exists, and if not, creates it.
     :param dird: str: Directory path.
     :param erase: bool: Whether to delete existing folder or not.
-    :return:
+    :return: None
     """
     try:
         if not os.path.exists(dird):
