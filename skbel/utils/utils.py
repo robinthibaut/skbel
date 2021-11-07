@@ -40,14 +40,12 @@ def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
     :return: Data contained in file. np.array if data can be converted to float, else list.
     """
     with open(file, "r") as fr:  # Open file
-        lines = np.copy(fr.readlines())[
-            start:end:step
-        ]  # Read lines. We copy the lines to avoid changing the original file.
+        lines = fr.readlines()[start:end:step]  # Read lines.
         try:  # Try to convert to float
             op = np.array(
                 [list(map(float, line.split())) for line in lines], dtype=object
             )
-        except ValueError:  # If not, keep as string
+        except ValueError:  # If not, keep as string.
             op = [line.split() for line in lines]
     return op  # Return data
 
