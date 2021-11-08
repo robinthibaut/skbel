@@ -629,7 +629,7 @@ def _kde_cca(
     """
     Plot the kernel density estimate of the CCA.
     :param bel: The BEL object.
-    :param obs_n: The number of observations to use.
+    :param obs_n: The index of the observation to plot.
     :param X_obs: The X observations.
     :param Y_obs: The Y observations.
     :param sdir: The directory to save the plot to.
@@ -657,7 +657,9 @@ def _kde_cca(
     # Transform X obs, Y obs
     X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
 
-    samples = bel.random_sample(X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100)  # Get 100 samples
+    samples = bel.random_sample(
+        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100
+    )  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -680,7 +682,7 @@ def _kde_cca(
 
             # Conditional:
             hp, sup = posterior_conditional(
-                X_obs=X_obs_f[obs_n].T[comp_n], dens=density, support=support, k=200
+                X_obs=X_obs_f.T[comp_n], dens=density, support=support, k=200
             )  # Get posterior
 
             # Filled contour plot
@@ -705,7 +707,7 @@ def _kde_cca(
             pass
         # Vertical line
         ax_joint.axvline(
-            x=X_obs_f[obs_n].T[comp_n],
+            x=X_obs_f.T[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -713,7 +715,7 @@ def _kde_cca(
         )
         # Horizontal line
         ax_joint.axhline(
-            y=Y_obs_f[obs_n].T[comp_n],
+            y=Y_obs_f.T[comp_n],
             color="deepskyblue",
             linewidth=1,
             alpha=0.5,
@@ -730,15 +732,15 @@ def _kde_cca(
             alpha=0.9,
         )
         ax_joint.plot(
-            np.ones(samples.shape[1]) * X_obs_f[obs_n].T[comp_n],
-            samples[obs_n].T[comp_n],
+            np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
+            samples.T[comp_n],
             "go",
             alpha=0.3,
-        )
+        )  # Samples
         # Point
         ax_joint.plot(
-            bel.X_obs_f[obs_n].T[comp_n],
-            bel.Y_obs_f[obs_n].T[comp_n],
+            X_obs_f.T[comp_n],
+            Y_obs_f.T[comp_n],
             "wo",
             markersize=5,
             markeredgecolor="k",
@@ -766,7 +768,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_y.axhline(
-            y=bel.Y_obs_f.T[comp_n],
+            y=Y_obs_f.T[comp_n],
             xmax=0.25,
             color="deepskyblue",
             linewidth=1,

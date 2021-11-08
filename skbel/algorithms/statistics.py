@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import warnings
 from numpy.random import uniform
-from scipy import ndimage
+from scipy import ndimage, integrate
 from sklearn import preprocessing
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
@@ -439,25 +439,32 @@ def _conditional_distribution(
     return zi, line
 
 
-def _scale_distribution(post: np.array):
+def _scale_distribution(post: np.array, support: np.array):
     """
     Scale the distribution to have a maximum of 1.
     :param post: Values of the KDE cross-section
-    :return:
+    :param support: Support of the KDE cross-section
+    :return: The scaled distribution
     """
 
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
 
-    if (
-        post.any()
-    ):  # Deals with the case where 'post' consists of an array filled with 0's
-        min_max_scaler = preprocessing.MinMaxScaler()
-        post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
+    # if (
+    #     post.any()
+    # ):  # Deals with the case where 'post' consists of an array filled with 0's
+    #     min_max_scaler = preprocessing.MinMaxScaler()
+    #     post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
+    #
+    #     return post_minmax
+    #
+    # else:
+    #     return post
 
-        return post_minmax
+    if post.any():  # Rule of thumb
+        a = integrate.simps(y=np.abs(post), x=support)
+        post *= 1 / a
 
-    else:
-        return post
+    return post
 
 
 def posterior_conditional(
@@ -481,11 +488,10 @@ def posterior_conditional(
 
     if X_obs is not None:
         # Extract the density values along the line, using cubic interpolation
-        if type(X_obs) is list or type(X_obs) is tuple:
-            X_obs = X_obs[0]
         post, line = _conditional_distribution(
-            x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
+            x=X_obs[0], x_array=xg, y_array=yg, kde_array=dens, k=k
         )
+        sup = yg
     elif Y_obs is not None:
         # Extract the density values along the line, using cubic interpolation
         if type(Y_obs) is list or tuple:
@@ -493,13 +499,13 @@ def posterior_conditional(
         post, line = _conditional_distribution(
             y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
-
+        sup = xg
     else:
         msg = "No observation point included."
         warnings.warn(msg, UserWarning)
         return 0
 
-    post = _scale_distribution(post)
+    post = _scale_distribution(post, sup)
 
     return post, line
 
