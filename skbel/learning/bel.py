@@ -258,8 +258,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param precomputed_kde: Precomputed KDE functions
         :return: The posterior samples in the original space
         """
-        if mode is not None:
+        if mode is not None:  # If mode is provided
             self.mode = mode
+
+        if n_posts is not None:  # If n_posts is provided
+            self.n_posts = n_posts  # Set the number of posterior samples
 
         if type(X_obs) is list:
             try:
@@ -308,7 +311,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 x_dim = self.X_pre_processing[
                     "pca"
                 ].n_components  # Number of PCA components
-                noise = 0.01  # Noise level
+                noise = 0.01  # Noise level. We assume that the data is noisy with a given level of noise.
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = np.eye(x_dim) * noise
                 # (n_comp_CCA, n_comp_CCA)
@@ -350,8 +353,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         fun = LinearRegression().fit(
                             self.X_f.T[comp_n].reshape(-1, 1),
                             self.Y_f.T[comp_n].reshape(-1, 1),
-                        )
-                        bw = 0
+                        )  # Linear regression
+                        bw = 0  # Bandwidth is not used in this case.
                         # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
                         sample_fun = {"kind": kind, "function": fun, "bandwidth": bw}
                         functions = [sample_fun] * n_obs
@@ -388,11 +391,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     self.kde_functions[:, comp_n] = functions  # noqa
 
         if return_samples:
-            samples = self.random_sample(X_obs_f, n_posts, mode)
+            samples = self.random_sample(X_obs_f, n_posts, mode)  # Samples from the posterior
             if inverse_transform:
-                return self.inverse_transform(samples)
+                return self.inverse_transform(samples)  # Inverse transform
             else:
-                return samples
+                return samples  # Return samples
 
     def random_sample(
         self,
@@ -402,11 +405,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         init_kde: np.array = None,
     ) -> np.array:
         """
-        Random sample the inferred posterior distribution
-        :param X_obs_f: Observed data points
+        Random sample the inferred posterior distribution. It can be used to generate samples from the posterior
+        :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
-        :return: Samples from the posterior distribution
+        :return: Samples from the posterior distribution (n_obs, n_posts, n_comp_CCA)
         """
         if mode is not None:
             self.mode = mode
@@ -486,7 +489,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def kde_init(self, X_obs_f):
         """
-        Initialize the KDEs
+        Initialize the KDEs, i.e. the functions that will be used to sample from the posterior distribution.
         :param X_obs_f: Observed data points
         :return: The initialized KDEs
         """
@@ -522,7 +525,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ) -> np.array:
         """
         Back-transforms the posterior samples Y_pred to their physical space.
-        :param Y_pred: The posterior samples
+        :param Y_pred: The posterior samples (shape = (n_obs, n_components, n_samples))
         :return: forecast_posterior
         """
         check_is_fitted(self.cca)
