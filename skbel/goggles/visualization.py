@@ -657,7 +657,7 @@ def _kde_cca(
     # Transform X obs, Y obs
     X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
 
-    samples = bel.random_sample(X_obs_f=X_obs_f, n_posts=100)  # Get 100 samples
+    samples = bel.random_sample(X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100)  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -834,7 +834,7 @@ def cca_vision(
     bel,
     X_obs: np.array,
     Y_obs: np.array,
-    obs_n: int = 0,
+    obs_n: int = None,
     fig_dir: str = None,
     show: bool = False,
 ):

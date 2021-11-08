@@ -410,6 +410,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         Random sample the inferred posterior distribution. It can be used to generate samples from the posterior
         :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
+        :param obs_n: If we want to generate samples from the posterior of a specific observation point, obs_n is the
+        index of the observation point.
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
         :return: Samples from the posterior distribution (n_obs, n_posts, n_comp_CCA)
