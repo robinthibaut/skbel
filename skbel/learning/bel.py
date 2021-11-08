@@ -550,17 +550,18 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         Back-transforms the posterior samples Y_pred to their physical space.
         :param Y_pred: The posterior samples (shape = (n_obs, n_components, n_samples))
-        :return: forecast_posterior
+        :return: The back-transformed samples
         """
         check_is_fitted(self.cca)
 
-        if Y_pred.ndim < 3:
+        if Y_pred.ndim < 2:
             Y_pred = Y_pred.reshape(1, -1)
 
         Y_post = []
 
         for i, yp in enumerate(Y_pred):  # For each observed data
 
+            yp = yp.reshape(1, -1)  # Shape = (1, n_components)
             yp = check_array(yp)
 
             y_post = self.Y_post_processing.inverse_transform(
