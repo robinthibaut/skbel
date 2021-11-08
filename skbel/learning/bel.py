@@ -554,9 +554,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         check_is_fitted(self.cca)
 
-        if Y_pred.ndim < 2:
-            Y_pred = Y_pred.reshape(1, -1)
-
         Y_post = []
 
         for i, yp in enumerate(Y_pred):  # For each observed data
@@ -567,6 +564,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             y_post = self.Y_post_processing.inverse_transform(
                 yp
             )  # Posterior CCA scores
+
             y_post = (
                 np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
                 + self.cca._y_mean  # noqa
