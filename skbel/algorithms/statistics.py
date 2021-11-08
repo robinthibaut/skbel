@@ -439,9 +439,9 @@ def _conditional_distribution(
     return zi, line
 
 
-def _scale_distribution(post: np.array, support: np.array):
+def _scale_distribution(post: np.array, support: np.array) -> np.array:
     """
-    Scale the distribution to have a maximum of 1.
+    Scale the distribution to have a maximum of 1, and a minimum of 0.
     :param post: Values of the KDE cross-section
     :param support: Support of the KDE cross-section
     :return: The scaled distribution
@@ -449,20 +449,9 @@ def _scale_distribution(post: np.array, support: np.array):
 
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
 
-    # if (
-    #     post.any()
-    # ):  # Deals with the case where 'post' consists of an array filled with 0's
-    #     min_max_scaler = preprocessing.MinMaxScaler()
-    #     post_minmax = min_max_scaler.fit_transform(post.reshape(-1, 1)).reshape(-1)
-    #
-    #     return post_minmax
-    #
-    # else:
-    #     return post
-
-    if post.any():  # Rule of thumb
-        a = integrate.simps(y=np.abs(post), x=support)
-        post *= 1 / a
+    if post.any():  # If there is any value
+        a = integrate.simps(y=np.abs(post), x=support)  # Integrate the absolute values
+        post *= 1 / a  # Scale the distribution
 
     return post
 
@@ -481,31 +470,31 @@ def posterior_conditional(
     :param dens: The density values of the KDE of (X, Y).
     :param support: The support grid of the KDE of (X, Y).
     :param k: Used to set number of rows/columns
-    :return:
+    :return: The posterior distribution p(y|x_obs) or p(x|y_obs) and the support grid of the cross-section.
     """
     # Grid parameters
     xg, yg = support
 
     if X_obs is not None:
         # Extract the density values along the line, using cubic interpolation
+        if isinstance(X_obs, list) or isinstance(X_obs, np.ndarray):
+            X_obs = X_obs[0]
         post, line = _conditional_distribution(
-            x=X_obs[0], x_array=xg, y_array=yg, kde_array=dens, k=k
+            x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
-        sup = yg
     elif Y_obs is not None:
         # Extract the density values along the line, using cubic interpolation
-        if type(Y_obs) is list or tuple:
-            Y_obs = X_obs[0]
+        if isinstance(Y_obs, list) or isinstance(Y_obs, np.ndarray):
+            Y_obs = Y_obs[0]
         post, line = _conditional_distribution(
             y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
         )
-        sup = xg
     else:
         msg = "No observation point included."
         warnings.warn(msg, UserWarning)
         return 0
 
-    post = _scale_distribution(post, sup)
+    post = _scale_distribution(post, line)
 
     return post, line
 
@@ -514,7 +503,7 @@ def mvn_inference(
     X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
     """
-    Estimating posterior mean and covariance of the target.
+    Estimates the posterior mean and covariance of the target.
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
     :param X: Canonical Variate of the training data
