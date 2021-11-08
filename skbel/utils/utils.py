@@ -25,9 +25,12 @@ Function = types.FunctionType
 
 
 def flatten_array(arr: np.array) -> np.array:
-    """Flattens a numpy array"""
-    arr_flat = np.array([item for sublist in arr for item in sublist])
-    return arr_flat.reshape(1, -1)
+    """Flattens a numpy array
+    :param arr: np.array: Numpy array.
+    :return: np.array: Flattened array.
+    """
+    arr_flat = np.array([item for sublist in arr for item in sublist])  # Flatten
+    return arr_flat.reshape(1, -1)  # Reshape
 
 
 def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
@@ -95,6 +98,7 @@ def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
     'None' will indicate to use the original combination.
     :param combi: list: List of size n.
+    :return: list: List of combinations.
     """
     cb = [
         list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)

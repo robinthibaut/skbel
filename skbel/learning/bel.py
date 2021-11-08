@@ -391,7 +391,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     self.kde_functions[:, comp_n] = functions  # noqa
 
         if return_samples:
-            samples = self.random_sample(X_obs_f, n_posts, mode)  # Samples from the posterior
+            samples = self.random_sample(
+                X_obs_f, n_posts, mode
+            )  # Samples from the posterior
             if inverse_transform:
                 return self.inverse_transform(samples)  # Inverse transform
             else:
@@ -400,6 +402,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def random_sample(
         self,
         X_obs_f: np.array,
+        obs_n: int = None,
         n_posts: int = None,
         mode: str = None,
         init_kde: np.array = None,
@@ -428,23 +431,35 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         np.random.seed(self.seed)
 
         if self.mode == "mvn":  # Multivariate normal distribution
+            if obs_n is not None:  # If we have a specific observation
+                post_mn = self.posterior_mean[obs_n].reshape(1, -1)
+                post_cv = self.posterior_covariance[obs_n].reshape(1, -1)
+            else:
+                post_mn = self.posterior_mean
+                post_cv = self.posterior_covariance
+
             Y_samples = []
-            for n, (mean, cov) in enumerate(
-                zip(self.posterior_mean, self.posterior_covariance)
-            ):
+            for n, (mean, cov) in enumerate(zip(post_mn, post_cv)):
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
-                )
+                )  # Draw n_posts samples from the multivariate normal distribution
 
         if self.mode == "kde":  # Kernel density estimation
-            n_obs = X_obs_f.shape[0]
+            n_obs = X_obs_f.shape[0]  # Number of observations
             Y_samples = np.zeros(
                 (n_obs, self.n_posts, X_obs_f.shape[-1])
             )  # Shape = (n_obs, n_posts, n_comp_CCA)
 
+            if obs_n is not None:  # If we have a specific observation
+                kde_fn = self.kde_functions[obs_n].reshape(
+                    1, -1
+                )  # Shape = (1, n_comp_CCA)
+            else:
+                kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+
             if init_kde is None:
                 # Parses the functions dict
-                for i, fun_per_comp in enumerate(self.kde_functions):
+                for i, fun_per_comp in enumerate(kde_fn):
                     for j, fun in enumerate(fun_per_comp):
                         if fun["kind"] == "pdf":  # If the function is a pdf
                             pdf = fun["function"]
@@ -467,7 +482,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
             else:  # If the KDE is already initialized
-                for i, fun_per_comp in enumerate(self.kde_functions):
+                for i, fun_per_comp in enumerate(kde_fn):
                     for j, fun in enumerate(fun_per_comp):
                         pv = init_kde[i, j]
                         if fun["kind"] == "pdf":
@@ -487,10 +502,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         return np.array(Y_samples)  # noqa
 
-    def kde_init(self, X_obs_f):
+    def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """
         Initialize the KDEs, i.e. the functions that will be used to sample from the posterior distribution.
         :param X_obs_f: Observed data points
+        :param obs_n: Observation number
         :return: The initialized KDEs
         """
         n_obs = X_obs_f.shape[0]  # Number of observations
@@ -498,8 +514,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         init_samples = np.zeros(
             (n_obs, n_comp), dtype="object"
         )  # Shape = (n_obs, n_comp)
+
+        if obs_n is not None:  # If we have a specific observation
+            kde_fn = self.kde_functions[obs_n].reshape(1, -1)  # Shape = (1, n_comp_CCA)
+        else:
+            kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+
         # Parses the functions dict
-        for i, fun_per_comp in enumerate(self.kde_functions):
+        for i, fun_per_comp in enumerate(kde_fn):
             for j, fun in enumerate(fun_per_comp):
                 if fun["kind"] == "pdf":
                     pdf = fun["function"]

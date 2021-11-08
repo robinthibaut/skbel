@@ -400,12 +400,12 @@ def pca_vision(
         h = np.array([])
     if d.any():
         X_pc = bel.X_pre_processing.transform(d)
-        X_obs_pc = bel.X_pre_processing.transform(X_obs)
+        X_obs_pc = bel.X_pre_processing.transform(X_obs[obs_n])
         fig_file = os.path.join(fig_dir, "d_scores.png")
         if scores:
             pca_scores(
                 training=X_pc,
-                prediction=X_obs_pc[obs_n],
+                prediction=X_obs_pc,
                 n_comp=X_pc.shape[1],
                 # annotation=["C"],
                 labels=labels,
@@ -655,10 +655,9 @@ def _kde_cca(
             Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
 
     # Transform X obs, Y obs
-    bel.X_obs_f = bel.transform(X=X_obs)  # Transform X obs
-    bel.Y_obs_f = bel.transform(Y=Y_obs)  # Transform Y obs
+    X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
 
-    samples = bel.random_sample(X_obs_f=bel.X_obs_f, n_posts=100)  # Get 100 samples
+    samples = bel.random_sample(X_obs_f=X_obs_f, n_posts=100)  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -681,7 +680,7 @@ def _kde_cca(
 
             # Conditional:
             hp, sup = posterior_conditional(
-                X_obs=bel.X_obs_f[obs_n].T[comp_n], dens=density, support=support, k=200
+                X_obs=X_obs_f[obs_n].T[comp_n], dens=density, support=support, k=200
             )  # Get posterior
 
             # Filled contour plot
@@ -706,7 +705,7 @@ def _kde_cca(
             pass
         # Vertical line
         ax_joint.axvline(
-            x=bel.X_obs_f[obs_n].T[comp_n],
+            x=X_obs_f[obs_n].T[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -714,7 +713,7 @@ def _kde_cca(
         )
         # Horizontal line
         ax_joint.axhline(
-            y=bel.Y_obs_f[obs_n].T[comp_n],
+            y=Y_obs_f[obs_n].T[comp_n],
             color="deepskyblue",
             linewidth=1,
             alpha=0.5,
@@ -731,7 +730,7 @@ def _kde_cca(
             alpha=0.9,
         )
         ax_joint.plot(
-            np.ones(samples.shape[1]) * bel.X_obs_f[obs_n].T[comp_n],
+            np.ones(samples.shape[1]) * X_obs_f[obs_n].T[comp_n],
             samples[obs_n].T[comp_n],
             "go",
             alpha=0.3,
@@ -754,7 +753,7 @@ def _kde_cca(
         )
         #  - Notch indicating true value
         ax_marg_x.axvline(
-            x=bel.X_obs_f.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+            x=X_obs_f.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
         )
         ax_marg_x.legend(loc=2, fontsize=10)
 
@@ -817,7 +816,7 @@ def _kde_cca(
         )
 
         if sdir:
-            skbel.utils.dirmaker(sdir)
+            skbel.utils.dirmaker(sdir, erase=False)
             plt.savefig(
                 jp(sdir, f"cca_kde_{comp_n}.png"),
                 bbox_inches="tight",
@@ -832,12 +831,17 @@ def _kde_cca(
 
 
 def cca_vision(
-    bel, X_obs: np.array, Y_obs: np.array, fig_dir: str = None, show: bool = False
+    bel,
+    X_obs: np.array,
+    Y_obs: np.array,
+    obs_n: int = 0,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """
     Loads CCA pickles and plots components for all folders
     :param bel: BEL model
-    :param X_obs: Observed X
+    :param X_obs: Observed X (n_obs, n_comp)
     :param Y_obs: True target array
     :param fig_dir: Base directory path
     :param show: Show figure
@@ -873,6 +877,7 @@ def cca_vision(
     legendary = _proxy_annotate(annotation=["D"], fz=14, loc=1)
     plt.gca().add_artist(legendary)
 
+    skbel.utils.dirmaker(fig_dir, erase=True)
     plt.savefig(
         os.path.join(fig_dir, "coefs.png"),
         bbox_inches="tight",
@@ -884,4 +889,4 @@ def cca_vision(
     plt.close()
 
     # KDE plots which consume a lot of time.
-    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, sdir=fig_dir, show=show)
+    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, obs_n=obs_n, sdir=fig_dir, show=show)
