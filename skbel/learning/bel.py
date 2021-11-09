@@ -27,6 +27,7 @@ from sklearn.utils.validation import (
 from scipy import interpolate
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
+from ..utils import flatten_array
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -603,6 +604,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             y_post_raw = self.Y_pre_processing.inverse_transform(
                 y_post
             )  # Inverse transform
+
+            if type(y_post_raw) == list:  #If the target contains more than one variable
+                y_post_raw = np.concatenate([y_raw.reshape(-1) for y_raw in y_post_raw], axis=0)
+
             Y_post.append(y_post_raw)
 
         return np.array(Y_post)

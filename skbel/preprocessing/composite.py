@@ -118,7 +118,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         :return: list of transformed datasets
         """
         Xit = [
-            obj.inverse_transform(Xr[i]) for i, obj in enumerate(self.t_objects)
+            obj.inverse_transform(Xr[i].reshape(1, -1)) for i, obj in enumerate(self.t_objects)
         ]  # Successively inverse transform
         return Xit
 
