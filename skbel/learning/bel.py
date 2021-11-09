@@ -137,7 +137,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if (
             type(X) is list
         ):  # If more than one dataset used (several features of different nature)
-            [check_consistent_length(x, Y) for x in X]
+            # [check_consistent_length(x, Y) for x in X]
             _X = [
                 self._validate_data(
                     x,
@@ -149,7 +149,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 for x in X
             ]
         else:
-            check_consistent_length(X, Y)
+            # check_consistent_length(X, Y)
             _X = self._validate_data(
                 X,
                 dtype=np.float64,
@@ -158,13 +158,28 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 allow_nd=True,
             )
 
-        _Y = check_array(
-            Y,
-            dtype=np.float64,
-            copy=self.copy,
-            ensure_2d=False,
-            allow_nd=True,
-        )
+        if (
+            type(Y) is list
+        ):  # If more than one dataset used (several features of different nature)
+            _Y = [
+                check_array(
+                    y,
+                    dtype=np.float64,
+                    copy=self.copy,
+                    ensure_2d=False,
+                    allow_nd=True,
+                )
+                for y in Y
+            ]
+        else:
+            # check_consistent_length(X, Y)
+            _Y = check_array(
+                Y,
+                dtype=np.float64,
+                copy=self.copy,
+                ensure_2d=False,
+                allow_nd=True,
+            )
 
         _xt, _yt = (
             self.X_pre_processing.fit_transform(_X),

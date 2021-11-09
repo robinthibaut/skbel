@@ -146,7 +146,9 @@ class KDE:
         """Create a 1D grid of evaluation points.
         :param x: 1D array of data
         """
-        grid = self._define_support_grid(x, self.bw, self.cut, self.clip, self.gridsize)  # define grid
+        grid = self._define_support_grid(
+            x, self.bw, self.cut, self.clip, self.gridsize
+        )  # define grid
         return grid
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array):
@@ -157,8 +159,12 @@ class KDE:
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):  # if clip is a single number
             clip = (clip, clip)
-        grid1 = self._define_support_grid(x1, self.bw, self.cut, clip[0], self.gridsize)  # define grid for x1
-        grid2 = self._define_support_grid(x2, self.bw, self.cut, clip[1], self.gridsize)  # define grid for x2
+        grid1 = self._define_support_grid(
+            x1, self.bw, self.cut, clip[0], self.gridsize
+        )  # define grid for x1
+        grid2 = self._define_support_grid(
+            x2, self.bw, self.cut, clip[1], self.gridsize
+        )  # define grid for x2
 
         return grid1, grid2
 
@@ -211,11 +217,17 @@ class KDE:
             # The scores for each parameter combination will be combined for all the folds and averaged.
             # Highest performing parameter combination will be selected.
 
-            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)})  # Grid search on bandwidth
+            grid = GridSearchCV(
+                kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)}
+            )  # Grid search on bandwidth
             grid.fit(fit_data)  # Fit the grid search
-            self.bw = grid.best_params_["bandwidth"]  # Set the bandwidth to the best bandwidth
+            self.bw = grid.best_params_[
+                "bandwidth"
+            ]  # Set the bandwidth to the best bandwidth
             fit_kws["bandwidth"] = self.bw  # Update the bandwidth in the fit_kws
-            kde.set_params(**{"bandwidth": self.bw})  # Update the bandwidth in the scikit-learn model
+            kde.set_params(
+                **{"bandwidth": self.bw}
+            )  # Update the bandwidth in the scikit-learn model
 
         kde.fit(fit_data)  # Fit the KDE
 

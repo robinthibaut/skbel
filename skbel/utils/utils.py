@@ -3,9 +3,9 @@
 import itertools
 import numpy as np
 import os
+import warnings
 import shutil
 import types
-from loguru import logger
 from typing import List
 
 __all__ = [
@@ -33,23 +33,31 @@ def flatten_array(arr: np.array) -> np.array:
     return arr_flat.reshape(1, -1)  # Reshape
 
 
-def data_read(file: str = None, start: int = 0, end: int = None, step: int = 1):
+def data_read(
+    file: str = None,
+    start: int = 0,
+    end: int = None,
+    step: int = 1,
+    delimiter: str = None,
+):
     """
     Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab.
     :param file: str: File path, such as 'data.txt'.
     :param start: int: Starting line, default is 0.
     :param end: int: Ending line, default is None (last line).
     :param step: int: Step, default is 1 (every line).
+    :param delimiter: str: Delimiter, default is None (space).
     :return: Data contained in file. np.array if data can be converted to float, else list.
     """
     with open(file, "r") as fr:  # Open file
         lines = fr.readlines()[start:end:step]  # Read lines.
         try:  # Try to convert to float
             op = np.array(
-                [list(map(float, line.split())) for line in lines], dtype=object
+                [list(map(float, line.split(delimiter))) for line in lines],
+                dtype=object,
             )
         except ValueError:  # If not, keep as string.
-            op = [line.split() for line in lines]
+            op = [line.split(delimiter) for line in lines]
     return op  # Return data
 
 
@@ -68,7 +76,7 @@ def folder_reset(folder: str, exceptions: list = None):
                     if os.path.isfile(file_path):
                         os.unlink(file_path)
                 except Exception as e:
-                    logger.warning("Failed to delete %s. Reason: %s" % (file_path, e))
+                    warnings.warn("Failed to delete %s. Reason: %s" % (file_path, e))
     except FileNotFoundError:
         pass
 
@@ -90,7 +98,7 @@ def dirmaker(dird: str, erase: bool = False):
                 os.makedirs(dird)
             return 1
     except Exception as e:
-        logger.warning(e)
+        warnings.warn(e)
         return 0
 
 

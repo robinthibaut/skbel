@@ -427,13 +427,16 @@ def pca_vision(
             except AttributeError:
                 pass
 
-    if h.any():
+    try:
         h_pc_training = bel.Y_pre_processing.transform(h)
         # Transform and split
-        try:
-            Y_obs = check_array(Y_obs, allow_nd=True)
-        except ValueError:
-            Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
+        if type(Y_obs) is list:
+            pass
+        else:
+            try:
+                Y_obs = check_array(Y_obs, allow_nd=True)
+            except ValueError:
+                Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
         h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         # Plot
         fig_file = os.path.join(fig_dir, "h_pca_scores.png")
@@ -461,6 +464,8 @@ def pca_vision(
                 )
             except AttributeError:
                 pass
+    except Exception:
+        pass
 
 
 def _despine(
@@ -639,20 +644,26 @@ def _kde_cca(
         offset=bel.cca.n_components
     )  # Gets correlation coefficient
     vmax = 1
-    try:
-        X_obs = check_array(X_obs, allow_nd=True)
-    except ValueError:
+    if type(X_obs) == list:
+        pass
+    else:
         try:
-            X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
-        except AttributeError:
-            X_obs = check_array(X_obs.reshape(1, -1))
-    try:
-        Y_obs = check_array(Y_obs, allow_nd=True)
-    except ValueError:
+            X_obs = check_array(X_obs, allow_nd=True)
+        except ValueError:
+            try:
+                X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
+            except AttributeError:
+                X_obs = check_array(X_obs.reshape(1, -1))
+    if type(Y_obs) == list:
+        pass
+    else:
         try:
-            Y_obs = check_array(Y_obs.reshape(1, -1))
-        except AttributeError:
-            Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
+            Y_obs = check_array(Y_obs, allow_nd=True)
+        except ValueError:
+            try:
+                Y_obs = check_array(Y_obs.reshape(1, -1))
+            except AttributeError:
+                Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
 
     # Transform X obs, Y obs
     X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs

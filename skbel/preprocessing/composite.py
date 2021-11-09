@@ -60,7 +60,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         self.params = fit_params
 
     def fit(self, Xc: list, yc=None, **fit_params):
-        self.t_objects = [self.base_function(self.params) for _ in Xc]
+        self.t_objects = [self.base_function(**self.params) for _ in Xc]
         [obj.fit(Xc[i], yc) for i, obj in enumerate(self.t_objects)]
         return self
 
