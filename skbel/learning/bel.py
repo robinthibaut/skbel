@@ -169,11 +169,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         _xt, _yt = (
             self.X_pre_processing.fit_transform(_X),
             self.Y_pre_processing.fit_transform(_Y),
-        )
+        )  # Pre-processing
 
         # Canonical variates
         try:
-            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)
+            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)  # CCA
         except ValueError:
             _xc, _yc = _xt, _yt
 
@@ -181,9 +181,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         _xf, _yf = (
             self.X_post_processing.fit_transform(_xc),
             self.Y_post_processing.fit_transform(_yc),
-        )
+        )  # Post-processing
 
-        self.X_f, self.Y_f = _xf, _yf  # At the moment we have to save those
+        self.X_f, self.Y_f = _xf, _yf  # At the moment, we have to save those.
 
         return self
 
@@ -199,17 +199,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if X is not None and Y is None:  # If only X is provided
             X = check_array(X, copy=self.copy)
-            _xt = self.X_pre_processing.transform(X)
-            _xc = self.cca.transform(X=_xt)
-            _xp = self.X_post_processing.transform(_xc)
+            _xt = self.X_pre_processing.transform(X)  # Pre-processing
+            _xc = self.cca.transform(X=_xt)  # CCA
+            _xp = self.X_post_processing.transform(_xc)  # Post-processing
 
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))
-            _, _yc = self.cca.transform(X=dummy, Y=_yt)
+            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy
+            _, _yc = self.cca.transform(X=dummy, Y=_yt)  # CCA. We only need the Y-loadings, so we pass dummy X
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
@@ -414,6 +414,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         index of the observation point.
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
+        :param init_kde: Initial KDE function. If None, the KDE function is computed from the observed data.
         :return: Samples from the posterior distribution (n_obs, n_posts, n_comp_CCA)
         """
         if mode is not None:
@@ -484,7 +485,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
             else:  # If the KDE is already initialized
-                for i, fun_per_comp in enumerate(kde_fn):
+                for i, fun_per_comp in enumerate(kde_fn):  # Parses the function dict
                     for j, fun in enumerate(fun_per_comp):
                         pv = init_kde[i, j]
                         if fun["kind"] == "pdf":
@@ -494,7 +495,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,
+                                k=2 ** 7 + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                                 cdf_y=pv,
                             )
                         elif fun["kind"] == "linear":
@@ -531,7 +532,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         pdf=pdf,
                         lower_bd=pdf.x.min(),
                         upper_bd=pdf.x.max(),
-                        k=2 ** 7 + 1,
+                        k=2 ** 7 + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                         return_cdf=True,
                     )
                 elif fun["kind"] == "linear":
@@ -564,6 +565,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             y_post = self.Y_post_processing.inverse_transform(
                 yp
             )  # Posterior CCA scores
+
+            n_comp = self.cca.n_components  # Number of components
+
+            if y_post.shape[1] > n_comp:  # If the number of components is smaller than the number of observations
+                y_post = y_post[:, :n_comp]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
 
             y_post = (
                 np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
