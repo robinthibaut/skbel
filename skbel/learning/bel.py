@@ -209,7 +209,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
             dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy
-            _, _yc = self.cca.transform(X=dummy, Y=_yt)  # CCA. We only need the Y-loadings, so we pass dummy X
+            _, _yc = self.cca.transform(
+                X=dummy, Y=_yt
+            )  # CCA. We only need the Y-loadings, so we pass dummy X
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
@@ -495,7 +497,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
+                                k=2 ** 7
+                                + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                                 cdf_y=pv,
                             )
                         elif fun["kind"] == "linear":
@@ -532,7 +535,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         pdf=pdf,
                         lower_bd=pdf.x.min(),
                         upper_bd=pdf.x.max(),
-                        k=2 ** 7 + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
+                        k=2 ** 7
+                        + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                         return_cdf=True,
                     )
                 elif fun["kind"] == "linear":
@@ -568,8 +572,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             n_comp = self.cca.n_components  # Number of components
 
-            if y_post.shape[1] > n_comp:  # If the number of components is smaller than the number of observations
-                y_post = y_post[:, :n_comp]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
+            if (
+                y_post.shape[1] > n_comp
+            ):  # If the number of components is smaller than the number of observations
+                y_post = y_post[
+                    :, :n_comp
+                ]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
 
             y_post = (
                 np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa

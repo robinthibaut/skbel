@@ -146,7 +146,7 @@ class KDE:
         """Create a 1D grid of evaluation points.
         :param x: 1D array of data
         """
-        grid = self._define_support_grid(x, self.bw, self.cut, self.clip, self.gridsize)
+        grid = self._define_support_grid(x, self.bw, self.cut, self.clip, self.gridsize)  # define grid
         return grid
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array):
@@ -155,10 +155,10 @@ class KDE:
         :param x2: 2nd dimension of the evaluation grid
         """
         clip = self.clip
-        if clip[0] is None or np.isscalar(clip[0]):
+        if clip[0] is None or np.isscalar(clip[0]):  # if clip is a single number
             clip = (clip, clip)
-        grid1 = self._define_support_grid(x1, self.bw, self.cut, clip[0], self.gridsize)
-        grid2 = self._define_support_grid(x2, self.bw, self.cut, clip[1], self.gridsize)
+        grid1 = self._define_support_grid(x1, self.bw, self.cut, clip[0], self.gridsize)  # define grid for x1
+        grid2 = self._define_support_grid(x2, self.bw, self.cut, clip[1], self.gridsize)  # define grid for x2
 
         return grid1, grid2
 
@@ -174,12 +174,12 @@ class KDE:
         :param cache: if True, cache the support grid
         """
         if x2 is None:
-            support = self._define_support_univariate(x1)
+            support = self._define_support_univariate(x1)  # 1D
         else:
-            support = self._define_support_bivariate(x1, x2)
+            support = self._define_support_bivariate(x1, x2)  # 2D
 
         if cache:
-            self.support = support
+            self.support = support  # cache the support grid
 
         return support
 
@@ -187,7 +187,7 @@ class KDE:
         """Fit the scikit-learn KDE
         :param fit_data: Data to fit the KDE to
         """
-        bw = 1 if self.bw is None else self.bw
+        bw = 1 if self.bw is None else self.bw  # bandwidth
         fit_kws = {
             "bandwidth": bw,
             "algorithm": "auto",
@@ -211,13 +211,13 @@ class KDE:
             # The scores for each parameter combination will be combined for all the folds and averaged.
             # Highest performing parameter combination will be selected.
 
-            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)})
-            grid.fit(fit_data)
-            self.bw = grid.best_params_["bandwidth"]
-            fit_kws["bandwidth"] = self.bw
-            kde.set_params(**{"bandwidth": self.bw})
+            grid = GridSearchCV(kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)})  # Grid search on bandwidth
+            grid.fit(fit_data)  # Fit the grid search
+            self.bw = grid.best_params_["bandwidth"]  # Set the bandwidth to the best bandwidth
+            fit_kws["bandwidth"] = self.bw  # Update the bandwidth in the fit_kws
+            kde.set_params(**{"bandwidth": self.bw})  # Update the bandwidth in the scikit-learn model
 
-        kde.fit(fit_data)
+        kde.fit(fit_data)  # Fit the KDE
 
         return kde
 
