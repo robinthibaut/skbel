@@ -24,7 +24,9 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         """
         self.n_components = n_components
         self.scale = scale
-        self.pca_objects = [PCA(n_components=n) for n in self.n_components] # list of PCA objects
+        self.pca_objects = [
+            PCA(n_components=n) for n in self.n_components
+        ]  # list of PCA objects
 
     def fit(self, Xc: list, yc=None, **fit_params):
         """Fit all PCA objects for the different datasets with their specified n_components
@@ -42,7 +44,9 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :return: concatenated output
         """
         [check_is_fitted(p) for p in self.pca_objects]  # Check if fitted
-        scores = [pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]  # Transform
+        scores = [
+            pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
+        ]  # Transform
         if self.scale:  # Scale the data if specified
             scaler = StandardScaler()
             scores = [scaler.fit_transform(s) for s in scores]
@@ -62,7 +66,9 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
         """
-        rm = np.cumsum(np.concatenate([[0], self.n_components]))  # Cumulative sum of n_components
+        rm = np.cumsum(
+            np.concatenate([[0], self.n_components])
+        )  # Cumulative sum of n_components
         Xr = Xr.reshape(-1)
         Xc = [
             Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
@@ -89,7 +95,9 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
         """
-        self.t_objects = [self.base_function(**self.params) for _ in Xc]  # list of transformations
+        self.t_objects = [
+            self.base_function(**self.params) for _ in Xc
+        ]  # list of transformations
         [obj.fit(Xc[i], yc) for i, obj in enumerate(self.t_objects)]  # Fit
         return self
 
@@ -118,7 +126,8 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         :return: list of transformed datasets
         """
         Xit = [
-            obj.inverse_transform(Xr[i].reshape(1, -1)) for i, obj in enumerate(self.t_objects)
+            obj.inverse_transform(Xr[i].reshape(1, -1))
+            for i, obj in enumerate(self.t_objects)
         ]  # Successively inverse transform
         return Xit
 

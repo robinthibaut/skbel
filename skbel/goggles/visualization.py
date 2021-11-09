@@ -742,12 +742,12 @@ def _kde_cca(
             markeredgewidth=0.2,
             alpha=0.9,
         )
-        ax_joint.plot(
-            np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
-            samples.T[comp_n],
-            "go",
-            alpha=0.3,
-        )  # Samples
+        # ax_joint.plot(
+        #     np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
+        #     samples.T[comp_n],
+        #     "go",
+        #     alpha=0.3,
+        # )  # Samples
         # Point
         ax_joint.plot(
             X_obs_f.T[comp_n],
