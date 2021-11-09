@@ -62,11 +62,11 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
         """
-        rm = np.concatenate([[0], self.n_components])
+        rm = np.cumsum(np.concatenate([[0], self.n_components]))  # Cumulative sum of n_components
+        Xr = Xr.reshape(-1)
         Xc = [
             Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
-        ]  # Separates the concatenated features into the
-        # different original datasets
+        ]  # Separates the concatenated features into the different original datasets
         Xit = [
             pca.inverse_transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
         ]  # Successively inverse transform
