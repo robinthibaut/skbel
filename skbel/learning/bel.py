@@ -467,7 +467,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.mode == "kde":  # Kernel density estimation
             n_obs = X_obs_f.shape[0]  # Number of observations
             Y_samples = np.zeros(
-                (n_obs, self.n_posts, X_obs_f.shape[-1])
+                (n_obs, self.n_posts, self.kde_functions.shape[1])
             )  # Shape = (n_obs, n_posts, n_comp_CCA)
 
             if obs_n is not None:  # If we have a specific observation
