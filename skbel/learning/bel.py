@@ -410,7 +410,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if return_samples:
             samples = self.random_sample(
-                X_obs_f=X_obs_f, obs_n=obs_n, n_posts=n_posts, mode=mode, init_kde=precomputed_kde
+                X_obs_f=X_obs_f, n_posts=n_posts, mode=mode, init_kde=precomputed_kde
             )  # Samples from the posterior
             if inverse_transform:
                 return self.inverse_transform(samples)  # Inverse transform
