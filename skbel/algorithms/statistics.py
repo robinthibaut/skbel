@@ -6,7 +6,6 @@ import pandas as pd
 import warnings
 from numpy.random import uniform
 from scipy import ndimage, integrate
-from sklearn import preprocessing
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
 from sklearn.model_selection import GridSearchCV
@@ -630,7 +629,10 @@ def get_cdf(pdf):
     upper_bound = np.max(pdf.x)
 
     def cdf_number(x):
-        """Numerical cdf"""
+        """Numerical cdf
+        :param x: The value to evaluate the cdf at.
+        :return: The value of the cdf at x.
+        """
         if x <= lower_bound:
             return 0
         elif x >= upper_bound:
@@ -646,7 +648,10 @@ def get_cdf(pdf):
                 return 0
 
     def cdf_vector(x):
-        """Vectorized cdf"""
+        """Vectorized cdf
+        :param x: The values to evaluate the cdf at.
+        :return: The values of the cdf at x.
+        """
         try:
             return np.array([cdf_number(xi) for xi in x])
         except AttributeError:
