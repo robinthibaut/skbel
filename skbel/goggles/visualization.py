@@ -656,6 +656,8 @@ def _kde_cca(
                 X_obs = check_array(X_obs.reshape(1, -1))
     if type(Y_obs) == list:
         pass
+    elif Y_obs is None:
+        pass
     else:
         try:
             Y_obs = check_array(Y_obs, allow_nd=True)
@@ -666,11 +668,14 @@ def _kde_cca(
                 Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
 
     # Transform X obs, Y obs
-    X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
+    try:
+        X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
+    except ValueError:
+        X_obs_f = bel.transform(X=X_obs)
 
-    samples = bel.random_sample(
-        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100
-    )  # Get 100 samples
+    # samples = bel.random_sample(
+    #     X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100
+    # )  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -714,7 +719,7 @@ def _kde_cca(
             check_is_fitted(reg)
             reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
             ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
-        except Exception:
+        except Exception:  # If no regressor
             pass
         # Vertical line
         ax_joint.axvline(
@@ -725,13 +730,16 @@ def _kde_cca(
             label="$d^{c}_{True}$",
         )
         # Horizontal line
-        ax_joint.axhline(
-            y=Y_obs_f.T[comp_n],
-            color="deepskyblue",
-            linewidth=1,
-            alpha=0.5,
-            label="$h^{c}_{True}$",
-        )
+        try:
+            ax_joint.axhline(
+                y=Y_obs_f.T[comp_n],
+                color="deepskyblue",
+                linewidth=1,
+                alpha=0.5,
+                label="$h^{c}_{True}$",
+            )
+        except UnboundLocalError:  # If Y_obs is None
+            pass
         # Scatter plot
         ax_joint.plot(
             bel.X_f.T[comp_n],
@@ -749,14 +757,17 @@ def _kde_cca(
         #     alpha=0.3,
         # )  # Samples
         # Point
-        ax_joint.plot(
-            X_obs_f.T[comp_n],
-            Y_obs_f.T[comp_n],
-            "wo",
-            markersize=5,
-            markeredgecolor="k",
-            alpha=1,
-        )
+        try:
+            ax_joint.plot(
+                X_obs_f.T[comp_n],
+                Y_obs_f.T[comp_n],
+                "wo",
+                markersize=5,
+                markeredgecolor="k",
+                alpha=1,
+            )
+        except UnboundLocalError:  # If Y_obs is None
+            pass
         # Marginal x plot
         #  - Line plot
         ax_marg_x.plot(sup_x, kde_x, color="black", linewidth=0.5, alpha=1)
@@ -778,13 +789,16 @@ def _kde_cca(
             sup_y, 0, kde_y, alpha=0.5, color="darkred", label="$p(h^{c})$"
         )
         #  - Notch indicating true value
-        ax_marg_y.axhline(
-            y=Y_obs_f.T[comp_n],
-            xmax=0.25,
-            color="deepskyblue",
-            linewidth=1,
-            alpha=0.5,
-        )
+        try:
+            ax_marg_y.axhline(
+                y=Y_obs_f.T[comp_n],
+                xmax=0.25,
+                color="deepskyblue",
+                linewidth=1,
+                alpha=0.5,
+            )
+        except UnboundLocalError:
+            pass
         if cca_coefficient[comp_n] < 0.999:
             # Conditional distribution
             #  - Line plot
