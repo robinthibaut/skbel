@@ -94,18 +94,16 @@ class KDE:
         clip: list = None,
     ):
         """Initialize the estimator with its parameters.
-
-        Parameters
-        ----------
-        gridsize : int, optional
-            Number of points on each dimension of the evaluation grid.
-        cut : number, optional
-            Factor, multiplied by the smoothing bandwidth, that determines how
+        :param kernel_type: kernel type, one of 'gaussian', 'tophat', 'epanechnikov',
+            'exponential', 'linear', 'cosine'
+        :param bandwidth: bandwidth
+        :param grid_search: perform a grid search for the bandwidth
+        :param gridsize: number of points on each dimension of the evaluation grid.
+        :param cut: Factor, multiplied by the smoothing bandwidth, that determines how
             far the evaluation grid extends past the extreme datapoints. When
             set to 0, truncate the curve at the data limits.
-        clip : pair of numbers None, or a pair of such pairs
-            Do not evaluate the density outside of these limits.
-
+        :param clip: A list of two elements, the lower and upper bounds for the
+            support of the density. If None, the support is the range of the data.
         """
         if clip is None:
             clip = None, None

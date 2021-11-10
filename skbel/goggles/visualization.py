@@ -732,7 +732,7 @@ def _kde_cca(
         # Horizontal line
         try:
             ax_joint.axhline(
-                y=Y_obs_f.T[comp_n],
+                y=Y_obs_f.T[comp_n],  # noqa
                 color="deepskyblue",
                 linewidth=1,
                 alpha=0.5,
@@ -802,7 +802,7 @@ def _kde_cca(
         if cca_coefficient[comp_n] < 0.999:
             # Conditional distribution
             #  - Line plot
-            ax_marg_y.plot(hp, sup, color="red", alpha=0)
+            ax_marg_y.plot(hp, sup, color="red", alpha=0)  # noqa
             #  - Fill to axis
             ax_marg_y.fill_betweenx(
                 sup,
