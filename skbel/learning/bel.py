@@ -579,7 +579,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         for i, yp in enumerate(Y_pred):  # For each observed data
 
-            yp = yp.reshape(1, -1)  # Shape = (1, n_components)
             yp = check_array(yp)
 
             y_post = self.Y_post_processing.inverse_transform(
