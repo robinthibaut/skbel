@@ -579,6 +579,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         for i, yp in enumerate(Y_pred):  # For each observed data
 
+            if yp.ndim < 2:  # If we have only one component
+                yp = yp.reshape(1, -1)
+
             yp = check_array(yp)
 
             y_post = self.Y_post_processing.inverse_transform(
