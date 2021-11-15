@@ -45,6 +45,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_post_processing=None,
         Y_post_processing=None,
         cca=None,
+        n_comp_cca=None,
         x_dim=None,
         y_dim=None,
         random_state=None,
@@ -58,6 +59,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
         :param cca: sklearn pipeline for CCA.
+        :param n_comp_cca: Number of components to keep in CCA.
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
         :param random_state: Seed to reproduce the same samples.
@@ -83,7 +85,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.X_post_processing = X_post_processing
         self.Y_post_processing = Y_post_processing
         self.cca = cca
-
+        self.n_comp_cca = n_comp_cca
         # Parameters for sampling
         self.random_state = random_state
 
@@ -189,8 +191,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Canonical variates
         try:
+            if self.n_comp_cca is None:  # If not specified, use all components
+                self.cca.n_components = min(_xt.shape[1], _yt.shape[1])
+            else:
+                self.cca.n_components = self.n_comp_cca
             _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)  # CCA
-        except ValueError:
+        except ValueError:  # If no CCA
             _xc, _yc = _xt, _yt
 
         # CV Normalized
