@@ -174,11 +174,16 @@ def explained_variance(
     # Explained variance vector:
     cum = np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100
     # x-ticks
-    plt.xticks(
-        np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-        np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
-        fontsize=11,
-    )
+    try:
+        plt.xticks(
+            np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
+            np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
+            fontsize=11,
+        )
+    except ValueError:
+        plt.xticks(
+            fontsize=11,
+        )
     # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks, fontsize=8.5)

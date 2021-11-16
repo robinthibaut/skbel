@@ -111,6 +111,6 @@ def combinator(combi):
     cb = [
         list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)
     ]  # Get all possible wel combinations
-    # Flatten and reverse to get all combination at index 0.
-    cb = [item for sublist in cb for item in sublist][::-1]
+    # Flatten
+    cb = [item for sublist in cb for item in sublist]
     return cb
