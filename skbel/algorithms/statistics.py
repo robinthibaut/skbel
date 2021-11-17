@@ -619,7 +619,6 @@ def get_cdf(pdf):
     """Generate a CDF from a (possibly not normalized) pdf.
     :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
-
     :return: cdf: The cumulative density function of the (normalized version of the)
         provided pdf. Will return a float if provided with a float or int; will
         return a numpy array if provided with an iterable.

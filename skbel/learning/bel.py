@@ -519,8 +519,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
-                                k=2 ** 7
-                                + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
+                                k=2 ** 7 + 1,
                                 cdf_y=pv,
                             )
                         elif fun["kind"] == "linear":
