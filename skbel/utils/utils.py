@@ -41,7 +41,8 @@ def data_read(
     delimiter: str = None,
 ):
     """
-    Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab.
+    Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab (default)
+    or by a delimiter specified by the user.
     :param file: str: File path, such as 'data.txt'.
     :param start: int: Starting line, default is 0.
     :param end: int: Ending line, default is None (last line).
@@ -50,12 +51,14 @@ def data_read(
     :return: Data contained in file. np.array if data can be converted to float, else list.
     """
     with open(file, "r") as fr:  # Open file
-        lines = fr.readlines()[start:end:step]  # Read lines.
+        lines = fr.readlines()[
+            start:end:step
+        ]  # Read lines. The content is sliced according to the parameters.
         try:  # Try to convert to float
             op = np.array(
                 [list(map(float, line.split(delimiter))) for line in lines],
                 dtype=object,
-            )
+            )  # The map function converts to float. The split function splits the line according to the delimiter.
         except ValueError:  # If not, keep as string.
             op = [line.split(delimiter) for line in lines]
     return op  # Return data

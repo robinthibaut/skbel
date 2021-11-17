@@ -530,14 +530,14 @@ def mvn_inference(
     n_training = X.shape[0]
 
     # Computation of the posterior mean in Canonical space
-    y_mean = np.mean(Y, axis=0)  # (n_comp_CCA, 1)
+    y_mean = np.mean(Y, axis=0)  # (n_comp_CCA, 1)  # noqa
     # Mean is 0, as expected.
     y_mean = np.where(np.abs(y_mean) < 1e-8, 0, y_mean)
 
     # Evaluate the covariance in h (in Canonical space)
     # Very close to the Identity matrix
     # (n_comp_CCA, n_comp_CCA)
-    y_cov = np.cov(Y.T)
+    y_cov = np.cov(Y.T)  # noqa
 
     if "x_cov" in kwargs.keys():
         x_cov = kwargs["x_cov"]
@@ -553,7 +553,7 @@ def mvn_inference(
 
     # Modeling error due to deviations from theory
     # (n_components_CCA, n_training)
-    x_ls_predicted = np.matmul(Y, g.T)
+    x_ls_predicted = np.matmul(Y, g.T)  # noqa
     x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
     x_modeling_error = (
         X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
@@ -582,7 +582,7 @@ def mvn_inference(
     y_posterior_covariance = np.linalg.pinv(d11)  # (n_comp_CCA, n_comp_CCA)
     # Computing the posterior mean is simply a linear operation, given precomputed posterior covariance.
     y_posterior_mean = y_posterior_covariance @ (
-        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)
+        d11 @ y_mean - d12 @ (X_obs[0] - x_modeling_mean_error - y_mean @ g.T)  # noqa
     )  # (n_comp_CCA,)
 
     return y_posterior_mean, y_posterior_covariance
@@ -598,15 +598,16 @@ def normalize(pdf):
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
 
-    dx = np.abs(pdf.x[1] - pdf.x[0])
-    quadrature = romb(pdf.y, dx)
-    A = quadrature
+    dx = np.abs(pdf.x[1] - pdf.x[0])  # Assume uniform spacing
+    quadrature = romb(pdf.y, dx)  # Integrate using Romberg's method
+    A = quadrature  # Normalization constant
 
     def pdf_normed(x):
-        b = np.interp(x=x, xp=pdf.x, fp=pdf.y)
+        """Normalized PDF."""
+        b = np.interp(x=x, xp=pdf.x, fp=pdf.y)  # Evaluate the PDF at x
         if A < 1e-3:  # Rule of thumb
             return 0
-        if b / A < 1e-3:
+        if b / A < 1e-3:  # If the PDF is very small, return 0
             return 0
         else:
             return b / A
@@ -669,7 +670,7 @@ def it_sampling(
     cdf_y: np.array = None,
     return_cdf: bool = False,
 ):
-    """Sample from an arbitrary, unnormalized PDF.
+    """Sample from an arbitrary, un-normalized PDF.
     :param pdf : function, float -> float The probability density
     function (not necessarily normalized). Must take floats or ints as input, and return floats as an output.
     :param num_samples : The number of samples to be generated.
