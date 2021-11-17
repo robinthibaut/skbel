@@ -88,6 +88,7 @@ class KDE:
         kernel_type: str = None,
         bandwidth: float = None,
         grid_search: bool = True,
+        bandwidth_space: np.array = None,
         gridsize: int = 200,
         cut: float = 1,
         clip: list = None,
@@ -97,6 +98,7 @@ class KDE:
             'exponential', 'linear', 'cosine'
         :param bandwidth: bandwidth
         :param grid_search: perform a grid search for the bandwidth
+        :param bandwidth_space: array of bandwidths to try
         :param gridsize: number of points on each dimension of the evaluation grid.
         :param cut: Factor, multiplied by the smoothing bandwidth, that determines how
             far the evaluation grid extends past the extreme datapoints. When
@@ -112,6 +114,10 @@ class KDE:
             self.kernel_type = "gaussian"
         self.bw = bandwidth
         self.grid_search = grid_search
+        if bandwidth_space is None:
+            self.bandwidth_space = np.logspace(-2, 1, 50)
+        else:
+            self.bandwidth_space = bandwidth_space
         self.gridsize = gridsize
         self.cut = cut
         self.clip = clip
@@ -201,21 +207,18 @@ class KDE:
             "breadth_first": True,
             "leaf_size": 40,
             "metric_params": None,
-        }
-        kde = KernelDensity(**fit_kws)
+        }  # define the kernel density estimator parameters
+        kde = KernelDensity(**fit_kws)  # initiate the estimator
         if self.grid_search and not self.bw:
             # GridSearchCV maximizes the total log probability density under the model.
-
             # The data X will be be divided into train-test splits based on folds defined in cv param
-
             # For each combination of parameters that you specified in param_grid, the model
             # will be trained on the train part from the step above and then scoring will be used on test part.
-
             # The scores for each parameter combination will be combined for all the folds and averaged.
-            # Highest performing parameter combination will be selected.
+            # Highest performing parameter will be selected.
 
             grid = GridSearchCV(
-                kde, {"bandwidth": 10 ** np.linspace(-2, 1, 50)}
+                kde, {"bandwidth": self.bandwidth_space}
             )  # Grid search on bandwidth
             grid.fit(fit_data)  # Fit the grid search
             self.bw = grid.best_params_[

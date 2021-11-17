@@ -268,15 +268,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         X_obs: np.array,
         n_posts: int = None,
         mode: str = None,
+        noise: float = None,
         return_samples: bool = True,
         inverse_transform: bool = True,
         precomputed_kde: np.array = None,
     ) -> np.array:
         """
-        Make predictions, in the BEL fashion.
+        Predict the posterior distribution of the target variable.
         :param X_obs: The observed data
         :param n_posts: The number of posterior samples to draw
         :param mode: The mode of inference to use.
+        :param noise: The noise level of the model (only if mode == 'mvn').
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space
         :param precomputed_kde: Precomputed KDE functions
@@ -284,6 +286,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """
         if mode is not None:  # If mode is provided
             self.mode = mode
+
+        if noise is None:
+            self.noise = 0.01
 
         if n_posts is not None:  # If n_posts is provided
             self.n_posts = n_posts  # Set the number of posterior samples
@@ -325,7 +330,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Estimate the posterior mean and covariance
         n_obs = X_obs_f.shape[0]  # Number of observations
         n_cca = self.cca.n_components  # Number of canonical variables
-        if self.mode == "mvn":
+        if self.mode == "mvn":  # If mode is mvn
             self.posterior_mean, self.posterior_covariance = np.zeros(
                 (n_obs, n_cca)
             ), np.zeros((n_obs, n_cca, n_cca))
@@ -335,9 +340,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 x_dim = self.X_pre_processing[
                     "pca"
                 ].n_components  # Number of PCA components
-                noise = 0.01  # Noise level. We assume that the data is noisy with a given level of noise.
                 # I matrix. (n_comp_PCA, n_comp_PCA)
-                x_cov = np.eye(x_dim) * noise
+                x_cov = (
+                    np.eye(x_dim) * self.noise
+                )  # Noise level. We assume that the data is noisy with a given level of noise.
                 # (n_comp_CCA, n_comp_CCA)
                 # Get the rotation matrices
                 x_rotations = self.cca.x_rotations_
