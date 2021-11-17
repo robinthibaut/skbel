@@ -36,7 +36,7 @@ def _my_alphabet(az: int):
     """
     Method used to make custom figure annotations.
     :param az: Index of the alphabet
-    :return:
+    :return: corresponding letter
     """
     alphabet = string.ascii_uppercase
     extended_alphabet = ["".join(i) for i in list(itertools.permutations(alphabet, 2))]
@@ -49,6 +49,19 @@ def _my_alphabet(az: int):
 
     return sub
 
+def _yield_alphabet(start=0):
+    """
+    Yields the alphabet from a given index
+    :param start: Index of the first letter
+    :return:
+    """
+    alphabet = string.ascii_uppercase
+    extended_alphabet = ["".join(i) for i in list(itertools.permutations(alphabet, 2))]
+
+    alphaomega = [char for char in alphabet] + extended_alphabet
+
+    for sub in alphaomega[start:]:
+        yield sub
 
 def _proxy_legend(
     legend1: legend = None,
@@ -223,8 +236,8 @@ def explained_variance(
 
 def pca_scores(
     training: np.array,
-    prediction: np.array,
-    n_comp: int,
+    prediction: np.array = None,
+    n_comp: int = None,
     annotation: list = None,
     fig_file: str = None,
     labels: bool = True,
@@ -246,56 +259,56 @@ def pca_scores(
         annotation = []
     # Grid
     plt.grid(alpha=0.2)
-    # Ticks
-    # Only works for multiple of 5 - not ideal - quick fix with "try"
-    # try:
-    #     plt.xticks(
-    #         np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-    #         np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
-    #     )
-    # except Exception as e:
-    #     logger.error(e)
 
     # Plot all training scores
     plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
-    # plt.plot(training.T[:ut], '+w', markersize=.5, alpha=0.2)
 
-    # For each sample used for prediction:
-    # Select observation
-    pc_obs = prediction.reshape(1, -1)
-    # Create beautiful spline to follow prediction scores
-    xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-    spl = make_interp_spline(
-        np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-    )  # type: BSpline
-    power_smooth = spl(xnew)
-    # I forgot why I had to put '-1'
-    plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
+    if prediction is not None:
+        # For each sample used for prediction:
+        # Select observation
+        pc_obs = prediction.reshape(1, -1)
+        # Create beautiful spline to follow prediction scores
+        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
+        spl = make_interp_spline(
+            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
+        )  # type: BSpline
+        power_smooth = spl(xnew)
+        # I forgot why I had to put '-1'
+        plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
 
-    plt.plot(
-        pc_obs.T[:n_comp],  # Plot observations scores
-        "ro",
-        markersize=3,
-        markeredgecolor="k",
-        markeredgewidth=0.4,
-        alpha=0.8,
-        # label=str(sample_n),
-    )
+        plt.plot(
+            pc_obs.T[:n_comp],  # Plot observations scores
+            "ro",
+            markersize=3,
+            markeredgecolor="k",
+            markeredgewidth=0.4,
+            alpha=0.8,
+            # label=str(sample_n),
+        )
 
     if labels:
-        plt.title("Principal Components of training and test dataset")
+        plt.title("Principal Components")
         plt.xlabel("PC number")
         plt.ylabel("PC")
     plt.tick_params(labelsize=11)
     # Add legend
     # Add title inside the box
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
-    _proxy_legend(
-        legend1=legend_a,
-        colors=["blue", "red"],
-        labels=["Training", "Test"],
-        marker=["o", "o"],
-    )
+
+    if prediction is not None:
+        _proxy_legend(
+            legend1=legend_a,
+            colors=["blue", "red"],
+            labels=["Training", "Test"],
+            marker=["o", "o"],
+        )
+    else:
+        _proxy_legend(
+            legend1=legend_a,
+            colors=["blue"],
+            labels=["Training"],
+            marker=["o"],
+        )
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
@@ -376,6 +389,8 @@ def pca_vision(
     Y_obs: np.array = None,
     scores: bool = True,
     exvar: bool = True,
+    thrx: float = 0.8,
+    thry: float = 0.8,
     labels: bool = True,
     fig_dir: str = None,
     show: bool = False,
@@ -390,6 +405,8 @@ def pca_vision(
     :param Y_obs: np.array: "True" target array
     :param scores: bool: Plot scores
     :param exvar: bool: Plot explained variance
+    :param thrx: float: Threshold for X (explained variance plot)
+    :param thry: float: Threshold for Y (explained variance plot)
     :param labels: Show labels
     :param fig_dir: Path to save directory
     :param show: Show figure
@@ -401,18 +418,25 @@ def pca_vision(
 
     if d is None:
         d = np.array([])
+
     if h is None:
         h = np.array([])
+
+    annotation = _yield_alphabet()
+
     if d.any():
-        X_pc = bel.X_pre_processing.transform(d)
-        X_obs_pc = bel.X_pre_processing.transform(X_obs[obs_n])
+        X_pc = bel.X_pre_processing.transform(d)  # PCA scores
+        if X_obs is not None:
+            X_obs_pc = bel.X_pre_processing.transform(X_obs[obs_n])  # PCA scores of the observed point
+        else:
+            X_obs_pc = None
         fig_file = os.path.join(fig_dir, "d_scores.png")
         if scores:
             pca_scores(
                 training=X_pc,
                 prediction=X_obs_pc,
                 n_comp=X_pc.shape[1],
-                # annotation=["C"],
+                annotation=[next(annotation)],
                 labels=labels,
                 fig_file=fig_file,
                 show=show,
@@ -424,8 +448,8 @@ def pca_vision(
                 explained_variance(
                     bel.X_pre_processing["pca"],
                     n_comp=X_pc.shape[1],
-                    thr=0.8,
-                    # annotation=["E"],
+                    thr=thrx,
+                    annotation=[next(annotation)],
                     fig_file=fig_file,
                     show=show,
                 )
@@ -435,14 +459,17 @@ def pca_vision(
     try:
         h_pc_training = bel.Y_pre_processing.transform(h)
         # Transform and split
-        if type(Y_obs) is list:
-            pass
+        if Y_obs is not None:
+            if type(Y_obs) is list:
+                pass
+            else:
+                try:
+                    Y_obs = check_array(Y_obs, allow_nd=True)
+                except ValueError:
+                    Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
+            h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
         else:
-            try:
-                Y_obs = check_array(Y_obs, allow_nd=True)
-            except ValueError:
-                Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
-        h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
+            h_pc_prediction = None
         # Plot
         fig_file = os.path.join(fig_dir, "h_pca_scores.png")
         if scores:
@@ -450,7 +477,7 @@ def pca_vision(
                 training=h_pc_training,
                 prediction=h_pc_prediction,
                 n_comp=h_pc_training.shape[1],
-                # annotation=["D"],
+                annotation=[next(annotation)],
                 labels=labels,
                 fig_file=fig_file,
                 show=show,
@@ -462,8 +489,8 @@ def pca_vision(
                 explained_variance(
                     bel.Y_pre_processing["pca"],
                     n_comp=h_pc_training.shape[1],
-                    thr=0.8,
-                    # annotation=["F"],
+                    thr=thry,
+                    annotation=[next(annotation)],
                     fig_file=fig_file,
                     show=show,
                 )
