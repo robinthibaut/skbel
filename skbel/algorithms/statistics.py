@@ -1,14 +1,16 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import math
+import warnings
+
 import numpy as np
 import pandas as pd
-import warnings
 from numpy.random import uniform
 from scipy import ndimage, integrate
+from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
-from sklearn.model_selection import GridSearchCV
+
 from skbel.algorithms.extmath import get_block
 
 __all__ = [
@@ -111,11 +113,11 @@ class KDE:
 
         self.kernel_type = kernel_type
         if kernel_type is None:
-            self.kernel_type = "gaussian"
+            self.kernel_type = "gaussian"  # default
         self.bw = bandwidth
         self.grid_search = grid_search
         if bandwidth_space is None:
-            self.bandwidth_space = np.logspace(-2, 1, 50)
+            self.bandwidth_space = np.logspace(-2, 1, 50)  # default bandwidths
         else:
             self.bandwidth_space = bandwidth_space
         self.gridsize = gridsize
@@ -137,6 +139,7 @@ class KDE:
         :param clip: pair of numbers None, or a pair of such pairs
             Do not evaluate the density outside of these limits.
         :param gridsize: number of points on each dimension of the evaluation grid.
+        :return: evaluation grid
         """
         clip_lo = -np.inf if clip[0] is None else clip[0]
         clip_hi = +np.inf if clip[1] is None else clip[1]
@@ -148,6 +151,7 @@ class KDE:
     def _define_support_univariate(self, x: np.array):
         """Create a 1D grid of evaluation points.
         :param x: 1D array of data
+        :return: 1D array of evaluation points
         """
         grid = self._define_support_grid(
             x, self.bw, self.cut, self.clip, self.gridsize
@@ -158,6 +162,7 @@ class KDE:
         """Create a 2D grid of evaluation points.
         :param x1: 1st dimension of the evaluation grid
         :param x2: 2nd dimension of the evaluation grid
+        :return: 2D grid of evaluation points
         """
         clip = self.clip
         if clip[0] is None or np.isscalar(clip[0]):  # if clip is a single number
@@ -181,6 +186,7 @@ class KDE:
         :param x1: 1D array of data
         :param x2: 2D array of data
         :param cache: if True, cache the support grid
+        :return: grid of evaluation points
         """
         if x2 is None:
             support = self._define_support_univariate(x1)  # 1D
@@ -195,16 +201,17 @@ class KDE:
     def _fit(self, fit_data: np.array):
         """Fit the scikit-learn KDE
         :param fit_data: Data to fit the KDE to
+        :return: fitted KDE object
         """
         bw = 1 if self.bw is None else self.bw  # bandwidth
         fit_kws = {
             "bandwidth": bw,
-            "algorithm": "auto",
+            "algorithm": "auto",  # kdtree or ball_tree
             "kernel": self.kernel_type,
-            "metric": "euclidean",
-            "atol": 1e-4,
-            "rtol": 0,
-            "breadth_first": True,
+            "metric": "euclidean",  # default
+            "atol": 1e-4,  # tolerance for convergence
+            "rtol": 0,  #
+            "breadth_first": True,  #
             "leaf_size": 40,
             "metric_params": None,
         }  # define the kernel density estimator parameters
@@ -236,6 +243,7 @@ class KDE:
     def _eval_univariate(self, x: np.array):
         """Fit and evaluate on univariate data.
         :param x: Data to evaluate.
+        :return: (density, support)
         """
         support = self.support
         if support is None:
@@ -243,7 +251,7 @@ class KDE:
 
         kde = self._fit(x.reshape(-1, 1))
 
-        density = np.exp(kde.score_samples(support.reshape(-1, 1)))
+        density = np.exp(kde.score_samples(support.reshape(-1, 1)))  # evaluate the KDE
 
         return density, support
 
@@ -251,6 +259,7 @@ class KDE:
         """Fit and evaluate on bivariate data.
         :param x1: First data set.
         :param x2: Second data set.
+        :return: (density, support)
         """
         support = self.support
         if support is None:
@@ -263,7 +272,7 @@ class KDE:
         X, Y = np.meshgrid(*support)
         grid = np.vstack([X.ravel(), Y.ravel()]).T
 
-        density = np.exp(kde.score_samples(grid))
+        density = np.exp(kde.score_samples(grid))  # evaluate the KDE
         density = density.reshape(X.shape)
 
         return density, support
@@ -283,6 +292,7 @@ def _univariate_density(
     """Estimate the density of a single variable.
     :param data_variable: DataFrame with a single variable.
     :param estimate_kws: Keyword arguments for the density estimator.
+    :return: (density, support, bandwidth)
     """
     # Initialize the estimator object
     estimator = KDE(**estimate_kws)
@@ -311,7 +321,7 @@ def _bivariate_density(
     Estimate bivariate KDE.
     :param data: DataFrame containing (x, y) data
     :param estimate_kws: KDE parameters
-    :return:
+    :return: (density, support, bandwidth)
     """
 
     estimator = KDE(**estimate_kws)
@@ -424,7 +434,7 @@ def _conditional_distribution(
     :param x: Observed data (horizontal axis)
     :param y: Observed data (vertical axis)
     :param k: Used to set number of rows/columns
-    :return:
+    :return: (cross_section : The cross-section of the KDE, line : The line of the KDE)
     """
 
     # Coordinates of the line we'd like to sample along
@@ -593,10 +603,8 @@ def mvn_inference(
 
 def normalize(pdf):
     """Normalize a non-normalized PDF.
-
     :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
-
     :return: pdf_norm : Function with same signature as pdf, but normalized so that the integral
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
@@ -606,7 +614,10 @@ def normalize(pdf):
     A = quadrature  # Normalization constant
 
     def pdf_normed(x):
-        """Normalized PDF."""
+        """Normalized PDF.
+        :param x: Input to the pdf.
+        :return: pdf(x) / A.
+        """
         b = np.interp(x=x, xp=pdf.x, fp=pdf.y)  # Evaluate the PDF at x
         if A < 1e-3:  # Rule of thumb
             return 0
@@ -625,7 +636,6 @@ def get_cdf(pdf):
     :return: cdf: The cumulative density function of the (normalized version of the)
         provided pdf. Will return a float if provided with a float or int; will
         return a numpy array if provided with an iterable.
-
     """
     pdf_norm = normalize(pdf)  # Calculate the normalized pdf
     lower_bound = np.min(pdf.x)
