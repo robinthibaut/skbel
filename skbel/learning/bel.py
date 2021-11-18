@@ -12,6 +12,7 @@ Alternative blueprints could be written in the same style as the BEL class imple
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import numpy as np
+from scipy import interpolate
 from sklearn.base import (
     BaseEstimator,
     TransformerMixin,
@@ -22,12 +23,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.utils import check_array
 from sklearn.utils.validation import (
     check_is_fitted,
-    check_consistent_length,
 )
-from scipy import interpolate
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
-from ..utils import flatten_array
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -275,13 +273,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ) -> np.array:
         """
         Predict the posterior distribution of the target variable.
-        :param X_obs: The observed data
-        :param n_posts: The number of posterior samples to draw
-        :param mode: The mode of inference to use.
+        :param X_obs: The observed data.
+        :param n_posts: The number of posterior samples to draw.
+        :param mode: The mode of inference to use. Default is "kde".
         :param noise: The noise level of the model (only if mode == 'mvn').
         :param return_samples: Option to return samples or not. Default=True.
-        :param inverse_transform: Option to return the samples in the original space
-        :param precomputed_kde: Precomputed KDE functions
+        :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
+        original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
+        transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
+        :param precomputed_kde: Precomputed KDE functions. Computing the KDEs can be time-consuming. If the KDEs are
+        precomputed, they can be passed as an argument.
         :return: The posterior samples in the original space
         """
         if mode is not None:  # If mode is provided
@@ -608,10 +609,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     :, :n_comp
                 ]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
 
-            y_post = (
-                np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-                + self.cca._y_mean  # noqa
-            )  # Posterior PC scores
+            # x_dummy to be used in the inverse_transform of CCA:
+            x_dummy = np.zeros((y_post.shape[0], n_comp))
+            try:
+                x_post_dummy, y_post = self.cca.inverse_transform(
+                    x_dummy, y_post
+                )  # Inverse transform the posterior samples
+            except TypeError:
+                y_post = (
+                    np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
+                    + self.cca._y_mean  # noqa
+                )  # Posterior PC scores
 
             # Back transform PC scores
             y_post_raw = self.Y_pre_processing.inverse_transform(

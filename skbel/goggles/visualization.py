@@ -49,6 +49,7 @@ def _my_alphabet(az: int):
 
     return sub
 
+
 def _yield_alphabet(start=0):
     """
     Yields the alphabet from a given index
@@ -62,6 +63,7 @@ def _yield_alphabet(start=0):
 
     for sub in alphaomega[start:]:
         yield sub
+
 
 def _proxy_legend(
     legend1: legend = None,
@@ -427,7 +429,9 @@ def pca_vision(
     if d.any():
         X_pc = bel.X_pre_processing.transform(d)  # PCA scores
         if X_obs is not None:
-            X_obs_pc = bel.X_pre_processing.transform(X_obs[obs_n])  # PCA scores of the observed point
+            X_obs_pc = bel.X_pre_processing.transform(
+                X_obs[obs_n]
+            )  # PCA scores of the observed point
         else:
             X_obs_pc = None
         fig_file = os.path.join(fig_dir, "d_scores.png")
