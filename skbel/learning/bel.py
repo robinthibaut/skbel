@@ -283,7 +283,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
         :param precomputed_kde: Precomputed KDE functions. Computing the KDEs can be time-consuming. If the KDEs are
         precomputed, they can be passed as an argument.
-        :return: The posterior samples in the original space
+        :return: The posterior samples in the original space or in the transformed space.
         """
         if mode is not None:  # If mode is provided
             self.mode = mode
@@ -294,7 +294,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if n_posts is not None:  # If n_posts is provided
             self.n_posts = n_posts  # Set the number of posterior samples
 
-        if type(X_obs) is list:
+        if type(X_obs) is list:  # If X_obs is a list
             try:
                 X_obs = [
                     check_array(x, allow_nd=True) for x in X_obs
@@ -318,6 +318,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Check if it is a pd.Series
                 except AttributeError:
                     X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
+        # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
+        # consistent.
 
         # Project observed data into canonical space.
         X_obs_pc = self.X_pre_processing.transform(

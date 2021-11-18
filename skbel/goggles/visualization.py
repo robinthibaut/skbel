@@ -666,6 +666,7 @@ def _kde_cca(
     Y_obs: np.array = None,
     sdir: str = None,
     show: bool = False,
+    annotation_callback = None,
 ):
     """
     Plot the kernel density estimate of the CCA.
@@ -675,6 +676,7 @@ def _kde_cca(
     :param Y_obs: The Y observations.
     :param sdir: The directory to save the plot to.
     :param show: Whether to show the plot.
+    :param annotation_callback: A callback function to annotate the plot.
     """
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
@@ -857,7 +859,7 @@ def _kde_cca(
         plt.tick_params(labelsize=14)
 
         # Add custom artists
-        subtitle = _my_alphabet(comp_n)
+        subtitle = next(annotation_callback)
         # Add title inside the box
         an = [
             f"{subtitle}. Pair {comp_n + 1} - "
@@ -892,6 +894,8 @@ def _kde_cca(
             plt.show()
         plt.close()
 
+    return annotation_callback  # Return the iterator so that it can be used again
+
 
 def cca_vision(
     bel,
@@ -906,12 +910,18 @@ def cca_vision(
     :param bel: BEL model
     :param X_obs: Observed X (n_obs, n_comp)
     :param Y_obs: True target array
+    :param obs_n: Observation number
     :param fig_dir: Base directory path
     :param show: Show figure
     :return:
     """
     if fig_dir is None:
         fig_dir = ""
+
+    annotation_call = _yield_alphabet()
+    # KDE plots which consume a lot of time.
+    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, obs_n=obs_n, sdir=fig_dir, show=show, annotation_callback=annotation_call)
+
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
         offset=bel.cca.n_components
@@ -937,10 +947,9 @@ def cca_vision(
     plt.xlabel("Component number")
 
     # Add annotation
-    legendary = _proxy_annotate(annotation=["D"], fz=14, loc=1)
+    legendary = _proxy_annotate(annotation=next(annotation_call), fz=14, loc=1)
     plt.gca().add_artist(legendary)
 
-    skbel.utils.dirmaker(fig_dir, erase=True)
     plt.savefig(
         os.path.join(fig_dir, "coefs.png"),
         bbox_inches="tight",
@@ -951,5 +960,4 @@ def cca_vision(
         plt.show()
     plt.close()
 
-    # KDE plots which consume a lot of time.
-    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, obs_n=obs_n, sdir=fig_dir, show=show)
+    return annotation_call  # Return the iterator so that it can be used again
