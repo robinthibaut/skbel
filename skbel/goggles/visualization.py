@@ -666,7 +666,7 @@ def _kde_cca(
     Y_obs: np.array = None,
     sdir: str = None,
     show: bool = False,
-    annotation_callback = None,
+    annotation_callback=None,
 ):
     """
     Plot the kernel density estimate of the CCA.
@@ -920,7 +920,15 @@ def cca_vision(
 
     annotation_call = _yield_alphabet()
     # KDE plots which consume a lot of time.
-    _kde_cca(bel, X_obs=X_obs, Y_obs=Y_obs, obs_n=obs_n, sdir=fig_dir, show=show, annotation_callback=annotation_call)
+    _kde_cca(
+        bel,
+        X_obs=X_obs,
+        Y_obs=Y_obs,
+        obs_n=obs_n,
+        sdir=fig_dir,
+        show=show,
+        annotation_callback=annotation_call,
+    )
 
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
