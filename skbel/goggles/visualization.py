@@ -202,6 +202,9 @@ def explained_variance(
     # Tricky y-ticks
     yticks = np.append(cum[:ny], cum[-1])
     plt.yticks(yticks, fontsize=8.5)
+
+    # Set y-axis limits
+    plt.ylim(0, 100)
     # bars for aesthetics
     plt.bar(
         np.arange(n_comp),
@@ -285,13 +288,12 @@ def pca_scores(
             markeredgecolor="k",
             markeredgewidth=0.4,
             alpha=0.8,
-            # label=str(sample_n),
         )
 
     if labels:
         plt.title("Principal Components")
         plt.xlabel("PC number")
-        plt.ylabel("PC")
+        plt.ylabel("PC value")
     plt.tick_params(labelsize=11)
     # Add legend
     # Add title inside the box
