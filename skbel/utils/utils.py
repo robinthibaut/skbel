@@ -37,7 +37,7 @@ def data_read(
     file: str = None,
     start: int = 0,
     end: int = None,
-    step: int = 1,
+    step: int = None,
     delimiter: str = None,
 ):
     """
@@ -50,6 +50,9 @@ def data_read(
     :param delimiter: str: Delimiter, default is None (space).
     :return: Data contained in file. np.array if data can be converted to float, else list.
     """
+    if step is None:
+        step = 1
+
     with open(file, "r") as fr:  # Open file
         lines = fr.readlines()[
             start:end:step
