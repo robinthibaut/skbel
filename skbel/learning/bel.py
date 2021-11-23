@@ -1,5 +1,4 @@
-"""
-Bayesian Evidential Learning Framework
+"""Bayesian Evidential Learning Framework.
 
 Currently, the common practice is to first transform predictor and target variables
 through PCA, and then apply CCA.
@@ -7,7 +6,6 @@ through PCA, and then apply CCA.
 It would be interesting to try other techniques and implement it in the framework.
 
 Alternative blueprints could be written in the same style as the BEL class implementing the classic scheme.
-
 """
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
@@ -29,8 +27,10 @@ from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    """
-    Heart of the framework. Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian Evidential Learning.
+    """Heart of the framework.
+
+    Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian
+    Evidential Learning.
     """
 
     def __init__(
@@ -48,8 +48,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         y_dim=None,
         random_state=None,
     ):
-        """
-        Initialize the BEL class.
+        """Initialize the BEL class.
+
         :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
@@ -93,7 +93,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     # The following properties are central to the BEL framework
     @property
     def X_shape(self):
-        """Predictor original shape"""
+        """Predictor original shape."""
         return self._X_shape
 
     @X_shape.setter
@@ -102,7 +102,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def Y_shape(self):
-        """Predictor original shape"""
+        """Predictor original shape."""
         return self._Y_shape
 
     @Y_shape.setter
@@ -111,7 +111,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def n_posts(self):
-        """Number of sample to extract from the posterior multivariate distribution after post-processing"""
+        """Number of sample to extract from the posterior multivariate
+        distribution after post-processing."""
         return self._n_posts
 
     @n_posts.setter
@@ -120,7 +121,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a. random state to reproduce the same samples"""
+        """Seed a.k.a.
+
+        random state to reproduce the same samples
+        """
         return self.random_state
 
     @seed.setter
@@ -129,8 +133,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         np.random.seed(self.random_state)
 
     def fit(self, X, Y):
-        """
-        Fit all pipelines.
+        """Fit all pipelines.
+
         :param X: Predictor array.
         :param Y: Target array.
         :return: self
@@ -208,8 +212,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self
 
     def transform(self, X=None, Y=None) -> (np.array, np.array):
-        """
-        Transform data across all pipelines.
+        """Transform data across all pipelines.
+
         :param X: Predictor array.
         :param Y: Target array.
         :return: Post-processed variables
@@ -251,8 +255,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _xp, _yp
 
     def fit_transform(self, X, y=None, **fit_params):
-        """
-        Fit-Transform across all pipelines.
+        """Fit-Transform across all pipelines.
+
         :param X: Predictor array.
         :param y: Target array.
         :return: If mode == "mvn" - returns the posterior mean and covariance. If mode == "kde" - returns a dictionary
@@ -271,8 +275,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         inverse_transform: bool = True,
         precomputed_kde: np.array = None,
     ) -> np.array:
-        """
-        Predict the posterior distribution of the target variable.
+        """Predict the posterior distribution of the target variable.
+
         :param X_obs: The observed data.
         :param n_posts: The number of posterior samples to draw.
         :param mode: The mode of inference to use. Default is "kde".
@@ -440,8 +444,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         mode: str = None,
         init_kde: np.array = None,
     ) -> np.array:
-        """
-        Random sample the inferred posterior distribution. It can be used to generate samples from the posterior
+        """Random sample the inferred posterior distribution. It can be used to
+        generate samples from the posterior.
+
         :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
         :param obs_n: If we want to generate samples from the posterior of a specific observation point, obs_n is the
         index of the observation point.
@@ -539,8 +544,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return np.array(Y_samples)  # noqa
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
-        """
-        Initialize the KDEs, i.e. the functions that will be used to sample from the posterior distribution.
+        """Initialize the KDEs, i.e. the functions that will be used to sample
+        from the posterior distribution.
+
         :param X_obs_f: Observed data points
         :param obs_n: Observation number
         :return: The initialized KDEs
@@ -582,8 +588,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self,
         Y_pred: np.array,
     ) -> np.array:
-        """
-        Back-transforms the posterior samples Y_pred to their physical space.
+        """Back-transforms the posterior samples Y_pred to their physical
+        space.
+
         :param Y_pred: The posterior samples (shape = (n_obs, n_components, n_samples))
         :return: The back-transformed samples
         """

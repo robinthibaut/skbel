@@ -10,7 +10,7 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class Kernel(TransformerMixin, BaseEstimator):
-    """ """
+    """"""
 
     def __init__(
         self,

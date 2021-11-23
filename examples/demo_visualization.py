@@ -33,10 +33,9 @@ def binary_polygon(
     outside: float = -1,
     inside: float = 1,
 ) -> np.array:
-    """
-    Given a polygon whose vertices are given by the array pzs, and a matrix of
-    centroids coordinates of the surface discretization, assigns to the matrix a certain value
-    whether the cell is inside or outside said polygon.
+    """Given a polygon whose vertices are given by the array pzs, and a matrix
+    of centroids coordinates of the surface discretization, assigns to the
+    matrix a certain value whether the cell is inside or outside said polygon.
 
     To compute the signed distance function, we need a negative/positive value.
 
@@ -63,9 +62,8 @@ def binary_polygon(
 
 
 def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.array:
-    """
-    Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
-    """
+    """Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside
+    WHPA)."""
     # Create binary images of WHPA stored in bin_whpa
     bin_whpa = [
         binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices
@@ -117,8 +115,8 @@ def whpa_plot(
     highlight: bool = False,
     show: bool = False,
 ):
-    """
-    Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
+    """Produces the WHPA plot, i.e. the zero-contour of the signed distance
+    array.
 
     :param grid: Whether to plot the grid
     :param grf: Grid cell size
@@ -308,8 +306,9 @@ def post_examination(
 
 
 def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation
+    """Plot used to compare the reproduction of the original physical space
+    after PCA transformation.
+
     :param bel: BEL model
     :param fig_dir: str: directory where to save the figure
     :param show: bool: if True, show the figure
@@ -601,8 +600,8 @@ def plot_results(
     annotation: list = None,
     show: bool = False,
 ):
-    """
-    Plots forecasts results in the 'uq' folder
+    """Plots forecasts results in the 'uq' folder.
+
     :param bel: BEL model
     :param y_predicted: Predicted values
     :param X: Training set
@@ -914,8 +913,8 @@ def curves(
     title: str = "curves",
     show: bool = False,
 ):
-    """
-    Shows every breakthrough curve stacked on a plot.
+    """Shows every breakthrough curve stacked on a plot.
+
     :param cols: List of colors
     :param ylabel:
     :param xlabel:
@@ -969,9 +968,9 @@ def curves_i(
     sdir: str = None,
     show: bool = False,
 ):
-    """
-    Shows every breakthrough individually for each observation point.
-    Will produce n_well figures of n_sim curves each.
+    """Shows every breakthrough individually for each observation point. Will
+    produce n_well figures of n_sim curves each.
+
     :param cols: List of colors
     :param labelsize:
     :param factor:
@@ -981,7 +980,6 @@ def curves_i(
     :param highlight: list: List of indices of curves to highlight in the plot
     :param sdir: Directory in which to save figure
     :param show: Whether to show or not
-
     """
     if highlight is None:
         highlight = []
@@ -1055,8 +1053,9 @@ def plot_pc_ba(
     data: bool = False,
     target: bool = False,
 ):
-    """
-    Comparison between original variables and the same variables back-transformed with n PCA components.
+    """Comparison between original variables and the same variables back-
+    transformed with n PCA components.
+
     :param w:
     :param base_dir:
     :param bel:
@@ -1140,8 +1139,8 @@ def pca_vision(
     before_after: bool = True,
     labels: bool = True,
 ):
-    """
-    Loads PCA pickles and plot scores for all folders
+    """Loads PCA pickles and plot scores for all folders.
+
     :param before_after:
     :param base_dir:
     :param bel: BEL model
@@ -1228,8 +1227,9 @@ def d_pca_inverse_plot(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation.
+    """Plot used to compare the reproduction of the original physical space
+    after PCA transformation.
+
     :param bel: BEL model
     :param xlabel:
     :param ylabel:

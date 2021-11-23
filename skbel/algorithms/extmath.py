@@ -9,8 +9,8 @@ from scipy.spatial import distance_matrix
 
 
 def get_block(pm: np.array, i: int) -> np.array:
-    """
-    Extracts block from a 2x2 partitioned matrix.
+    """Extracts block from a 2x2 partitioned matrix.
+
     :param pm: Partitioned matrix
     :param i: Block index
     1 2
@@ -33,8 +33,8 @@ def get_block(pm: np.array, i: int) -> np.array:
 
 
 def matrix_paste(c_big: np.array, c_small: np.array) -> list:
-    """
-    Pastes a small matrix into a big matrix.
+    """Pastes a small matrix into a big matrix.
+
     :param c_big: Big matrix
     :param c_small: Small matrix
     """

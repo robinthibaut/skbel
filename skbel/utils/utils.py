@@ -26,7 +26,8 @@ Function = types.FunctionType
 
 
 def flatten_array(arr: np.array) -> np.array:
-    """Flattens a numpy array
+    """Flattens a numpy array.
+
     :param arr: np.array: Numpy array.
     :return: np.array: Flattened array.
     """
@@ -41,9 +42,10 @@ def data_read(
     step: int = None,
     delimiter: str = None,
 ):
-    """
-    Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab (default)
-    or by a delimiter specified by the user.
+    """Reads data from a file. It needs to be a text file and the data needs to
+    be separated by a space or tab (default) or by a delimiter specified by the
+    user.
+
     :param file: str: File path, such as 'data.txt'.
     :param start: int: Starting line, default is 0.
     :param end: int: Ending line, default is None (last line).
@@ -69,7 +71,8 @@ def data_read(
 
 
 def folder_reset(folder: str, exceptions: list = None):
-    """Deletes files in folder
+    """Deletes files in folder.
+
     :param folder: str: Folder path.
     :param exceptions: list: List of files to keep.
     """
@@ -89,8 +92,8 @@ def folder_reset(folder: str, exceptions: list = None):
 
 
 def dirmaker(dird: str, erase: bool = False):
-    """
-    Given a folder path, check if it exists, and if not, creates it.
+    """Given a folder path, check if it exists, and if not, creates it.
+
     :param dird: str: Directory path.
     :param erase: bool: Whether to delete existing folder or not.
     :return: None
@@ -110,8 +113,9 @@ def dirmaker(dird: str, erase: bool = False):
 
 
 def combinator(combi):
-    """Given a n-sized 1D array, generates all possible configurations, from size 1 to n-1.
-    'None' will indicate to use the original combination.
+    """Given a n-sized 1D array, generates all possible configurations, from
+    size 1 to n-1. 'None' will indicate to use the original combination.
+
     :param combi: list: List of size n.
     :return: list: List of combinations.
     """

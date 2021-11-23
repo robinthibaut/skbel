@@ -24,8 +24,8 @@ __all__ = [
 
 
 def tupleset(t, i, value):
-    """
-    Set the `i`th element of a tuple to `value`.
+    """Set the `i`th element of a tuple to `value`.
+
     :param t: tuple
     :param i: index
     :param value: value
@@ -36,8 +36,8 @@ def tupleset(t, i, value):
 
 
 def romb(y: np.array, dx: float = 1.0) -> np.array:
-    """
-    Romberg integration using samples of a function.
+    """Romberg integration using samples of a function.
+
     :param y: A vector of ``2**k + 1`` equally-spaced samples of a function.
     :param dx: The sample spacing. Default is 1.
     :return: The integral of the function.
@@ -78,8 +78,8 @@ def romb(y: np.array, dx: float = 1.0) -> np.array:
 
 
 class KDE:
-    """
-    Bivariate kernel density estimator.
+    """Bivariate kernel density estimator.
+
     This class is adapted from the class of the same name in the package Seaborn 0.11.1
     https://seaborn.pydata.org/generated/seaborn.kdeplot.html
     """
@@ -96,6 +96,7 @@ class KDE:
         clip: list = None,
     ):
         """Initialize the estimator with its parameters.
+
         :param kernel_type: kernel type, one of 'gaussian', 'tophat', 'epanechnikov',
             'exponential', 'linear', 'cosine'
         :param bandwidth: bandwidth
@@ -131,6 +132,7 @@ class KDE:
         x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
     ):
         """Create the grid of evaluation points depending for vector x.
+
         :param x: vector of values
         :param bandwidth: bandwidth
         :param cut: factor, multiplied by the smoothing bandwidth, that determines how
@@ -150,6 +152,7 @@ class KDE:
 
     def _define_support_univariate(self, x: np.array):
         """Create a 1D grid of evaluation points.
+
         :param x: 1D array of data
         :return: 1D array of evaluation points
         """
@@ -160,6 +163,7 @@ class KDE:
 
     def _define_support_bivariate(self, x1: np.array, x2: np.array):
         """Create a 2D grid of evaluation points.
+
         :param x1: 1st dimension of the evaluation grid
         :param x2: 2nd dimension of the evaluation grid
         :return: 2D grid of evaluation points
@@ -183,6 +187,7 @@ class KDE:
         cache: bool = True,
     ):
         """Create the evaluation grid for a given data set.
+
         :param x1: 1D array of data
         :param x2: 2D array of data
         :param cache: if True, cache the support grid
@@ -199,7 +204,8 @@ class KDE:
         return support
 
     def _fit(self, fit_data: np.array):
-        """Fit the scikit-learn KDE
+        """Fit the scikit-learn KDE.
+
         :param fit_data: Data to fit the KDE to
         :return: fitted KDE object
         """
@@ -242,6 +248,7 @@ class KDE:
 
     def _eval_univariate(self, x: np.array):
         """Fit and evaluate on univariate data.
+
         :param x: Data to evaluate.
         :return: (density, support)
         """
@@ -257,6 +264,7 @@ class KDE:
 
     def _eval_bivariate(self, x1: np.array, x2: np.array):
         """Fit and evaluate on bivariate data.
+
         :param x1: First data set.
         :param x2: Second data set.
         :return: (density, support)
@@ -290,6 +298,7 @@ def _univariate_density(
     estimate_kws: dict,
 ):
     """Estimate the density of a single variable.
+
     :param data_variable: DataFrame with a single variable.
     :param estimate_kws: Keyword arguments for the density estimator.
     :return: (density, support, bandwidth)
@@ -317,8 +326,8 @@ def _bivariate_density(
     data: pd.DataFrame,
     estimate_kws: dict,
 ):
-    """
-    Estimate bivariate KDE.
+    """Estimate bivariate KDE.
+
     :param data: DataFrame containing (x, y) data
     :param estimate_kws: KDE parameters
     :return: (density, support, bandwidth)
@@ -351,8 +360,8 @@ def kde_params(
     cut: float = 1,
     clip=None,
 ):
-    """
-    Computes the kernel density estimate (KDE) of one or two data sets.
+    """Computes the kernel density estimate (KDE) of one or two data sets.
+
     :param x : The x-coordinates of the input data.
     :param y : The y-coordinates of the input data.
     :param gridsize : Number of discrete points in the evaluation grid.
@@ -391,8 +400,9 @@ def kde_params(
 
 
 def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None):
-    """
-    Gets the pixel coordinate of the value x or y, in order to get posterior conditional probability given a KDE.
+    """Gets the pixel coordinate of the value x or y, in order to get posterior
+    conditional probability given a KDE.
+
     :param line: Coordinates of the line we'd like to sample along [(x1, y1), (x2, y2)]
     :param x_1d: List of x coordinates along the axis
     :param y_1d: List of y coordinates along the axis
@@ -424,10 +434,10 @@ def _conditional_distribution(
     y: float = None,
     k: int = None,
 ):
-    """
-    Compute the conditional posterior distribution p(x_array|y_array) given x or y.
-    Provide only one observation ! Either x or y.
-    Perform a cross-section in the KDE along the y axis.
+    """Compute the conditional posterior distribution p(x_array|y_array) given
+    x or y. Provide only one observation ! Either x or y. Perform a cross-
+    section in the KDE along the y axis.
+
     :param kde_array: KDE of the prediction
     :param x_array: X grid (1D)
     :param y_array: Y grid (1D)
@@ -462,8 +472,8 @@ def _conditional_distribution(
 
 
 def _scale_distribution(post: np.array, support: np.array) -> np.array:
-    """
-    Scale the distribution to have a maximum of 1, and a minimum of 0.
+    """Scale the distribution to have a maximum of 1, and a minimum of 0.
+
     :param post: Values of the KDE cross-section
     :param support: Support of the KDE cross-section
     :return: The scaled distribution
@@ -485,8 +495,9 @@ def posterior_conditional(
     support: np.array = None,
     k: int = None,
 ) -> (np.array, np.array):
-    """
-    Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a cross section of the KDE of (d, h).
+    """Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a
+    cross section of the KDE of (d, h).
+
     :param X_obs: Observation (predictor, x-axis)
     :param Y_obs: Observation (target, y-axis)
     :param dens: The density values of the KDE of (X, Y).
@@ -524,8 +535,8 @@ def posterior_conditional(
 def mvn_inference(
     X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
-    """
-    Estimates the posterior mean and covariance of the target.
+    """Estimates the posterior mean and covariance of the target.
+
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
     :param X: Canonical Variate of the training data
@@ -603,6 +614,7 @@ def mvn_inference(
 
 def normalize(pdf):
     """Normalize a non-normalized PDF.
+
     :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
     :return: pdf_norm : Function with same signature as pdf, but normalized so that the integral
@@ -615,6 +627,7 @@ def normalize(pdf):
 
     def pdf_normed(x):
         """Normalized PDF.
+
         :param x: Input to the pdf.
         :return: pdf(x) / A.
         """
@@ -631,6 +644,7 @@ def normalize(pdf):
 
 def get_cdf(pdf):
     """Generate a CDF from a (possibly not normalized) pdf.
+
     :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
     :return: cdf: The cumulative density function of the (normalized version of the)
@@ -642,7 +656,8 @@ def get_cdf(pdf):
     upper_bound = np.max(pdf.x)
 
     def cdf_number(x):
-        """Numerical cdf
+        """Numerical cdf.
+
         :param x: The value to evaluate the cdf at.
         :return: The value of the cdf at x.
         """
@@ -661,7 +676,8 @@ def get_cdf(pdf):
                 return 0
 
     def cdf_vector(x):
-        """Vectorized cdf
+        """Vectorized cdf.
+
         :param x: The values to evaluate the cdf at.
         :return: The values of the cdf at x.
         """
@@ -683,6 +699,7 @@ def it_sampling(
     return_cdf: bool = False,
 ):
     """Sample from an arbitrary, un-normalized PDF.
+
     :param pdf : function, float -> float The probability density
     function (not necessarily normalized). Must take floats or ints as input, and return floats as an output.
     :param num_samples : The number of samples to be generated.

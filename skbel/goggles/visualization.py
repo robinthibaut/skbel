@@ -1,6 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-"""Some visualization utilities"""
+"""Some visualization utilities."""
 
 import itertools
 import os
@@ -33,8 +33,8 @@ __all__ = [
 
 
 def _my_alphabet(az: int):
-    """
-    Method used to make custom figure annotations.
+    """Method used to make custom figure annotations.
+
     :param az: Index of the alphabet
     :return: corresponding letter
     """
@@ -51,8 +51,8 @@ def _my_alphabet(az: int):
 
 
 def _yield_alphabet(start=0):
-    """
-    Yields the alphabet from a given index
+    """Yields the alphabet from a given index.
+
     :param start: Index of the first letter
     :return:
     """
@@ -135,8 +135,8 @@ def _proxy_legend(
 
 
 def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=None):
-    """
-    Places annotation (or title) within the figure box
+    """Places annotation (or title) within the figure box.
+
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
     :param fz: Fontsize
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
@@ -170,8 +170,8 @@ def explained_variance(
     fig_file: str = None,
     show: bool = False,
 ):
-    """
-    PCA explained variance plot
+    """PCA explained variance plot.
+
     :param bel_pca: PCA object
     :param n_comp: Number of components to display
     :param thr: float: Threshold
@@ -245,8 +245,9 @@ def pca_scores(
     labels: bool = True,
     show: bool = False,
 ):
-    """
-    PCA scores plot, displays scores of observations above those of training.
+    """PCA scores plot, displays scores of observations above those of
+    training.
+
     :param labels: labels for the plot
     :param training: Training scores
     :param prediction: Test scores
@@ -334,9 +335,9 @@ def cca_plot(
     sdir: str = None,
     show: bool = False,
 ):
-    """
-    CCA plots.
-    Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
+    """CCA plots. Receives d, h PC components to be predicted, transforms them
+    in CCA space and adds it to the plots.
+
     :param bel: BEL object
     :param d: d CCA scores
     :param h: h CCA scores
@@ -400,8 +401,8 @@ def pca_vision(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Loads PCA pickles and plot scores for all folders
+    """Loads PCA pickles and plot scores for all folders.
+
     :param bel: BEL object
     :param d: bool: Plot d scores
     :param h: bool: Plot h scores
@@ -518,6 +519,7 @@ def _despine(
     trim=False,
 ):
     """Remove the top and right spines from plot(s).
+
     :param fig : Figure to despine all axes of, defaults to the current figure.
     :param ax: Specific axes object to despine. Ignored if fig is provided.
     :param top, right, left, bottom: If True, remove that spine.
@@ -671,8 +673,8 @@ def _kde_cca(
     show: bool = False,
     annotation_callback=None,
 ):
-    """
-    Plot the kernel density estimate of the CCA.
+    """Plot the kernel density estimate of the CCA.
+
     :param bel: The BEL object.
     :param obs_n: The index of the observation to plot.
     :param X_obs: The X observations.
@@ -908,8 +910,8 @@ def cca_vision(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Loads CCA pickles and plots components for all folders
+    """Loads CCA pickles and plots components for all folders.
+
     :param bel: BEL model
     :param X_obs: Observed X (n_obs, n_comp)
     :param Y_obs: True target array
