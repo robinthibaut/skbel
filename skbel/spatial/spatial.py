@@ -50,11 +50,11 @@ def grid_parameters(
 
 
 def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
-    """Return an array of shape (n, nrows, ncols) where.
-
+    """Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
     If arr is a 2D array, the returned array should look like n sub-blocks with
     each sub-block preserving the "physical" layout of arr.
+
     :param arr: Array
     :param nrows: Number of rows
     :param ncols: Number of columns
