@@ -520,7 +520,7 @@ def _despine(
 ):
     """Remove the top and right spines from plot(s).
 
-    :param fig : Figure to despine all axes of, defaults to the current figure.
+    :param fig: Figure to despine all axes of, defaults to the current figure.
     :param ax: Specific axes object to despine. Ignored if fig is provided.
     :param top, right, left, bottom: If True, remove that spine.
     :param offset: Absolute distance, in points, spines should be moved away
