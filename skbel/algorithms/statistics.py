@@ -407,7 +407,7 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None)
     :param x_1d: List of x coordinates along the axis
     :param y_1d: List of y coordinates along the axis
     :param k: Used to set number of rows/columns
-    :return:
+    :return: (rows, columns)
     """
     if k is None:
         num = 200
@@ -536,13 +536,13 @@ def mvn_inference(
     X: np.array, Y: np.array, X_obs: np.array, **kwargs
 ) -> (np.array, np.array):
     """Estimates the posterior mean and covariance of the target.
+       Note that in this implementation, n_samples must be = 1.
 
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
     :param X: Canonical Variate of the training data
     :param Y: Canonical Variate of the training target, gaussian-distributed
     :param X_obs: Canonical Variate of the observation (n_samples, n_features).
-    Note that in this implementation, n_samples must be = 1.
     :return: y_posterior_mean, y_posterior_covariance
     """
 
