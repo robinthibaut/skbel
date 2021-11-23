@@ -96,7 +96,6 @@ def dirmaker(dird: str, erase: bool = False):
 
     :param dird: Directory path.
     :param erase: Whether to delete existing folder or not.
-    :return: None
     """
     try:
         if not os.path.exists(dird):

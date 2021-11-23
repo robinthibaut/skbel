@@ -260,7 +260,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X: Predictor array.
         :param y: Target array.
         :return: If mode == "mvn" - returns the posterior mean and covariance. If mode == "kde" - returns a dictionary
-        of functions.
+         of functions.
         """
 
         return self.fit(X, y).transform(X, y)

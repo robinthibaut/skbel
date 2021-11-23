@@ -54,7 +54,6 @@ def _yield_alphabet(start=0):
     """Yields the alphabet from a given index.
 
     :param start: Index of the first letter
-    :return:
     """
     alphabet = string.ascii_uppercase
     extended_alphabet = ["".join(i) for i in list(itertools.permutations(alphabet, 2))]
@@ -90,7 +89,6 @@ def _proxy_legend(
     :param fz: Fontsize
     :param fig_file: Path to figure file
     :param extra: List of extra elements to be added on the final figure
-    :return:
     """
 
     if obj is None:
@@ -141,7 +139,6 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
     :param fz: Fontsize
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
-    :return:
     """
     if obj is None:
         obj = plt
@@ -179,7 +176,6 @@ def explained_variance(
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
-    :return:
     """
     plt.grid(alpha=0.1)
     if not n_comp:
@@ -256,7 +252,6 @@ def pca_scores(
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
-    :return:
     """
     # Scores plot
     if annotation is None:
@@ -345,7 +340,6 @@ def cca_plot(
     :param d_pc_prediction: d test PC scores
     :param sdir: Path to save directory
     :param show: Show figure
-    :return:
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(
@@ -417,7 +411,6 @@ def pca_vision(
     :param labels: Show labels
     :param fig_dir: Path to save directory
     :param show: Show figure
-    :return:
     """
 
     if fig_dir is None:
@@ -919,7 +912,6 @@ def cca_vision(
     :param obs_n: Observation number
     :param fig_dir: Base directory path
     :param show: Show figure
-    :return:
     """
     if fig_dir is None:
         fig_dir = ""

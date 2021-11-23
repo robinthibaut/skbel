@@ -28,7 +28,7 @@ def grid_parameters(
     :param x_lim: X limits
     :param y_lim: Y limits
     :param grf: Cell dimension
-    :return:
+    :return: (cell centers, number of rows, number of columns)
     """
     if y_lim is None:
         y_lim = [0, 1000]
@@ -58,6 +58,7 @@ def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
     :param arr: Array
     :param nrows: Number of rows
     :param ncols: Number of columns
+    :return: Array of shape (n, nrows, ncols)
     """
     h, w = arr.shape
     assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
@@ -162,7 +163,7 @@ def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
     """Computes the x and y dimensions of each block.
 
     :param blocks: Array of blocks
-    :return:
+    :return: (dx, dy) dimensions of each block
     """
     dc = np.array([np.diff(b[:, 0]).max for b in blocks])  # x-dimensions
     dr = np.array([np.diff(b[:, 1]).max for b in blocks])  # y-dimensions
@@ -176,6 +177,7 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
 
     :param rows: Array of row widths
     :param columns: Array of column widths
+    :return: Array of blocks
     """
 
     nrow = len(rows)  # Number of rows
@@ -206,6 +208,7 @@ def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
 
     :param rows: Array of row widths
     :param columns: Array of column widths
+    :return: Array of blocks
     """
 
     nrow = len(rows)
@@ -236,6 +239,7 @@ def get_centroids(array: np.array, grf: float) -> np.array:
 
     :param array: (m, n) array
     :param grf: float: Cell dimension
+    :return: (m, n, 2) array
     """
     xys = np.dstack(
         (np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2)
@@ -252,6 +256,7 @@ def contour_extract(x_lim, y_lim, grf, Z):
     :param y_lim: y limits of the grid
     :param grf: grid resolution
     :param Z: sampled posterior
+    :return: contour (x, y, vertices)
     """
     *_, x, y = refine_machine(x_lim, y_lim, grf)
     vertices = contours_vertices(x, y, Z)
@@ -300,6 +305,7 @@ def refine_machine(
     :param xlim: x limits of the grid
     :param ylim: y limits of the grid
     :param new_grf: new grid resolution
+    :return: new grid resolution (nrow, ncol, x, y)
     """
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns
