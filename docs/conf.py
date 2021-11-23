@@ -34,9 +34,9 @@ author = 'Robin Thibaut'
 
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.doctest",
+    # "sphinx.ext.doctest",
     "sphinx_rtd_theme",
-    "sphinx.ext.intersphinx",
+    # "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     # "sphinx.ext.napoleon",
