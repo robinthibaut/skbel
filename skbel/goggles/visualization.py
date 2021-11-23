@@ -80,6 +80,7 @@ def _proxy_legend(
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+
     :param legend1: First legend instance from the figure
     :param colors: List of colors
     :param labels: List of labels
