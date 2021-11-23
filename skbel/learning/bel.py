@@ -121,9 +121,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a.
-
-        random state to reproduce the same samples
+        """Seed a.k.a. random state to reproduce the same samples
         """
         return self.random_state
 
