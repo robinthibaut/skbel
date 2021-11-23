@@ -700,11 +700,11 @@ def it_sampling(
 ):
     """Sample from an arbitrary, un-normalized PDF.
 
-    :param pdf: function, float -> float The probability density
-    function (not necessarily normalized). Must take floats or ints as input, and return floats as an output.
+    :param pdf: function, float -> float The probability density function (not necessarily normalized). Must take floats
+     or ints as input, and return floats as an output.
     :param num_samples: The number of samples to be generated.
-    :param lower_bd: Lower bound of the support of the pdf.
-    This parameter allows one to manually establish cutoffs for the density.
+    :param lower_bd: Lower bound of the support of the pdf. This parameter allows one to manually establish cutoffs for
+    the density.
     :param upper_bd: Upper bound of the support of the pdf.
     :param k: Step number between lower_bd and upper_bd
     :param cdf_y: precomputed values of the CDF
