@@ -362,15 +362,15 @@ def kde_params(
 ):
     """Computes the kernel density estimate (KDE) of one or two data sets.
 
-    :param x : The x-coordinates of the input data.
-    :param y : The y-coordinates of the input data.
-    :param gridsize : Number of discrete points in the evaluation grid.
-    :param bw : The bandwidth of the kernel.
-    :param cut : Draw the estimate to cut * bw from the extreme data points.
-    :param clip : Lower and upper bounds for datapoints used to fit KDE. Can provide
+    :param x: The x-coordinates of the input data.
+    :param y: The y-coordinates of the input data.
+    :param gridsize: Number of discrete points in the evaluation grid.
+    :param bw: The bandwidth of the kernel.
+    :param cut: Draw the estimate to cut * bw from the extreme data points.
+    :param clip: Lower and upper bounds for datapoints used to fit KDE. Can provide
      a pair of (low, high) bounds for bivariate plots.
-    :return: density : The estimated probability density function evaluated at the support.
-              support : The support of the density function, the x-axis of the KDE.
+    :return: density: The estimated probability density function evaluated at the support.
+              support: The support of the density function, the x-axis of the KDE.
     """
 
     # Pack the kwargs for KDE
@@ -444,7 +444,7 @@ def _conditional_distribution(
     :param x: Observed data (horizontal axis)
     :param y: Observed data (vertical axis)
     :param k: Used to set number of rows/columns
-    :return: (cross_section : The cross-section of the KDE, line : The line of the KDE)
+    :return: (cross_section: The cross-section of the KDE, line: The line of the KDE)
     """
 
     # Coordinates of the line we'd like to sample along
@@ -617,7 +617,7 @@ def normalize(pdf):
 
     :param pdf: The probability density function (not necessarily normalized). Must take
         floats or ints as input, and return floats as an output.
-    :return: pdf_norm : Function with same signature as pdf, but normalized so that the integral
+    :return: pdf_norm: Function with same signature as pdf, but normalized so that the integral
         between lower_bd and upper_bd is close to 1. Maps nicely over iterables.
     """
 
@@ -700,16 +700,16 @@ def it_sampling(
 ):
     """Sample from an arbitrary, un-normalized PDF.
 
-    :param pdf : function, float -> float The probability density
+    :param pdf: function, float -> float The probability density
     function (not necessarily normalized). Must take floats or ints as input, and return floats as an output.
-    :param num_samples : The number of samples to be generated.
-    :param lower_bd : Lower bound of the support of the pdf.
+    :param num_samples: The number of samples to be generated.
+    :param lower_bd: Lower bound of the support of the pdf.
     This parameter allows one to manually establish cutoffs for the density.
-    :param upper_bd : Upper bound of the support of the pdf.
-    :param k : Step number between lower_bd and upper_bd
+    :param upper_bd: Upper bound of the support of the pdf.
+    :param k: Step number between lower_bd and upper_bd
     :param cdf_y: precomputed values of the CDF
     :param return_cdf: Option to return the computed CDF values
-    :return: samples : An array of samples from the provided PDF, with support between lower_bd and upper_bd.
+    :return: samples: An array of samples from the provided PDF, with support between lower_bd and upper_bd.
     """
     if k is None:
         k = 200  # Default step size

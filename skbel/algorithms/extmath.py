@@ -12,10 +12,8 @@ def get_block(pm: np.array, i: int) -> np.array:
     """Extracts block from a 2x2 partitioned matrix.
 
     :param pm: Partitioned matrix
-    :param i: Block index
-    1 2
-    3 4
-    :return: Block #b
+    :param i: Block index [[1,2], [3,4]]
+    :return: Block
     """
 
     b = pm.shape[0] // 2
