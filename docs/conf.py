@@ -15,12 +15,14 @@ import sys
 
 # sys.path.insert(2, os.path.abspath('../skbel'))
 # sys.path.insert(1, os.path.abspath('../examples'))
+from datetime import datetime
+
 sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'skbel'
-copyright = '2021, Robin Thibaut'
+copyright = f"2019 - {datetime.now().year} Robin Thibaut"
 author = 'Robin Thibaut'
 
 # -- General configuration ---------------------------------------------------
@@ -32,23 +34,39 @@ author = 'Robin Thibaut'
 #               "sphinx_rtd_theme",
 #               ]
 
+# extensions = [
+#     "sphinx.ext.autodoc",
+#     "sphinx.ext.doctest",
+#     "sphinx_rtd_theme",
+#     "sphinx.ext.intersphinx",
+#     "sphinx.ext.mathjax",
+#     "sphinx.ext.viewcode",
+#     # "sphinx.ext.napoleon",
+#     "sphinx.ext.autosummary",
+#     "sphinx.ext.extlinks",
+#     # "numpydoc",
+#     "nbsphinx",
+#     "matplotlib.sphinxext.plot_directive",
+#     "IPython.sphinxext.ipython_directive",
+#     "IPython.sphinxext.ipython_console_highlighting",
+#     "sphinx.ext.inheritance_diagram",
+#     # "m2r2",
+# ]
+
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.doctest",
-    "sphinx_rtd_theme",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.viewcode",
-    # "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
-    "sphinx.ext.extlinks",
-    # "numpydoc",
-    "nbsphinx",
-    "matplotlib.sphinxext.plot_directive",
-    "IPython.sphinxext.ipython_directive",
-    "IPython.sphinxext.ipython_console_highlighting",
-    "sphinx.ext.inheritance_diagram",
-    # "m2r2",
+    "numpydoc",
+    "sphinx.ext.linkcode",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.imgconverter",
+    "sphinx_gallery.gen_gallery",
+    "sphinx_issues",
+    "add_toctree_functions",
+    "sphinx-prompt",
+    "sphinxext.opengraph",
+    "doi_role",
 ]
 
 autodoc_default_options = {'members': True,
@@ -67,6 +85,12 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 source_suffix = ['.rst', '.md']
+
+add_function_parentheses = False
+pygments_style = "sphinx"
+html_domain_indices = False
+html_use_index = False
+html_copy_source = True
 
 # -- Options for HTML output -------------------------------------------------
 

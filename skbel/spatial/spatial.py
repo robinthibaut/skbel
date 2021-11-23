@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from matplotlib import pyplot as plt
 
-plt.rcParams.update({"figure.max_open_warning": 0})
+plt.rcParams.update({"figure.max_open_warning": 0})  # ignore warning for too many open figures
 
 __all__ = [
     "grid_parameters",
