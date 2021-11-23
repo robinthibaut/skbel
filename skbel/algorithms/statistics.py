@@ -704,7 +704,7 @@ def it_sampling(
      or ints as input, and return floats as an output.
     :param num_samples: The number of samples to be generated.
     :param lower_bd: Lower bound of the support of the pdf. This parameter allows one to manually establish cutoffs for
-    the density.
+     the density.
     :param upper_bd: Upper bound of the support of the pdf.
     :param k: Step number between lower_bd and upper_bd
     :param cdf_y: precomputed values of the CDF
