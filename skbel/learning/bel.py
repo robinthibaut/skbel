@@ -283,10 +283,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param noise: The noise level of the model (only if mode == 'mvn').
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
-        original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
-        transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
+         original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
+         transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
         :param precomputed_kde: Precomputed KDE functions. Computing the KDEs can be time-consuming. If the KDEs are
-        precomputed, they can be passed as an argument.
+         precomputed, they can be passed as an argument.
         :return: The posterior samples in the original space or in the transformed space.
         """
         if mode is not None:  # If mode is provided
@@ -449,7 +449,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
         :param obs_n: If we want to generate samples from the posterior of a specific observation point, obs_n is the
-        index of the observation point.
+         index of the observation point.
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
         :param init_kde: Initial KDE function. If None, the KDE function is computed from the observed data.
