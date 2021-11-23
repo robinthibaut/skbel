@@ -50,7 +50,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ):
         """Initialize the BEL class.
 
-        :param mode: How to infer the posterior distribution. "mvn" (default) or "kde"
+        :param mode: How to infer the posterior distribution. "kde" (default) or "mvn".
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
         :param Y_pre_processing: sklearn pipeline for pre-processing the target.
@@ -102,7 +102,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def Y_shape(self):
-        """Predictor original shape."""
+        """Target original shape."""
         return self._Y_shape
 
     @Y_shape.setter
