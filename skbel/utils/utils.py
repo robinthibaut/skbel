@@ -1,12 +1,13 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
 import itertools
-import numpy as np
 import os
-import warnings
 import shutil
 import types
+import warnings
 from typing import List
+
+import numpy as np
 
 __all__ = [
     "FLOAT_DTYPES",

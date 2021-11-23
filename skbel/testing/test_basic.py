@@ -4,10 +4,10 @@ pytest unit tests for skbel.basic
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
+import os
 from os.path import join as jp
 
 import numpy as np
-import os
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
