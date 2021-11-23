@@ -28,8 +28,8 @@ Function = types.FunctionType
 def flatten_array(arr: np.array) -> np.array:
     """Flattens a numpy array.
 
-    :param arr: np.array: Numpy array.
-    :return: np.array: Flattened array.
+    :param arr: Numpy array.
+    :return: Flattened array.
     """
     arr_flat = np.array([item for sublist in arr for item in sublist])  # Flatten
     return arr_flat.reshape(1, -1)  # Reshape
@@ -46,11 +46,11 @@ def data_read(
     be separated by a space or tab (default) or by a delimiter specified by the
     user.
 
-    :param file: str: File path, such as 'data.txt'.
-    :param start: int: Starting line, default is 0.
-    :param end: int: Ending line, default is None (last line).
-    :param step: int: Step, default is 1 (every line).
-    :param delimiter: str: Delimiter, default is None (space).
+    :param file: File path, such as 'data.txt'.
+    :param start: Starting line, default is 0.
+    :param end: Ending line, default is None (last line).
+    :param step: Step, default is 1 (every line).
+    :param delimiter: Delimiter, default is None (space).
     :return: Data contained in file. np.array if data can be converted to float, else list.
     """
     if step is None:
@@ -73,8 +73,8 @@ def data_read(
 def folder_reset(folder: str, exceptions: list = None):
     """Deletes files in folder.
 
-    :param folder: str: Folder path.
-    :param exceptions: list: List of files to keep.
+    :param folder: Folder path.
+    :param exceptions: List of files to keep.
     """
     if not isinstance(exceptions, (list, tuple)):
         exceptions = [exceptions]
@@ -94,8 +94,8 @@ def folder_reset(folder: str, exceptions: list = None):
 def dirmaker(dird: str, erase: bool = False):
     """Given a folder path, check if it exists, and if not, creates it.
 
-    :param dird: str: Directory path.
-    :param erase: bool: Whether to delete existing folder or not.
+    :param dird: Directory path.
+    :param erase: Whether to delete existing folder or not.
     :return: None
     """
     try:
@@ -116,8 +116,8 @@ def combinator(combi):
     """Given a n-sized 1D array, generates all possible configurations, from
     size 1 to n-1. 'None' will indicate to use the original combination.
 
-    :param combi: list: List of size n.
-    :return: list: List of combinations.
+    :param combi: List of size n.
+    :return: List of combinations.
     """
     cb = [
         list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)
