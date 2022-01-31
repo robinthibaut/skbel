@@ -24,6 +24,7 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
+from ..develop.transport_map_116 import transport_map
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -121,8 +122,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a. random state to reproduce the same samples
-        """
+        """Seed a.k.a. random state to reproduce the same samples"""
         return self.random_state
 
     @seed.setter
@@ -424,6 +424,72 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
                     # Shape = (n_obs, n_comp_CCA)
                     self.kde_functions[:, comp_n] = functions  # noqa
+
+        elif mode == "tm":
+            nonmonotone = [
+                [
+                    [],
+                    [0],
+                    [0, 0, "HF"],
+                    [0, 0, 0, "HF"],
+                    [0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, 0, 0, "HF"],
+                ]
+            ]
+
+            monotone = [
+                [
+                    [1],
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                ]
+            ]
+
+            self.tm_list = np.zeros(
+                (n_obs, n_cca), dtype="object"
+            )
+            for comp_n in range(n_cca):
+                # If the relation is almost perfectly linear, it doesn't make sense to perform a
+                # KDE estimation.
+                corr = np.corrcoef(self.X_f.T[comp_n], self.Y_f.T[comp_n]).diagonal(
+                    offset=1
+                )[0]
+                # If the Pearson's correlation coefficient is > 0.999, linear regression is used instead of KDE.
+                if corr >= 0.999:  # If the relation is almost perfectly linear
+                    kind = "linear"
+                    fun = LinearRegression().fit(
+                        self.X_f.T[comp_n].reshape(-1, 1),
+                        self.Y_f.T[comp_n].reshape(-1, 1),
+                    )  # Linear regression
+                    # The KDE inference method can be hybrid - the returned functions are saved as a dictionary
+                    sample_fun = {"kind": kind, "function": fun}
+                    functions = [sample_fun] * n_obs
+                else:  # If the relation is not perfectly linear
+                    X = np.vstack((self.X_f.T[comp_n], self.Y_f.T[comp_n])).T
+                    # Initialize a transport map object
+                    tm = transport_map(
+                        monotone=monotone,  # What are the monotone terms of the transport map components?
+                        nonmonotone=nonmonotone,  # What are the nonmonotone terms of the transport map components?
+                        X=X,  # Samples from the target distribution, N-by-D
+                        D=X.shape[-1],  # How many dimensions does the target distribution have?
+                        polynomial_type="probabilist's hermite",
+                        # Which polynomial function to use for the map component basis functions?
+                        monotonicity="separable monotonicity",
+                        # There are two ways to enforce monotonicity; we enforce it through coefficients for now
+                        standardize_samples=True,
+                        # Flag whether samples should be standardized before map optimization; should almost always be True
+                        workers=1,
+                    )  # Number of workers for the parallel optimization; 1 means no parallelization
+
+                    tm.optimize()
 
         if return_samples:
             samples = self.random_sample(
