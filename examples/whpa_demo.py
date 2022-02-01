@@ -96,7 +96,7 @@ if __name__ == "__main__":
     model = init_bel()
 
     # %% Set model parameters
-    model.mode = "mvn"  # How to compute the posterior conditional distribution
+    model.mode = "tm"  # How to compute the posterior conditional distribution
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
     model.Y_shape = (100, 87)  # 100 rows and 87 columns
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     y_predicted = model.predict(X_test)
 
     # Save the fitted BEL model
-    joblib.dump(model, jp(obj_dir, "bel.pkl"))
+    # joblib.dump(model, jp(obj_dir, "bel.pkl"))
 
     msg = f"model trained and saved in {obj_dir}"
     logger.info(msg)

@@ -710,9 +710,9 @@ def _kde_cca(
     except ValueError:
         X_obs_f = bel.transform(X=X_obs)
 
-    # samples = bel.random_sample(
-    #     X_obs_f=X_obs_f, obs_n=obs_n, n_posts=100
-    # )  # Get 100 samples
+    samples = bel.random_sample(
+        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=400
+    )  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -787,12 +787,12 @@ def _kde_cca(
             markeredgewidth=0.2,
             alpha=0.9,
         )
-        # ax_joint.plot(
-        #     np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
-        #     samples.T[comp_n],
-        #     "go",
-        #     alpha=0.3,
-        # )  # Samples
+        ax_joint.plot(
+            np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
+            samples.T[comp_n],
+            "go",
+            alpha=0.3,
+        )  # Samples
         # Point
         try:
             ax_joint.plot(

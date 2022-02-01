@@ -425,7 +425,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     # Shape = (n_obs, n_comp_CCA)
                     self.kde_functions[:, comp_n] = functions  # noqa
 
-        elif mode == "tm":
+        elif self.mode == "tm":
             nonmonotone = [
                 [
                     [],
@@ -453,7 +453,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 ]
             ]
 
-            self.tm_list = np.zeros(
+            self.tm_functions = np.zeros(
                 (n_obs, n_cca), dtype="object"
             )
             for comp_n in range(n_cca):
@@ -490,6 +490,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Number of workers for the parallel optimization; 1 means no parallelization
 
                     tm.optimize()
+
+                    kind = "tm"
+                    sample_fun = {"kind": kind, "function": tm, "X": X}
+                    functions = [sample_fun] * n_obs
+
+                # Shape = (n_obs, n_comp_CCA)
+                self.tm_functions[:, comp_n] = functions  # noqa
 
         if return_samples:
             samples = self.random_sample(
@@ -543,8 +550,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 post_mn = self.posterior_mean
                 post_cv = self.posterior_covariance
 
-            Y_samples = []
+            Y_samples = []  # Samples from the posterior
             for n, (mean, cov) in enumerate(zip(post_mn, post_cv)):
+                Y_samples.append(np.random.multivariate_normal(mean, cov, n_posts))
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )  # Draw n_posts samples from the multivariate normal distribution
@@ -604,6 +612,55 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             uniform_samples = np.ones(self.n_posts) * pv
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
+
+        if self.mode == "tm":
+            n_obs = X_obs_f.shape[0]  # Number of observations
+            Y_samples = np.zeros(
+                (n_obs, self.n_posts, self.tm_functions.shape[1])
+            )  # Shape = (n_obs, n_posts, n_comp_CCA)
+
+            if obs_n is not None:  # If we have a specific observation
+                tm_fn = self.tm_functions[obs_n].reshape(
+                    1, -1
+                )  # Shape = (1, n_comp_CCA)
+            else:
+                tm_fn = self.tm_functions  # Shape = (n_obs, n_comp_CCA)
+
+            # Parses the functions dict
+            for i, fun_per_comp in enumerate(tm_fn):
+                for j, fun in enumerate(fun_per_comp):
+                    if fun["kind"] == "tm":  # If the function is a pdf
+                        tm = fun["function"]
+                        X = fun["X"]
+                        N = X.shape[0]
+                        # Map the target samples to the reference distribution; we only get a N-by-1
+                        # vector because we only defined the map for the second dimension/column of X
+                        norm_samples = tm.map(X)
+                        # Now define the value we wish to condition on
+                        x1_obs = X_obs_f[i][j].reshape(-1)[0]  # our 'observed' value
+
+                        # In the inversion, we pretend that we have already inverted the first dimension
+                        # of X and obtained x1_obs, so we create fake, pre-calculated values for it
+                        X_precalc = np.ones((N, 1)) * x1_obs
+
+                        # Now invert the map conditionally. X_star are the posterior samples.
+                        X_star = tm.inverse_map(
+                            X_precalc=X_precalc, Y=norm_samples
+                        )  # Only necessary when heuristic is deactivated
+                        Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
+
+                    elif (
+                        fun["kind"] == "linear"
+                    ):  # If the function is a linear interpolation
+                        rel1d = fun["function"]
+                        uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+                            np.array(
+                                X_obs_f[i][j].reshape(1, -1)
+                            )  # check this line
+                        )  # Shape X_obs_f = (n_obs, n_components)
+
+                        Y_samples[i, :, j] = uniform_samples  # noqa
+
 
         return np.array(Y_samples)  # noqa
 
