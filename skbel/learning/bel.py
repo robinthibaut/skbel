@@ -24,7 +24,7 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
-from ..develop.transport_map_116 import transport_map
+from ..develop.transport_map_116 import TransportMap
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -475,7 +475,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 else:  # If the relation is not perfectly linear
                     X = np.vstack((self.X_f.T[comp_n], self.Y_f.T[comp_n])).T
                     # Initialize a transport map object
-                    tm = transport_map(
+                    tm = TransportMap(
                         monotone=monotone,  # What are the monotone terms of the transport map components?
                         nonmonotone=nonmonotone,  # What are the nonmonotone terms of the transport map components?
                         X=X,  # Samples from the target distribution, N-by-D
