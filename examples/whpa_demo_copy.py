@@ -19,8 +19,9 @@ from skbel.learning.bel import BEL
 
 
 def init_bel():
-    """
-    Set all BEL pipelines. This is the blueprint of the framework.
+    """Set all BEL pipelines.
+
+    This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(

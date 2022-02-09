@@ -15,12 +15,14 @@ import sys
 
 # sys.path.insert(2, os.path.abspath('../skbel'))
 # sys.path.insert(1, os.path.abspath('../examples'))
+from datetime import datetime
+
 sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'skbel'
-copyright = '2021, Robin Thibaut'
+copyright = f"2019 - {datetime.now().year} Robin Thibaut"
 author = 'Robin Thibaut'
 
 # -- General configuration ---------------------------------------------------
@@ -39,7 +41,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
+    # "sphinx.ext.napoleon",
     "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
     # "numpydoc",
@@ -50,6 +52,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     # "m2r2",
 ]
+
 
 autodoc_default_options = {'members': True,
                            'undoc-members': True,
@@ -67,6 +70,12 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 source_suffix = ['.rst', '.md']
+
+add_function_parentheses = False
+pygments_style = "sphinx"
+html_domain_indices = False
+html_use_index = False
+html_copy_source = True
 
 # -- Options for HTML output -------------------------------------------------
 

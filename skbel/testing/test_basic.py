@@ -1,13 +1,11 @@
-"""
-pytest unit tests for skbel.basic
-"""
+"""pytest unit tests for skbel.basic."""
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
+import os
 from os.path import join as jp
 
 import numpy as np
-import os
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
@@ -17,8 +15,9 @@ from skbel.learning.bel import BEL
 
 
 def init_bel():
-    """
-    Set all BEL pipelines. This is the blueprint of the framework.
+    """Set all BEL pipelines.
+
+    This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -58,7 +57,7 @@ def init_bel():
 
 
 def test_mvn():
-    """Compare posterior mean and covariance with reference default values"""
+    """Compare posterior mean and covariance with reference default values."""
 
     # Initiate BEL object
     bel = init_bel()

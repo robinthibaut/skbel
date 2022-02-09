@@ -1,6 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-"""Some visualization utilities"""
+"""Some visualization utilities."""
 
 import itertools
 import os
@@ -33,8 +33,8 @@ __all__ = [
 
 
 def _my_alphabet(az: int):
-    """
-    Method used to make custom figure annotations.
+    """Method used to make custom figure annotations.
+
     :param az: Index of the alphabet
     :return: corresponding letter
     """
@@ -51,10 +51,9 @@ def _my_alphabet(az: int):
 
 
 def _yield_alphabet(start=0):
-    """
-    Yields the alphabet from a given index
+    """Yields the alphabet from a given index.
+
     :param start: Index of the first letter
-    :return:
     """
     alphabet = string.ascii_uppercase
     extended_alphabet = ["".join(i) for i in list(itertools.permutations(alphabet, 2))]
@@ -80,6 +79,7 @@ def _proxy_legend(
     """
     Add a second legend to a figure @ bottom right (loc=4)
     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+
     :param legend1: First legend instance from the figure
     :param colors: List of colors
     :param labels: List of labels
@@ -89,7 +89,6 @@ def _proxy_legend(
     :param fz: Fontsize
     :param fig_file: Path to figure file
     :param extra: List of extra elements to be added on the final figure
-    :return:
     """
 
     if obj is None:
@@ -135,12 +134,11 @@ def _proxy_legend(
 
 
 def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=None):
-    """
-    Places annotation (or title) within the figure box
+    """Places annotation (or title) within the figure box.
+
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
     :param fz: Fontsize
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
-    :return:
     """
     if obj is None:
         obj = plt
@@ -170,15 +168,14 @@ def explained_variance(
     fig_file: str = None,
     show: bool = False,
 ):
-    """
-    PCA explained variance plot
+    """PCA explained variance plot.
+
     :param bel_pca: PCA object
     :param n_comp: Number of components to display
     :param thr: float: Threshold
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
-    :return:
     """
     plt.grid(alpha=0.1)
     if not n_comp:
@@ -248,8 +245,9 @@ def pca_scores(
     labels: bool = True,
     show: bool = False,
 ):
-    """
-    PCA scores plot, displays scores of observations above those of training.
+    """PCA scores plot, displays scores of observations above those of
+    training.
+
     :param labels: labels for the plot
     :param training: Training scores
     :param prediction: Test scores
@@ -257,7 +255,6 @@ def pca_scores(
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
-    :return:
     """
     # Scores plot
     if annotation is None:
@@ -274,12 +271,15 @@ def pca_scores(
         pc_obs = prediction.reshape(1, -1)
         # Create beautiful spline to follow prediction scores
         xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        spl = make_interp_spline(
-            np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-        )  # type: BSpline
-        power_smooth = spl(xnew)
-        # I forgot why I had to put '-1'
-        plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
+        try:
+            spl = make_interp_spline(
+                np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
+            )  # type: BSpline
+            power_smooth = spl(xnew)
+            # I forgot why I had to put '-1'
+            plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
+        except ValueError:
+            pass
 
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
@@ -333,16 +333,15 @@ def cca_plot(
     sdir: str = None,
     show: bool = False,
 ):
-    """
-    CCA plots.
-    Receives d, h PC components to be predicted, transforms them in CCA space and adds it to the plots.
+    """CCA plots. Receives d, h PC components to be predicted, transforms them
+    in CCA space and adds it to the plots.
+
     :param bel: BEL object
     :param d: d CCA scores
     :param h: h CCA scores
     :param d_pc_prediction: d test PC scores
     :param sdir: Path to save directory
     :param show: Show figure
-    :return:
     """
 
     cca_coefficient = np.corrcoef(d, h).diagonal(
@@ -399,8 +398,8 @@ def pca_vision(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Loads PCA pickles and plot scores for all folders
+    """Loads PCA pickles and plot scores for all folders.
+
     :param bel: BEL object
     :param d: bool: Plot d scores
     :param h: bool: Plot h scores
@@ -414,7 +413,6 @@ def pca_vision(
     :param labels: Show labels
     :param fig_dir: Path to save directory
     :param show: Show figure
-    :return:
     """
 
     if fig_dir is None:
@@ -459,7 +457,7 @@ def pca_vision(
                     fig_file=fig_file,
                     show=show,
                 )
-            except AttributeError:
+            except (AttributeError, KeyError):
                 pass
 
     try:
@@ -517,7 +515,8 @@ def _despine(
     trim=False,
 ):
     """Remove the top and right spines from plot(s).
-    :param fig : Figure to despine all axes of, defaults to the current figure.
+
+    :param fig: Figure to despine all axes of, defaults to the current figure.
     :param ax: Specific axes object to despine. Ignored if fig is provided.
     :param top, right, left, bottom: If True, remove that spine.
     :param offset: Absolute distance, in points, spines should be moved away
@@ -670,8 +669,8 @@ def _kde_cca(
     show: bool = False,
     annotation_callback=None,
 ):
-    """
-    Plot the kernel density estimate of the CCA.
+    """Plot the kernel density estimate of the CCA.
+
     :param bel: The BEL object.
     :param obs_n: The index of the observation to plot.
     :param X_obs: The X observations.
@@ -907,15 +906,14 @@ def cca_vision(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Loads CCA pickles and plots components for all folders
+    """Loads CCA pickles and plots components for all folders.
+
     :param bel: BEL model
     :param X_obs: Observed X (n_obs, n_comp)
     :param Y_obs: True target array
     :param obs_n: Observation number
     :param fig_dir: Base directory path
     :param show: Show figure
-    :return:
     """
     if fig_dir is None:
         fig_dir = ""

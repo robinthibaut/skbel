@@ -1,9 +1,10 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-import numpy as np
-from matplotlib import pyplot as plt
 from typing import List
 
-plt.rcParams.update({"figure.max_open_warning": 0})
+import numpy as np
+from matplotlib import pyplot as plt
+
+plt.rcParams.update({"figure.max_open_warning": 0})  # ignore warning for too many open figures
 
 __all__ = [
     "grid_parameters",
@@ -22,12 +23,12 @@ __all__ = [
 def grid_parameters(
     x_lim: list = None, y_lim: list = None, grf: float = 1
 ) -> (np.array, int, int):
-    """
-    Generates grid parameters given dimensions.
+    """Generates grid parameters given dimensions.
+
     :param x_lim: X limits
     :param y_lim: Y limits
     :param grf: Cell dimension
-    :return:
+    :return: (cell centers, number of rows, number of columns)
     """
     if y_lim is None:
         y_lim = [0, 1000]
@@ -49,14 +50,15 @@ def grid_parameters(
 
 
 def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
-    """
-    Return an array of shape (n, nrows, ncols) where
+    """Return an array of shape (n, nrows, ncols) where
     n * nrows * ncols = arr.size
     If arr is a 2D array, the returned array should look like n sub-blocks with
     each sub-block preserving the "physical" layout of arr.
+
     :param arr: Array
     :param nrows: Number of rows
     :param ncols: Number of columns
+    :return: Array of shape (n, nrows, ncols)
     """
     h, w = arr.shape
     assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
@@ -72,8 +74,7 @@ def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
 def refine_axis(
     widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
 ) -> np.array:
-    """
-    Refines one 1D axis around a point belonging to it.
+    """Refines one 1D axis around a point belonging to it.
 
     Example:
     along_c = refine_axis([10m, 10m... 10m], 500m, 70m, 2m, 10m, 1500m)
@@ -159,10 +160,10 @@ def refine_axis(
 
 
 def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
-    """
-    Computes the x and y dimensions of each block.
+    """Computes the x and y dimensions of each block.
+
     :param blocks: Array of blocks
-    :return:
+    :return: (dx, dy) dimensions of each block
     """
     dc = np.array([np.diff(b[:, 0]).max for b in blocks])  # x-dimensions
     dr = np.array([np.diff(b[:, 1]).max for b in blocks])  # y-dimensions
@@ -171,10 +172,12 @@ def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
 
 
 def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
-    """
-    Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
+    """Returns the blocks forming a 2D grid whose rows and columns widths are
+    defined by the two arrays rows, columns.
+
     :param rows: Array of row widths
     :param columns: Array of column widths
+    :return: Array of blocks
     """
 
     nrow = len(rows)  # Number of rows
@@ -200,10 +203,12 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
 
 
 def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
-    """
-    Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns
+    """Returns the blocks forming a 2D grid whose rows and columns widths are
+    defined by the two arrays rows, columns.
+
     :param rows: Array of row widths
     :param columns: Array of column widths
+    :return: Array of blocks
     """
 
     nrow = len(rows)
@@ -229,11 +234,12 @@ def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
 
 
 def get_centroids(array: np.array, grf: float) -> np.array:
-    """
-    Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
-    centroids.
+    """Given a (m, n) matrix of cells dimensions in the x-y axes, returns the
+    (m, n, 2) matrix of the coordinates of centroids.
+
     :param array: (m, n) array
     :param grf: float: Cell dimension
+    :return: (m, n, 2) array
     """
     xys = np.dstack(
         (np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2)
@@ -243,12 +249,14 @@ def get_centroids(array: np.array, grf: float) -> np.array:
 
 # extract 0 contours
 def contour_extract(x_lim, y_lim, grf, Z):
-    """
-    Extract the 0 contour from the sampled posterior, corresponding to the field delineation
+    """Extract the 0 contour from the sampled posterior, corresponding to the
+    field delineation.
+
     :param x_lim: x limits of the grid
     :param y_lim: y limits of the grid
     :param grf: grid resolution
     :param Z: sampled posterior
+    :return: contour (x, y, vertices)
     """
     *_, x, y = refine_machine(x_lim, y_lim, grf)
     vertices = contours_vertices(x, y, Z)
@@ -259,8 +267,8 @@ def contour_extract(x_lim, y_lim, grf, Z):
 def contours_vertices(
     x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
 ) -> np.array:
-    """
-    Extracts contour vertices from a list of matrices.
+    """Extracts contour vertices from a list of matrices.
+
     :param x: x coordinates of the grid
     :param y: y coordinates of the grid
     :param arrays: list of matrices
@@ -292,11 +300,12 @@ def contours_vertices(
 def refine_machine(
     xlim: list, ylim: list, new_grf: int or float
 ) -> (int, int, np.array, np.array):
-    """
-    Refines the grid to a new resolution.
+    """Refines the grid to a new resolution.
+
     :param xlim: x limits of the grid
     :param ylim: y limits of the grid
     :param new_grf: new grid resolution
+    :return: new grid resolution (nrow, ncol, x, y)
     """
     nrow = int(np.diff(ylim) / new_grf)  # Number of rows
     ncol = int(np.diff(xlim) / new_grf)  # Number of columns

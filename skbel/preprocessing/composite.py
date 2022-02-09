@@ -17,8 +17,9 @@ __all__ = ["CompositePCA", "CompositeTransformer", "Dummy"]
 
 class CompositePCA(TransformerMixin, BaseEstimator):
     def __init__(self, n_components: list, scale: bool = False):
-        """Initiate the class by specifying a list of number of components to keep for each
-        different datasets.
+        """Initiate the class by specifying a list of number of components to
+        keep for each different datasets.
+
         :param n_components: list of number of components to keep for each dataset
         :param scale: whether to scale the data before applying PCA
         """
@@ -29,7 +30,9 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         ]  # list of PCA objects
 
     def fit(self, Xc: list, yc=None, **fit_params):
-        """Fit all PCA objects for the different datasets with their specified n_components
+        """Fit all PCA objects for the different datasets with their specified
+        n_components.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
@@ -38,7 +41,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, Xc: list, yc=None, **fit_params) -> np.array:
-        """Transforms all datasets and concatenates the output
+        """Transforms all datasets and concatenates the output.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
@@ -53,7 +57,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         return np.concatenate(scores, axis=1)
 
     def fit_transform(self, Xc: list, yc=None, **fit_params):
-        """Fit and transform all datasets
+        """Fit and transform all datasets.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
@@ -61,7 +66,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         return self.fit(Xc, yc).transform(Xc, yc)
 
     def inverse_transform(self, Xr: np.array, yc=None, **fit_params) -> list:
-        """Inverse transform the data back to the original space
+        """Inverse transform the data back to the original space.
+
         :param Xr: transformed data
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
@@ -90,7 +96,9 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         self.params = fit_params
 
     def fit(self, Xc: list, yc=None, **fit_params):
-        """Fit all transformations for the different datasets with their specified parameters
+        """Fit all transformations for the different datasets with their
+        specified parameters.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
@@ -102,7 +110,8 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, Xc: list, yc=None, **fit_params) -> np.array:
-        """Transforms all datasets and concatenates the output
+        """Transforms all datasets and concatenates the output.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
@@ -112,7 +121,8 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         return output
 
     def fit_transform(self, Xc: list, yc=None, **fit_params):
-        """Fit and transform all datasets
+        """Fit and transform all datasets.
+
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
@@ -120,7 +130,8 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         return self.fit(Xc, yc).transform(Xc, yc)
 
     def inverse_transform(self, Xr: np.array, yc=None, **fit_params) -> list:
-        """Inverse transform the data back to the original space
+        """Inverse transform the data back to the original space.
+
         :param Xr: transformed data
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
@@ -133,7 +144,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
 
 
 class Dummy(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    """Dummy transformer that does nothing"""
+    """Dummy transformer that does nothing."""
 
     def __init__(self):
         self.fake_fit_ = np.zeros(1)

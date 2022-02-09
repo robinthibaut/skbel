@@ -1,6 +1,6 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 
-"""Discrete Cosine Transform written in scikit-learn style"""
+"""Discrete Cosine Transform written in scikit-learn style."""
 
 import numpy as np
 from scipy.fftpack import dct, idct
@@ -11,16 +11,12 @@ __all__ = ["DiscreteCosineTransform2D"]
 
 
 def dct2(a):
-    """
-    Performs a 2D Discrete Cosine Transform (DCT) on a 2D array.
-    """
+    """Performs a 2D Discrete Cosine Transform (DCT) on a 2D array."""
     return dct(dct(a.T, norm="ortho").T, norm="ortho")
 
 
 def idct2(a):
-    """
-    Performs a 2D Inverse Discrete Cosine Transform (IDCT) on a 2D array.
-    """
+    """Performs a 2D Inverse Discrete Cosine Transform (IDCT) on a 2D array."""
     return idct(idct(a.T, norm="ortho").T, norm="ortho")
 
 
