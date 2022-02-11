@@ -65,16 +65,16 @@ def _yield_alphabet(start=0):
 
 
 def _proxy_legend(
-        legend1: legend = None,
-        colors: list = None,
-        labels: list = None,
-        loc: int = 4,
-        marker: list = None,
-        pec: list = None,
-        fz: float = 11,
-        fig_file: str = None,
-        extra: list = None,
-        obj=None,
+    legend1: legend = None,
+    colors: list = None,
+    labels: list = None,
+    loc: int = 4,
+    marker: list = None,
+    pec: list = None,
+    fz: float = 11,
+    fig_file: str = None,
+    extra: list = None,
+    obj=None,
 ):
     """
     Add a second legend to a figure @ bottom right (loc=4)
@@ -161,12 +161,12 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
 
 
 def explained_variance(
-        bel_pca,
-        n_comp: int = 0,
-        thr: float = 1.0,
-        annotation: list = None,
-        fig_file: str = None,
-        show: bool = False,
+    bel_pca,
+    n_comp: int = 0,
+    thr: float = 1.0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
 ):
     """PCA explained variance plot.
 
@@ -234,13 +234,13 @@ def explained_variance(
 
 
 def pca_scores(
-        training: np.array,
-        prediction: np.array = None,
-        n_comp: int = None,
-        annotation: list = None,
-        fig_file: str = None,
-        labels: bool = True,
-        show: bool = False,
+    training: np.array,
+    prediction: np.array = None,
+    n_comp: int = None,
+    annotation: list = None,
+    fig_file: str = None,
+    labels: bool = True,
+    show: bool = False,
 ):
     """PCA scores plot, displays scores of observations above those of
     training.
@@ -324,12 +324,12 @@ def pca_scores(
 
 
 def cca_plot(
-        bel,
-        d: np.array,
-        h: np.array,
-        d_pc_prediction: np.array,
-        sdir: str = None,
-        show: bool = False,
+    bel,
+    d: np.array,
+    h: np.array,
+    d_pc_prediction: np.array,
+    sdir: str = None,
+    show: bool = False,
 ):
     """CCA plots. Receives d, h PC components to be predicted, transforms them
     in CCA space and adds it to the plots.
@@ -382,19 +382,19 @@ def cca_plot(
 
 
 def pca_vision(
-        bel,
-        d: np.array = None,
-        h: np.array = None,
-        obs_n: int = 0,
-        X_obs: np.array = None,
-        Y_obs: np.array = None,
-        scores: bool = True,
-        exvar: bool = True,
-        thrx: float = 0.8,
-        thry: float = 0.8,
-        labels: bool = True,
-        fig_dir: str = None,
-        show: bool = False,
+    bel,
+    d: np.array = None,
+    h: np.array = None,
+    obs_n: int = 0,
+    X_obs: np.array = None,
+    Y_obs: np.array = None,
+    scores: bool = True,
+    exvar: bool = True,
+    thrx: float = 0.8,
+    thry: float = 0.8,
+    labels: bool = True,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """Loads PCA pickles and plot scores for all folders.
 
@@ -503,14 +503,14 @@ def pca_vision(
 
 
 def _despine(
-        fig=None,
-        ax=None,
-        top=True,
-        right=True,
-        left=False,
-        bottom=False,
-        offset=None,
-        trim=False,
+    fig=None,
+    ax=None,
+    top=True,
+    right=True,
+    left=False,
+    bottom=False,
+    offset=None,
+    trim=False,
 ):
     """Remove the top and right spines from plot(s).
 
@@ -659,13 +659,13 @@ def _get_defaults_kde_plot():
 
 
 def _kde_cca(
-        bel,
-        obs_n: int = 0,
-        X_obs: np.array = None,
-        Y_obs: np.array = None,
-        sdir: str = None,
-        show: bool = False,
-        annotation_callback=None,
+    bel,
+    obs_n: int = 0,
+    X_obs: np.array = None,
+    Y_obs: np.array = None,
+    sdir: str = None,
+    show: bool = False,
+    annotation_callback=None,
 ):
     """Plot the kernel density estimate of the CCA.
 
@@ -720,12 +720,13 @@ def _kde_cca(
 
         marginal_eval_x = KDE()  # KDE for the marginal x
         marginal_eval_y = KDE()  # KDE for the marginal y
+        marginal_eval_samples = KDE()  # KDE for the marginal samples
+
         # support is cached
         kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
-            marginal_eval_samples = KDE()  # KDE for the marginal samples
             # Plot h posterior given d
             if bel.mode == "kde":
                 density, support, bw = kde_params(
@@ -839,8 +840,8 @@ def _kde_cca(
             )
         except UnboundLocalError:
             pass
-        if cca_coefficient[comp_n] < 0.999:
-            if bel.mode == "kde":
+        if bel.mode == "kde":
+            if cca_coefficient[comp_n] < 0.999:
                 # Conditional distribution
                 #  - Line plot
                 ax_marg_y.plot(hp, sup, color="red", alpha=0)  # noqa
@@ -853,18 +854,20 @@ def _kde_cca(
                     alpha=0.5,
                     label="$p(h^{c}|d^{c}_{*})_{KDE}$",
                 )
-            else:
-                kde_samples, sup_samples = marginal_eval_samples(samples[:, :, comp_n].reshape(1, -1))  # noqa
-                ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
-                #  - Fill to axis
-                ax_marg_y.fill_betweenx(
-                    sup_samples,
-                    0,
-                    kde_samples,
-                    color="mediumorchid",
-                    alpha=0.5,
-                    label="$p(h^{c}|d^{c}_{*})$",
-                )
+        else:
+            kde_samples, sup_samples = marginal_eval_samples(
+                samples[:, :, comp_n].reshape(1, -1)
+            )  # noqa
+            ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
+            #  - Fill to axis
+            ax_marg_y.fill_betweenx(
+                sup_samples,
+                0,
+                kde_samples,
+                color="mediumorchid",
+                alpha=0.5,
+                label="$p(h^{c}|d^{c}_{*})$",
+            )
 
         ax_marg_y.legend(fontsize=10)
         # Labels
@@ -913,12 +916,12 @@ def _kde_cca(
 
 
 def cca_vision(
-        bel,
-        X_obs: np.array,
-        Y_obs: np.array,
-        obs_n: int = None,
-        fig_dir: str = None,
-        show: bool = False,
+    bel,
+    X_obs: np.array,
+    Y_obs: np.array,
+    obs_n: int = None,
+    fig_dir: str = None,
+    show: bool = False,
 ):
     """Loads CCA pickles and plots components for all folders.
 
