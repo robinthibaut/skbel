@@ -3,7 +3,6 @@
 import os
 from os.path import join as jp
 
-import joblib
 import pandas as pd
 from loguru import logger
 from sklearn.cross_decomposition import CCA
@@ -115,28 +114,28 @@ if __name__ == "__main__":
     # Save the fitted BEL model
     # joblib.dump(model, jp(obj_dir, "bel.pkl"))
 
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
+    # msg = f"model trained and saved in {obj_dir}"
+    # logger.info(msg)
 
     # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(
-        model,
-        y_predicted=y_predicted,
-        X=X_train,
-        X_obs=X_test,
-        Y=y_train,
-        Y_obs=y_test,
-        base_dir=sub_dir,
-    )
-    #
-    # Plot PCA
-    pca_vision(
-        model,
-        Y_obs=y_test,
-        fig_dir=fig_pca_dir,
-    )
+    # myvis.plot_results(
+    #     model,
+    #     y_predicted=y_predicted,
+    #     X=X_train,
+    #     X_obs=X_test,
+    #     Y=y_train,
+    #     Y_obs=y_test,
+    #     base_dir=sub_dir,
+    # )
+    # #
+    # # Plot PCA
+    # pca_vision(
+    #     model,
+    #     Y_obs=y_test,
+    #     fig_dir=fig_pca_dir,
+    # )
 
     # Plot CCA
     cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)

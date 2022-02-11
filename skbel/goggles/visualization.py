@@ -711,7 +711,7 @@ def _kde_cca(
         X_obs_f = bel.transform(X=X_obs)
 
     samples = bel.random_sample(
-        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=400
+        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=bel.n_posts
     )  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
@@ -725,31 +725,33 @@ def _kde_cca(
         kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
+            marginal_eval_samples = KDE()  # KDE for the marginal samples
             # Plot h posterior given d
-            density, support, bw = kde_params(
-                x=bel.X_f.T[comp_n],
-                y=bel.Y_f.T[comp_n],
-                gridsize=200,
-            )  # Get KDE parameters
-            xx, yy = support
+            if bel.mode == "kde":
+                density, support, bw = kde_params(
+                    x=bel.X_f.T[comp_n],
+                    y=bel.Y_f.T[comp_n],
+                    gridsize=200,
+                )  # Get KDE parameters
+                xx, yy = support
 
-            # Conditional:
-            hp, sup = posterior_conditional(
-                X_obs=X_obs_f.T[comp_n], dens=density, support=support, k=200
-            )  # Get posterior
+                # Conditional:
+                hp, sup = posterior_conditional(
+                    X_obs=X_obs_f.T[comp_n], dens=density, support=support, k=200
+                )  # Get posterior
 
-            # Filled contour plot
-            # Mask values under threshold
-            z = ma.masked_where(
-                density <= np.finfo(np.float16).eps, density
-            )  # Mask values under threshold
-            # Filled contour plot
-            # 'BuPu_r' is nice
-            cf = ax_joint.contourf(
-                xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
-            )  # Filled contour plot
-            cb = plt.colorbar(cf, ax=[ax_cb], location="left")  # Colorbar
-            cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
+                # Filled contour plot
+                # Mask values under threshold
+                z = ma.masked_where(
+                    density <= np.finfo(np.float16).eps, density
+                )  # Mask values under threshold
+                # Filled contour plot
+                # 'BuPu_r' is nice
+                cf = ax_joint.contourf(
+                    xx, yy, z, cmap="coolwarm", levels=100, vmin=0, vmax=vmax
+                )  # Filled contour plot
+                cb = plt.colorbar(cf, ax=[ax_cb], location="left")  # Colorbar
+                cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
 
         try:
             reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
@@ -837,18 +839,31 @@ def _kde_cca(
         except UnboundLocalError:
             pass
         if cca_coefficient[comp_n] < 0.999:
-            # Conditional distribution
-            #  - Line plot
-            ax_marg_y.plot(hp, sup, color="red", alpha=0)  # noqa
-            #  - Fill to axis
-            ax_marg_y.fill_betweenx(
-                sup,
-                0,
-                hp,
-                color="mediumorchid",
-                alpha=0.5,
-                label="$p(h^{c}|d^{c}_{*})_{KDE}$",
-            )
+            if bel.mode == "kde":
+                # Conditional distribution
+                #  - Line plot
+                ax_marg_y.plot(hp, sup, color="red", alpha=0)  # noqa
+                #  - Fill to axis
+                ax_marg_y.fill_betweenx(
+                    sup,
+                    0,
+                    hp,
+                    color="mediumorchid",
+                    alpha=0.5,
+                    label="$p(h^{c}|d^{c}_{*})_{KDE}$",
+                )
+            else:
+                kde_samples, sup_samples = marginal_eval_samples(samples[:, :, comp_n].reshape(1, -1))
+                ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
+                #  - Fill to axis
+                ax_marg_y.fill_betweenx(
+                    sup_samples,
+                    0,
+                    kde_samples,
+                    color="mediumorchid",
+                    alpha=0.5,
+                    label="$p(h^{c}|d^{c}_{*})$",
+                )
 
         ax_marg_y.legend(fontsize=10)
         # Labels

@@ -479,7 +479,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         monotone=monotone,  # What are the monotone terms of the transport map components?
                         nonmonotone=nonmonotone,  # What are the nonmonotone terms of the transport map components?
                         X=X,  # Samples from the target distribution, N-by-D
-                        D=X.shape[-1],  # How many dimensions does the target distribution have?
+                        # D=X.shape[-1],  # How many dimensions does the target distribution have?
                         polynomial_type="probabilist's hermite",
                         # Which polynomial function to use for the map component basis functions?
                         monotonicity="separable monotonicity",
@@ -557,61 +557,61 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )  # Draw n_posts samples from the multivariate normal distribution
 
-        if self.mode == "kde":  # Kernel density estimation
-            n_obs = X_obs_f.shape[0]  # Number of observations
-            Y_samples = np.zeros(
-                (n_obs, self.n_posts, self.kde_functions.shape[1])
-            )  # Shape = (n_obs, n_posts, n_comp_CCA)
-
-            if obs_n is not None:  # If we have a specific observation
-                kde_fn = self.kde_functions[obs_n].reshape(
-                    1, -1
-                )  # Shape = (1, n_comp_CCA)
-            else:
-                kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
-
-            if init_kde is None:
-                # Parses the functions dict
-                for i, fun_per_comp in enumerate(kde_fn):
-                    for j, fun in enumerate(fun_per_comp):
-                        if fun["kind"] == "pdf":  # If the function is a pdf
-                            pdf = fun["function"]
-                            uniform_samples = it_sampling(  # Sample from the pdf
-                                pdf=pdf,
-                                num_samples=self.n_posts,
-                                lower_bd=pdf.x.min(),
-                                upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,
-                            )
-                        elif (
-                            fun["kind"] == "linear"
-                        ):  # If the function is a linear interpolation
-                            rel1d = fun["function"]
-                            uniform_samples = np.ones(self.n_posts) * rel1d.predict(
-                                np.array(
-                                    X_obs_f[i][j].reshape(1, -1)
-                                )  # check this line
-                            )  # Shape X_obs_f = (n_obs, n_components)
-
-                        Y_samples[i, :, j] = uniform_samples  # noqa
-            else:  # If the KDE is already initialized
-                for i, fun_per_comp in enumerate(kde_fn):  # Parses the function dict
-                    for j, fun in enumerate(fun_per_comp):
-                        pv = init_kde[i, j]
-                        if fun["kind"] == "pdf":
-                            pdf = fun["function"]
-                            uniform_samples = it_sampling(
-                                pdf=pdf,
-                                num_samples=self.n_posts,
-                                lower_bd=pdf.x.min(),
-                                upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,
-                                cdf_y=pv,
-                            )
-                        elif fun["kind"] == "linear":
-                            uniform_samples = np.ones(self.n_posts) * pv
-
-                        Y_samples[i, :, j] = uniform_samples  # noqa
+        # if self.mode == "kde":  # Kernel density estimation
+        #     n_obs = X_obs_f.shape[0]  # Number of observations
+        #     Y_samples = np.zeros(
+        #         (n_obs, self.n_posts, self.kde_functions.shape[1])
+        #     )  # Shape = (n_obs, n_posts, n_comp_CCA)
+        #
+        #     if obs_n is not None:  # If we have a specific observation
+        #         kde_fn = self.kde_functions[obs_n].reshape(
+        #             1, -1
+        #         )  # Shape = (1, n_comp_CCA)
+        #     else:
+        #         kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+        #
+        #     if init_kde is None:
+        #         # Parses the functions dict
+        #         for i, fun_per_comp in enumerate(kde_fn):
+        #             for j, fun in enumerate(fun_per_comp):
+        #                 if fun["kind"] == "pdf":  # If the function is a pdf
+        #                     pdf = fun["function"]
+        #                     uniform_samples = it_sampling(  # Sample from the pdf
+        #                         pdf=pdf,
+        #                         num_samples=self.n_posts,
+        #                         lower_bd=pdf.x.min(),
+        #                         upper_bd=pdf.x.max(),
+        #                         k=2 ** 7 + 1,
+        #                     )
+        #                 elif (
+        #                     fun["kind"] == "linear"
+        #                 ):  # If the function is a linear interpolation
+        #                     rel1d = fun["function"]
+        #                     uniform_samples = np.ones(self.n_posts) * rel1d.predict(
+        #                         np.array(
+        #                             X_obs_f[i][j].reshape(1, -1)
+        #                         )  # check this line
+        #                     )  # Shape X_obs_f = (n_obs, n_components)
+        #
+        #                 Y_samples[i, :, j] = uniform_samples  # noqa
+        #     else:  # If the KDE is already initialized
+        #         for i, fun_per_comp in enumerate(kde_fn):  # Parses the function dict
+        #             for j, fun in enumerate(fun_per_comp):
+        #                 pv = init_kde[i, j]
+        #                 if fun["kind"] == "pdf":
+        #                     pdf = fun["function"]
+        #                     uniform_samples = it_sampling(
+        #                         pdf=pdf,
+        #                         num_samples=self.n_posts,
+        #                         lower_bd=pdf.x.min(),
+        #                         upper_bd=pdf.x.max(),
+        #                         k=2 ** 7 + 1,
+        #                         cdf_y=pv,
+        #                     )
+        #                 elif fun["kind"] == "linear":
+        #                     uniform_samples = np.ones(self.n_posts) * pv
+        #
+        #                 Y_samples[i, :, j] = uniform_samples  # noqa
 
         if self.mode == "tm":
             n_obs = X_obs_f.shape[0]  # Number of observations

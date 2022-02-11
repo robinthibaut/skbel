@@ -112,7 +112,7 @@ def dirmaker(dird: str, erase: bool = False):
 
 
 def combinator(combi):
-    """Given a n-sized 1D array, generates all possible configurations, from
+    """Given an n-sized 1D array, generates all possible configurations, from
     size 1 to n-1. 'None' will indicate to use the original combination.
 
     :param combi: List of size n.
