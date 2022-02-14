@@ -282,8 +282,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
          original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
-         transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
-        :param precomputed_kde: Precomputed KDE functions. Computing the KDEs can be time-consuming. If the KDEs are
+         reduced space, which is much faster, so that the samples can be back-transformed later. Default=True.
+        :param precomputed_kde: (if mode="kde) Precomputed KDE functions. Computing the KDEs can be time-consuming.
+         If the KDEs are
          precomputed, they can be passed as an argument.
         :return: The posterior samples in the original space or in the transformed space.
         """
@@ -704,7 +705,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             ):  # If the number of components is smaller than the number of observations
                 y_post = y_post[
                     :, :n_comp
-                ]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
+                ]  # Truncate the posterior samples, because the number of components is smaller than the number of
+                # observations
 
             # x_dummy to be used in the inverse_transform of CCA:
             x_dummy = np.zeros((y_post.shape[0], n_comp))
