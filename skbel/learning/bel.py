@@ -614,7 +614,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             ):  # If the number of components is smaller than the number of observations
                 y_post = y_post[
                     :, :n_comp
-                ]  # Truncate the posterior samples, because the number of components is smaller than the number of observations
+                ]  # Truncate the posterior samples, because the number of components is smaller than the number of
+                # observations
 
             # x_dummy to be used in the inverse_transform of CCA:
             x_dummy = np.zeros((y_post.shape[0], n_comp))
