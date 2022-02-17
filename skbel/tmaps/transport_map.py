@@ -1,31 +1,34 @@
 #  Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology
 
+import copy
 
 import numpy as np
 
+__all__ = ['TransportMap']
 
-class transport_map:
+
+class TransportMap:
     def __init__(
-        self,
-        monotone,
-        nonmonotone,
-        X,
-        polynomial_type="hermite function",
-        monotonicity="integrated rectifier",
-        standardize_samples=True,
-        standardization="standard",
-        workers=1,
-        ST_scale_factor=1.0,
-        ST_scale_mode="dynamic",
-        coeffs_init=0.1,
-        linearization=None,
-        linearization_specified_as_quantiles=True,
-        linearization_increment=1e-6,
-        regularization=None,
-        regularization_lambda=0.1,
-        quadrature_input=None,
-        rectifier_type="exponential",
-        delta=0.0,
+            self,
+            monotone,
+            nonmonotone,
+            X,
+            polynomial_type="hermite function",
+            monotonicity="integrated rectifier",
+            standardize_samples=True,
+            standardization="standard",
+            workers=1,
+            ST_scale_factor=1.0,
+            ST_scale_mode="dynamic",
+            coeffs_init=0.1,
+            linearization=None,
+            linearization_specified_as_quantiles=True,
+            linearization_increment=1e-6,
+            regularization=None,
+            regularization_lambda=0.1,
+            quadrature_input=None,
+            rectifier_type="exponential",
+            delta=0.0,
     ):
 
         """
@@ -146,7 +149,6 @@ class transport_map:
 
         if quadrature_input is None:
             quadrature_input = {}
-        import copy
 
         # ---------------------------------------------------------------------
         # Load in pre-defined variables
@@ -206,25 +208,25 @@ class transport_map:
 
         # Determine the derivative and polynomial terms depending on the chosen type
         if (
-            polynomial_type.lower() == "standard"
-            or polynomial_type.lower() == "polynomial"
-            or polynomial_type.lower() == "power series"
+                polynomial_type.lower() == "standard"
+                or polynomial_type.lower() == "polynomial"
+                or polynomial_type.lower() == "power series"
         ):
             self.polyfunc = np.polynomial.polynomial.Polynomial
             self.polyfunc_der = np.polynomial.polynomial.polyder
             self.polyfunc_str = "np.polynomial.Polynomial"
         elif (
-            polynomial_type.lower() == "hermite"
-            or polynomial_type.lower() == "phycisist's hermite"
-            or polynomial_type.lower() == "phycisists hermite"
+                polynomial_type.lower() == "hermite"
+                or polynomial_type.lower() == "phycisist's hermite"
+                or polynomial_type.lower() == "phycisists hermite"
         ):
             self.polyfunc = np.polynomial.hermite.Hermite
             self.polyfunc_der = np.polynomial.hermite.hermder
             self.polyfunc_str = "np.polynomial.Hermite"
         elif (
-            polynomial_type.lower() == "hermite_e"
-            or polynomial_type.lower() == "probabilist's hermite"
-            or polynomial_type.lower() == "probabilists hermite"
+                polynomial_type.lower() == "hermite_e"
+                or polynomial_type.lower() == "probabilist's hermite"
+                or polynomial_type.lower() == "probabilists hermite"
         ):
             self.polyfunc = np.polynomial.hermite_e.HermiteE
             self.polyfunc_der = np.polynomial.hermite_e.hermeder
@@ -242,9 +244,9 @@ class transport_map:
             self.polyfunc_der = np.polynomial.legendre.legder
             self.polyfunc_str = "np.polynomial.Legendre"
         elif (
-            polynomial_type.lower() == "hermite function"
-            or polynomial_type.lower() == "hermite_function"
-            or polynomial_type.lower() == "hermite functions"
+                polynomial_type.lower() == "hermite function"
+                or polynomial_type.lower() == "hermite_function"
+                or polynomial_type.lower() == "hermite functions"
         ):
             self.polynomial_type = "hermite function"  # Unify this polynomial string, so we can use it as a flag
             self.polyfunc = np.polynomial.hermite_e.HermiteE
@@ -311,10 +313,9 @@ class transport_map:
             raise ValueError("'ST_scale_mode' must be either 'dynamic' or 'static'.")
 
         if (
-            self.hermite_function_threshold_mode != "composite"
-            and self.hermite_function_threshold_mode != "individual"
+                self.hermite_function_threshold_mode != "composite"
+                and self.hermite_function_threshold_mode != "individual"
         ):
-
             raise ValueError(
                 "The flag hermite_function_threshold_mode must be "
                 + "'composite' or 'individual'. Currently, it is defined as "
@@ -360,8 +361,6 @@ class transport_map:
                 the number of dimensions
         """
 
-        import copy
-
         if len(X.shape) != 2:
             raise Exception(
                 "X should be a two-dimensional array of shape (N,D), N = number of samples, D = number of dimensions. Current shape of X is "
@@ -376,7 +375,6 @@ class transport_map:
 
         # Set all parameters to zero
         for k in range(self.D):
-
             self.coeffs_mon[k] *= 0
             self.coeffs_nonmon[k] *= 0
 
@@ -411,8 +409,6 @@ class transport_map:
         internal computations.
         """
 
-        import numpy as np
-
         # Store the mean and standard deviation of the samples        # I have replaced the standard deviation estimate with one based on
         # quantiles, as I fear outliers might compromise the normal standard
         # deviation estimate more easily.
@@ -421,14 +417,14 @@ class transport_map:
             self.X_mean = np.mean(self.X, axis=0)
             self.X_std = np.std(self.X, axis=0)
         elif (
-            self.standardization.lower() == "quantile"
-            or self.standardization.lower() == "quantiles"
+                self.standardization.lower() == "quantile"
+                or self.standardization.lower() == "quantiles"
         ):
             self.X_mean = np.quantile(self.X, q=0.5, axis=0)
             self.X_std = (
-                np.quantile(self.X - self.X_mean, q=0.8413447460685429, axis=0)
-                - np.quantile(self.X - self.X_mean, q=0.15865525393145707, axis=0)
-            ) / 2
+                                 np.quantile(self.X - self.X_mean, q=0.8413447460685429, axis=0)
+                                 - np.quantile(self.X - self.X_mean, q=0.15865525393145707, axis=0)
+                         ) / 2
         else:
             raise ValueError(
                 "'standardization' must be either 'standard' or 'quantiles'."
@@ -446,15 +442,12 @@ class transport_map:
         more quickly.
         """
 
-        import copy
-
         # Prepare precalculation matrices
         self.Psi_mon = []
         self.Psi_nonmon = []
 
         # Precalculate matrices
         for k in range(self.D):
-
             # Pre-allocate empty matrices
             self.Psi_mon.append(copy.copy(self.fun_mon[k](copy.copy(self.X), self)))
             self.Psi_nonmon.append(
@@ -492,8 +485,6 @@ class transport_map:
                 samples the 'term' corresponds to. Used to clarify with respect
                 to what variable we take the derivative.
         """
-
-        import copy
 
         # First, check for input errors ---------------------------------------
 
@@ -576,13 +567,13 @@ class transport_map:
 
                     # Construct the string
                     string = (
-                        "((__x__[...,"
-                        + i
-                        + "] - __mu__)*(1-scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))) - __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
+                            "((__x__[...,"
+                            + i
+                            + "] - __mu__)*(1-scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))) - __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
                     )
 
                 elif mode == "derivative":
@@ -593,9 +584,9 @@ class transport_map:
                     if int(i) == k:
 
                         string = (
-                            "(1 - scipy.special.erf((__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                                "(1 - scipy.special.erf((__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                         )
 
                     else:
@@ -614,13 +605,13 @@ class transport_map:
 
                     # Construct the string
                     string = (
-                        "((__x__[...,"
-                        + i
-                        + "] - __mu__)*(1+scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))) + __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
+                            "((__x__[...,"
+                            + i
+                            + "] - __mu__)*(1+scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))) + __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
                     )
 
                 elif mode == "derivative":
@@ -631,9 +622,9 @@ class transport_map:
                     if int(i) == k:
 
                         string = (
-                            "(1 + scipy.special.erf((__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                                "(1 + scipy.special.erf((__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                         )
 
                     else:
@@ -652,9 +643,9 @@ class transport_map:
 
                     # Construct the string
                     string = (
-                        "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
-                        + i
-                        + "] - __mu__)**2/(2*__scale__**2))"
+                            "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
+                            + i
+                            + "] - __mu__)**2/(2*__scale__**2))"
                     )
 
                 elif mode == "derivative":
@@ -665,11 +656,11 @@ class transport_map:
                     if int(i) == k:
 
                         string = (
-                            "(__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2*np.pi)*__scale__**3)*np.exp(-(__x__[...,"
-                            + i
-                            + "] - __mu__)**2/(2*__scale__**2))"
+                                "(__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2*np.pi)*__scale__**3)*np.exp(-(__x__[...,"
+                                + i
+                                + "] - __mu__)**2/(2*__scale__**2))"
                         )
 
                     else:
@@ -688,9 +679,9 @@ class transport_map:
 
                     # Construct the string
                     string = (
-                        "(1 + scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                            "(1 + scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                     )
 
                 elif mode == "derivative":
@@ -701,9 +692,9 @@ class transport_map:
                     if int(i) == k:
 
                         string = (
-                            "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
-                            + i
-                            + "] - __mu__)**2/(2*__scale__**2))"
+                                "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
+                                + i
+                                + "] - __mu__)**2/(2*__scale__**2))"
                         )
 
                     else:
@@ -796,7 +787,6 @@ class transport_map:
 
                 # Normalize the influence of Hermite functions
                 if hermite_function_modifier:
-
                     # Evaluate a naive Hermite function
                     hf_x = np.linspace(-100, 100, 100001)
                     hfeval = self.polyfunc(dummy_coefficients)(hf_x) * np.exp(
@@ -844,7 +834,6 @@ class transport_map:
                     # Add Hermite function ------------------------------------
 
                     if hermite_function_modifier:
-
                         var += "*np.exp(-__x__[...," + str(ui[i]) + "]**2/4)"
 
                     # Save the variable ---------------------------------------
@@ -940,15 +929,15 @@ class transport_map:
                         # Now we can construct the actual derivative ----------
 
                         string = (
-                            "-1/2*np.exp(-__x__[...,"
-                            + str(ui[i])
-                            + "]**2/4)*(__x__[...,"
-                            + str(ui[i])
-                            + "]*"
-                            + key
-                            + " - 2*"
-                            + keyder
-                            + ")"
+                                "-1/2*np.exp(-__x__[...,"
+                                + str(ui[i])
+                                + "]**2/4)*(__x__[...,"
+                                + str(ui[i])
+                                + "]*"
+                                + key
+                                + " - 2*"
+                                + keyder
+                                + ")"
                         )
 
                     # Add a multiplier, in case there are more terms ----------
@@ -960,7 +949,6 @@ class transport_map:
             # If the variable we take the derivative against is not in the term,
             # overwrite the string with zeros
             if mode == "derivative" and k not in ui:
-
                 # Overwrite string with zeros
                 string = "np.zeros(__x__.shape[:-1])"
 
@@ -972,9 +960,6 @@ class transport_map:
         This function assembles the string for the monotone and nonmonotone map
         components, then converts these strings into functions.
         """
-
-        import numpy as np
-        import copy
 
         self.fun_mon = []
         self.fun_mon_strings = []
@@ -1004,14 +989,14 @@ class transport_map:
             # =================================================================
 
             # Define modules to load
-            modules = ["import numpy as np", "import copy"]
+            modules = [" ", ""]
 
             # Check if this term is linear
             if (
-                len(self.monotone[k]) == 1
-                and type(self.monotone[k][0]) != str
-                and len(self.monotone[k][0]) != 0
-                and self.monotonicity == "separable monotonicity"
+                    len(self.monotone[k]) == 1
+                    and type(self.monotone[k][0]) != str
+                    and len(self.monotone[k][0]) != 0
+                    and self.monotonicity == "separable monotonicity"
             ):
 
                 # Criteria:
@@ -1077,29 +1062,28 @@ class transport_map:
 
                             # Wait a moment! Are we linearizing this term?
                             if key.endswith("_LIN"):
-
                                 # Yes, we are! What dimension is this?
                                 d = int(copy.copy(key).split("_")[1])
 
                                 # Edit the term
                                 dict_precalc[key] = (
-                                    copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_trc"
-                                    )
-                                    + " * "
-                                    + "(1 - vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
-                                    + ") + "
-                                    + copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_ext"
-                                    )
-                                    + " * "
-                                    + "vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
+                                        copy.copy(dict_precalc[key]).replace(
+                                            "__x__", "x_trc"
+                                        )
+                                        + " * "
+                                        + "(1 - vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
+                                        + ") + "
+                                        + copy.copy(dict_precalc[key]).replace(
+                                    "__x__", "x_ext"
+                                )
+                                        + " * "
+                                        + "vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
                                 )
 
                 # -------------------------------------------------------------
@@ -1162,8 +1146,8 @@ class transport_map:
 
             # Are there multiple special terms?
             if (
-                np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
-                > 1
+                    np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
+                    > 1
             ):
 
                 import itertools
@@ -1191,7 +1175,6 @@ class transport_map:
                 # Create all combinations of terms
                 RBF_terms_grid = copy.deepcopy(RBF_terms_dict[RBF_terms_dims[0]])
                 for i in RBF_terms_dims[1:]:
-
                     # Create a grid with the next dimension
                     RBF_terms_grid = list(
                         itertools.product(
@@ -1238,7 +1221,6 @@ class transport_map:
 
             # If linearization is active, truncate the input x
             if self.linearization is not None:
-
                 # First, find our which parts are outside the linearization hypercube
                 string += "vec_below = copy.copy(x) - self.linearization_threshold[:,0][np.newaxis,:];\n\t"
                 string += (
@@ -1267,7 +1249,7 @@ class transport_map:
                 # Also crate an extrapolated version of x_trc
                 string += "x_ext = copy.copy(x_trc);\n\t"
                 string += (
-                    "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
+                        "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
                 )  # Offset all values which have been snapped by a small increment
 
                 # Add a space to the next block
@@ -1279,7 +1261,6 @@ class transport_map:
 
             # Add all precalculation terms
             for key in list(dict_precalc.keys()):
-
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
             # -----------------------------------------------------------------
@@ -1331,7 +1312,7 @@ class transport_map:
             )
 
             # Define modules to load
-            modules = ["import numpy as np", "import copy"]
+            modules = [" ", ""]
 
             # =================================================================
             # Extract the terms
@@ -1378,29 +1359,28 @@ class transport_map:
 
                             # Wait a moment! Are we linearizing this term?
                             if key.endswith("_LIN"):
-
                                 # Yes, we are! What dimension is this?
                                 d = int(copy.copy(key).split("_")[1])
 
                                 # Edit the term
                                 dict_precalc[key] = (
-                                    copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_trc"
-                                    )
-                                    + " * "
-                                    + "(1 - vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
-                                    + ") + "
-                                    + copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_ext"
-                                    )
-                                    + " * "
-                                    + "vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
+                                        copy.copy(dict_precalc[key]).replace(
+                                            "__x__", "x_trc"
+                                        )
+                                        + " * "
+                                        + "(1 - vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
+                                        + ") + "
+                                        + copy.copy(dict_precalc[key]).replace(
+                                    "__x__", "x_ext"
+                                )
+                                        + " * "
+                                        + "vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
                                 )
 
                 # -------------------------------------------------------------
@@ -1478,7 +1458,6 @@ class transport_map:
 
                 # If linearization is active, truncate the input x
                 if self.linearization is not None:
-
                     # First, find our which parts are outside the linearization hypercube
                     string += "vec_below = copy.copy(x) - self.linearization_threshold[:,0][np.newaxis,:];\n\t"
                     string += "vec_below[vec_below >= 0] = 0;\n\t"  # Set all values above to zero
@@ -1503,7 +1482,7 @@ class transport_map:
                     # Also crate an extrapolated version of x_trc
                     string += "x_ext = copy.copy(x_trc);\n\t"
                     string += (
-                        "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
+                            "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
                     )  # Offset all values which have been snapped by a small increment
 
                     # Add a space to the next block
@@ -1515,7 +1494,6 @@ class transport_map:
 
                 # Add all precalculation terms
                 for key in list(dict_precalc.keys()):
-
                     string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
                 # -------------------------------------------------------------
@@ -1526,7 +1504,7 @@ class transport_map:
                 if len(terms) == 1:  # Only a single term, no need for stacking
 
                     string += (
-                        "result = " + copy.copy(terms[0]) + "[:,np.newaxis];\n\t\n\t"
+                            "result = " + copy.copy(terms[0]) + "[:,np.newaxis];\n\t\n\t"
                     )
 
                 else:  # If we have more than one term, start stacking the result
@@ -1580,7 +1558,6 @@ class transport_map:
         # If monotonicity mode is 'separable monotonicity', we also require the
         # derivative of the monotone part of the map
         if self.monotonicity.lower() == "separable monotonicity":
-
             self.function_derivative_constructor_alternative()
 
         return
@@ -1593,9 +1570,6 @@ class transport_map:
         It constructs the functions' strings, then converts them into
         functions.
         """
-
-        import numpy as np
-        import copy
 
         self.der_fun_mon = []
         self.der_fun_mon_strings = []
@@ -1622,7 +1596,7 @@ class transport_map:
             )
 
             # Define modules to load
-            modules = ["import numpy as np", "import copy"]
+            modules = [" ", ""]
 
             # Define the terms composing the transport map component
             terms = []
@@ -1652,7 +1626,6 @@ class transport_map:
                 # -------------------------------------------------------------
 
                 if "constant" in list(modifier_log.keys()):
-
                     # Assign linear constraints
                     self.optimization_constraints_lb[k][j] = -np.inf
                     self.optimization_constraints_ub[k][j] = +np.inf
@@ -1669,7 +1642,6 @@ class transport_map:
 
                         # Have we logged this one already?
                         if key not in list(dict_precalc.keys()):
-
                             # No, we haven't. Add it.
                             dict_precalc[key] = copy.copy(
                                 modifier_log["variables"][key]
@@ -1731,8 +1703,8 @@ class transport_map:
 
             # Are there multiple special terms?
             if (
-                np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
-                > 1
+                    np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
+                    > 1
             ):
 
                 import itertools
@@ -1760,7 +1732,6 @@ class transport_map:
                 # Create all combinations of terms
                 RBF_terms_grid = copy.deepcopy(RBF_terms_dict[RBF_terms_dims[0]])
                 for i in RBF_terms_dims[1:]:
-
                     # Create a grid with the next dimension
                     RBF_terms_grid = list(
                         itertools.product(
@@ -1801,7 +1772,6 @@ class transport_map:
 
             # If linearization is active, truncate the input x
             if self.linearization is not None:
-
                 # First, find our which parts are outside the linearization hypercube
                 string += "vec_below = self.linearization_threshold[:,0][np.newaxis,:] - x;\n\t"
                 string += (
@@ -1835,7 +1805,6 @@ class transport_map:
 
             # Add all precalculation terms
             for key in list(dict_precalc.keys()):
-
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
             # -----------------------------------------------------------------
@@ -1914,7 +1883,6 @@ class transport_map:
 
                 # If this term is a string, it denotes a special term
                 if type(entry) == str:
-
                     # Split the entry and extract its dimensional entry
                     index = int(entry.split(" ")[1])
 
@@ -1926,7 +1894,6 @@ class transport_map:
 
                 # If this term is a string, it denotes a special term
                 if type(entry) == str:
-
                     # Split the entry and extract its dimensional entry
                     index = int(entry.split(" ")[1])
 
@@ -1948,8 +1915,6 @@ class transport_map:
         to be on the left side.
         """
 
-        import copy
-
         self.ST_centers_m = []
         self.ST_scales_m = []
 
@@ -1961,7 +1926,7 @@ class transport_map:
         for k in range(self.D):
 
             for idx, RBF_counter in enumerate(
-                [self.RBF_counter_m, self.RBF_counter_nm]
+                    [self.RBF_counter_m, self.RBF_counter_nm]
             ):
 
                 if np.sum(RBF_counter[k, :]) == 0:  # No special terms are defined
@@ -2049,7 +2014,7 @@ class transport_map:
 
                             # Decide where to place the special terms
                             quantiles = np.arange(1, RBF_counter[k, d] + 1, 1) / (
-                                RBF_counter[k, d] + 1
+                                    RBF_counter[k, d] + 1
                             )
 
                             # Append an empty list, then fill it
@@ -2070,36 +2035,36 @@ class transport_map:
                                         if i == 0:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][1]
-                                                    - self.ST_centers_m[-1][d][0]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][1]
+                                                            - self.ST_centers_m[-1][d][0]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Right edge-case: base is half distance to previous basis
                                         elif i == RBF_counter[k, d] - 1:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][i]
-                                                    - self.ST_centers_m[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][i]
+                                                            - self.ST_centers_m[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Otherwise: base is average distance to neighbours
                                         else:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][i + 1]
-                                                    - self.ST_centers_m[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][i + 1]
+                                                            - self.ST_centers_m[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                     # Copy the scales into the array
@@ -2126,36 +2091,36 @@ class transport_map:
                                         if i == 0:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][1]
-                                                    - self.ST_centers_nm[-1][d][0]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][1]
+                                                            - self.ST_centers_nm[-1][d][0]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Right edge-case: base is half distance to previous basis
                                         elif i == RBF_counter[k, d] - 1:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][i]
-                                                    - self.ST_centers_nm[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][i]
+                                                            - self.ST_centers_nm[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Otherwise: base is average distance to neighbours
                                         else:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][i + 1]
-                                                    - self.ST_centers_nm[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][i + 1]
+                                                            - self.ST_centers_nm[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                     # Copy the scales into the array
@@ -2174,7 +2139,6 @@ class transport_map:
             if self.linearization_specified_as_quantiles:
 
                 for k in range(self.X.shape[-1]):
-
                     self.linearization_threshold[k, 0] = np.quantile(
                         self.X[:, k], q=self.linearization
                     )
@@ -2186,7 +2150,6 @@ class transport_map:
             else:
 
                 for k in range(self.X.shape[-1]):
-
                     # Overwrite with static term -marked-
                     self.linearization_threshold[k, 0] = -self.linearization
                     self.linearization_threshold[k, 1] = +self.linearization
@@ -2210,9 +2173,6 @@ class transport_map:
                 and D is the number of dimensions.
         """
 
-        import numpy as np
-        import copy
-
         if X is not None and self.standardize:
 
             X = copy.copy(X)
@@ -2228,7 +2188,6 @@ class transport_map:
         Y = np.zeros((X.shape[0], self.D))
 
         for k in range(self.D):
-
             # Apply the forward map
             Y[:, k] = copy.copy(
                 self.s(
@@ -2270,9 +2229,6 @@ class transport_map:
                 not depend on x_k. This vector is replaced from storage if it
                 is not overwritten.
         """
-
-        import numpy as np
-        import copy
 
         # Load in values if required
         if x is None:
@@ -2339,8 +2295,8 @@ class transport_map:
             # In the case that monotonicity is enforced through parameterization,
             # simply evaluate the monotone funciton
             monotone_part = np.dot(self.fun_mon[k](x, self), coeffs_mon[:, np.newaxis])[
-                :, 0
-            ]
+                            :, 0
+                            ]
 
         # ---------------------------------------------------------------------
         # Combine both terms
@@ -2358,9 +2314,6 @@ class transport_map:
         coefficients which best map the samples to a standard multivariate
         Gaussian distribution.
         """
-
-        import numpy as np
-        import copy
 
         if self.workers == 1:  # With only one worker, don't parallelize
 
@@ -2485,7 +2438,6 @@ class transport_map:
 
             # Go through all results and save the coefficients
             for k in range(self.D):
-
                 # Save the coefficients
                 self.coeffs_nonmon[k] = copy.deepcopy(results[k][0])
                 self.coeffs_mon[k] = copy.deepcopy(results[k][1])
@@ -2508,7 +2460,6 @@ class transport_map:
                 exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
                 if self.monotonicity == "separable monotonicity":
-
                     # Create the function
                     funstring = "der_fun_mon_" + str(k)
                     exec(
@@ -2539,10 +2490,7 @@ class transport_map:
                 information about the optimization progress.
         """
 
-        import numpy as np
-        import scipy.special
         from scipy.optimize import minimize, LinearConstraint
-        import copy
 
         # -----------------------------------------------------------------
         # Prepare task
@@ -2584,7 +2532,6 @@ class transport_map:
         self.fun_mon = []
         self.fun_nonmon = []
         for i in range(self.D):
-
             # Create the derivative of the monotone function
             funstring = "der_fun_mon_" + str(i)
             exec(self.der_fun_mon_strings[i].replace("fun", funstring), globals())
@@ -2639,10 +2586,10 @@ class transport_map:
                 # -------------------------------------------------------------
 
                 objective = (
-                    np.linalg.multi_dot(
-                        (coeffs_mon[:, np.newaxis].T, A, coeffs_mon[:, np.newaxis])
-                    )[0, 0]
-                    / 2
+                        np.linalg.multi_dot(
+                            (coeffs_mon[:, np.newaxis].T, A, coeffs_mon[:, np.newaxis])
+                        )[0, 0]
+                        / 2
                 )
 
                 # -------------------------------------------------------------
@@ -2701,8 +2648,8 @@ class transport_map:
             A = np.dot(
                 (Psi_mon - np.dot(Psi_nonmon, A)).T, Psi_mon - np.dot(Psi_nonmon, A)
             ) / 2 + self.regularization_lambda * (
-                np.dot(A.T, A) + np.identity(A.shape[-1])
-            )
+                        np.dot(A.T, A) + np.identity(A.shape[-1])
+                )
 
             # print('A')
             # print(A.shape)
@@ -2884,7 +2831,6 @@ class transport_map:
         """
 
         from scipy.optimize import minimize
-        import copy
 
         # -----------------------------------------------------------------
         # Prepare task
@@ -2924,7 +2870,6 @@ class transport_map:
             self.fun_mon = []
             self.fun_nonmon = []
             for i in range(self.D):
-
                 # Create the function
                 funstring = "fun_mon_" + str(i)
                 exec(self.fun_mon_strings[i].replace("fun", funstring), globals())
@@ -2948,7 +2893,7 @@ class transport_map:
 
         # Minimize the objective function
         opt = minimize(
-            method="BFGS",  #'L-BFGS-B',
+            method="BFGS",  # 'L-BFGS-B',
             fun=self.objective_function,
             jac=self.objective_function_jacobian,
             x0=coeffs,
@@ -3017,10 +2962,6 @@ class transport_map:
                 [integer] : an integer specifying where the cutoff between the
                 nonmonotone and monotone coefficients in 'coeffs' is.
         """
-
-        import numpy as np
-        import copy
-        import scipy.special
 
         # Partition the coefficient vector, if necessary
         if coeffs is not None:
@@ -3183,9 +3124,6 @@ class transport_map:
                 nonmonotone and monotone coefficients in 'coeffs' is.
         """
 
-        import numpy as np
-        import copy
-
         # Partition the coefficient vector, if necessary
         if coeffs is not None:
             # Separate the vector into nonmonotone and monotone coefficients
@@ -3271,7 +3209,6 @@ class transport_map:
         term_2 = np.einsum("ij,i->ij", numer, denom)
 
         if div > 0:
-
             # If we have non-monotone terms, expand the term accordingly
             term_2 = np.column_stack((np.zeros((term_2.shape[0], div)), term_2))
 
@@ -3310,10 +3247,10 @@ class transport_map:
 
                         # Add l1 regularization for all coefficients
                         term = (
-                            np.asarray(
-                                list(np.sign(coeffs_nonmon)) + list(np.sign(coeffs_mon))
-                            )
-                            * self.regularization_lambda[k]
+                                np.asarray(
+                                    list(np.sign(coeffs_nonmon)) + list(np.sign(coeffs_mon))
+                                )
+                                * self.regularization_lambda[k]
                         )
 
                     else:
@@ -3339,8 +3276,8 @@ class transport_map:
 
                         # Add l2 regularization for all coefficients
                         term = (
-                            np.asarray(list(2 * coeffs_nonmon) + list(2 * coeffs_mon))
-                            * self.regularization_lambda[k]
+                                np.asarray(list(2 * coeffs_nonmon) + list(2 * coeffs_mon))
+                                * self.regularization_lambda[k]
                         )
 
                     else:
@@ -3389,9 +3326,6 @@ class transport_map:
                 during the inversion process.
         """
 
-        import numpy as np
-        import copy
-
         # # Check consistency with precalculated output, if applicable
         # if X_precalc is not None:
         #     D1  = Y.shape[-1]
@@ -3420,12 +3354,10 @@ class transport_map:
 
             # Go through all dimensions
             for k in np.arange(0, self.D, 1):
-
                 X = self.vectorized_root_search_bisection(Yk=Y[:, k], X=X, k=k)
 
             # If we standardized the samples, undo the standardization
             if self.standardize_samples:
-
                 X *= self.X_std
                 X += self.X_mean
 
@@ -3445,18 +3377,15 @@ class transport_map:
                 X[:, : self.skip_dimensions] = copy.copy(X_precalc)
 
                 if self.standardize_samples:
-
                     X[:, : self.skip_dimensions] -= self.X_mean[: self.skip_dimensions]
                     X[:, : self.skip_dimensions] /= self.X_std[: self.skip_dimensions]
 
                 # Go through all dimensions
                 for k in np.arange(0, self.D, 1):
-
                     X = self.vectorized_root_search_bisection(Yk=Y[:, k], X=X, k=k)
 
                 # If we standardized the samples, undo the standardization
                 if self.standardize_samples:
-
                     X *= self.X_std
                     X += self.X_mean
 
@@ -3478,26 +3407,23 @@ class transport_map:
                 X[:, :skip_dimensions] = copy.copy(X_precalc)
 
                 if self.standardize_samples:
-
                     # Standardize the precalculated samples for the map
                     X[:, :skip_dimensions] -= self.X_mean[:skip_dimensions]
                     X[:, :skip_dimensions] /= self.X_std[:skip_dimensions]
 
                 # Go through all dimensions
                 for i, k in enumerate(np.arange(skip_dimensions, D, 1)):
-
                     X = self.vectorized_root_search_bisection(Yk=Y[:, i], X=X, k=k)
 
                 # If we standardized the samples, undo the standardization
                 if self.standardize_samples:
-
                     X *= self.X_std
                     X += self.X_mean
 
-        return X[:, self.skip_dimensions :]
+        return X[:, self.skip_dimensions:]
 
     def vectorized_root_search_bisection(
-        self, X, Yk, k, max_iterations=100, threshold=1e-9, start_distance=2
+            self, X, Yk, k, max_iterations=100, threshold=1e-9, start_distance=2
     ):
 
         """
@@ -3535,10 +3461,6 @@ class transport_map:
 
         """
 
-        import numpy as np
-        import copy
-        import pickle
-
         Xc = copy.copy(X)
 
         # Extract number of particles
@@ -3570,7 +3492,6 @@ class transport_map:
         # Sort the bsct_pts so that bsct_out is increasing
         for n in indices:
             if bsct_out[n, 0] > bsct_out[n, 1]:
-
                 dummy = bsct_out[n, 0]
                 bsct_out[n, 0] = bsct_out[n, 1]
                 bsct_out[n, 1] = dummy
@@ -3599,7 +3520,6 @@ class transport_map:
             # Re-sort the windows if necessary
             for n in shiftindices:
                 if bsct_out[n, 0] > bsct_out[n, 1]:
-
                     dummy = bsct_out[n, 0]
                     bsct_out[n, 0] = bsct_out[n, 1]
                     bsct_out[n, 1] = dummy
@@ -3666,7 +3586,6 @@ class transport_map:
 
         # Start optimization loop
         while np.sum(indices) > 0 and itr_counter < max_iterations:
-
             itr_counter += 1
 
             # Propose bisection
@@ -3690,7 +3609,6 @@ class transport_map:
             indices = indices[not_converged]
 
         if itr_counter == max_iterations and self.verbose:
-
             print(
                 "WARNING: root search for particles "
                 + str(indices)
@@ -3703,19 +3621,19 @@ class transport_map:
         return X
 
     def GaussQuadrature(
-        self,
-        f,
-        a,
-        b,
-        order=100,
-        args=None,
-        Ws=None,
-        xis=None,
-        adaptive=False,
-        threshold=1e-6,
-        increment=1,
-        verbose=False,
-        full_output=False,
+            self,
+            f,
+            a,
+            b,
+            order=100,
+            args=None,
+            Ws=None,
+            xis=None,
+            adaptive=False,
+            threshold=1e-6,
+            increment=1,
+            verbose=False,
+            full_output=False,
     ):
 
         """
@@ -3790,9 +3708,6 @@ class transport_map:
 
         """
 
-        import numpy as np
-        import copy
-
         # =========================================================================
         # Here the actual magic starts
         # =========================================================================
@@ -3810,7 +3725,6 @@ class transport_map:
             # If required, determine the weights and positions of the integration
             # points; always required if adaptation is active
             if Ws is None or xis is None or adaptive == True:
-
                 # Weights and integration points are not specified; calculate them
                 # To get the weights and positions of the integration points, we must
                 # provide the *order*-th Legendre polynomial and its derivative
@@ -3857,16 +3771,16 @@ class transport_map:
                 if args is None:
 
                     result = (
-                        lim_dif
-                        * 0.5
-                        * (Ws[0] * f(lim_dif * 0.5 * xis[0] + lim_sum * 0.5))
+                            lim_dif
+                            * 0.5
+                            * (Ws[0] * f(lim_dif * 0.5 * xis[0] + lim_sum * 0.5))
                     )
 
                     for i in np.arange(1, len(Ws)):
                         result += (
-                            lim_dif
-                            * 0.5
-                            * (Ws[i] * f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5))
+                                lim_dif
+                                * 0.5
+                                * (Ws[i] * f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5))
                         )
 
                 # Otherwise, pass the arguments on as well
@@ -3885,7 +3799,6 @@ class transport_map:
                         result = lim_dif * 0.5 * (Ws[0] * funcres)
 
                         for i in np.arange(1, len(Ws)):
-
                             funcres = f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5, *args)
 
                             result += lim_dif * 0.5 * (Ws[i] * funcres)
@@ -3897,7 +3810,6 @@ class transport_map:
                         result = np.einsum("i,ij->ij", lim_dif * 0.5 * Ws[0], funcres)
 
                         for i in np.arange(1, len(Ws)):
-
                             funcres = f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5, *args)
 
                             result += np.einsum(
@@ -3926,7 +3838,6 @@ class transport_map:
                         result = np.einsum("i,ijk->ijk", lim_dif * 0.5 * Ws[0], funcres)
 
                         for i in np.arange(1, len(Ws)):
-
                             funcres = f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5, *args)
 
                             result += np.einsum(
@@ -3952,16 +3863,16 @@ class transport_map:
                 # If no additional arguments were given, simply call the function
                 if args is None:
                     result = (
-                        (b - a)
-                        * 0.5
-                        * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5))
+                            (b - a)
+                            * 0.5
+                            * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5))
                     )
                 # Otherwise, pass the arguments on as well
                 else:
                     result = (
-                        (b - a)
-                        * 0.5
-                        * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5, *args))
+                            (b - a)
+                            * 0.5
+                            * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5, *args))
                     )
 
             # if adaptive, store results for next iteration

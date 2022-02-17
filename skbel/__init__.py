@@ -23,4 +23,5 @@ __all__ = [
     "learning",
     "preprocessing",
     "spatial",
+    "tmaps",
 ]
