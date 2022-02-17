@@ -24,6 +24,7 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
+from ..develop.transport_map_116 import TransportMap
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -35,7 +36,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def __init__(
         self,
-        mode: str = "kde",
+        mode: str = "tm",
         copy: bool = True,
         *,
         X_pre_processing=None,
@@ -50,7 +51,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ):
         """Initialize the BEL class.
 
-        :param mode: How to infer the posterior distribution. "kde" (default) or "mvn".
+        :param mode: How to infer the posterior distribution. "kde", "mvn" or "tm".
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
         :param Y_pre_processing: sklearn pipeline for pre-processing the target.
@@ -121,8 +122,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a. random state to reproduce the same samples
-        """
+        """Seed a.k.a. random state to reproduce the same samples"""
         return self.random_state
 
     @seed.setter
@@ -282,8 +282,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
          original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
-         transformed space, which is much faster, so that the samples can be back-transformed later. Default=True.
-        :param precomputed_kde: Precomputed KDE functions. Computing the KDEs can be time-consuming. If the KDEs are
+         reduced space, which is much faster, so that the samples can be back-transformed later. Default=True.
+        :param precomputed_kde: (if mode="kde) Precomputed KDE functions. Computing the KDEs can be time-consuming.
+         If the KDEs are
          precomputed, they can be passed as an argument.
         :return: The posterior samples in the original space or in the transformed space.
         """
@@ -425,6 +426,60 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     # Shape = (n_obs, n_comp_CCA)
                     self.kde_functions[:, comp_n] = functions  # noqa
 
+        elif self.mode == "tm":
+            nonmonotone = [
+                [
+                    [],
+                    [0],
+                    [0, 0, "HF"],
+                    [0, 0, 0, "HF"],
+                    [0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, 0, "HF"],
+                    [0, 0, 0, 0, 0, 0, 0, "HF"],
+                ]
+            ]
+
+            monotone = [
+                [
+                    [1],
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                    "iRBF 1",
+                ]
+            ]
+
+            self.tm_functions = np.zeros((n_obs, n_cca), dtype="object")
+            for comp_n in range(n_cca):
+                X = np.vstack((self.X_f.T[comp_n], self.Y_f.T[comp_n])).T
+                # Initialize a transport map object
+                tm = TransportMap(
+                    monotone=monotone,  # What are the monotone terms of the transport map components?
+                    nonmonotone=nonmonotone,  # What are the nonmonotone terms of the transport map components?
+                    X=X,  # Samples from the target distribution, N-by-D
+                    polynomial_type="probabilist's hermite",
+                    # Which polynomial function to use for the map component basis functions?
+                    monotonicity="separable monotonicity",
+                    # There are two ways to enforce monotonicity; we enforce it through coefficients for now
+                    standardize_samples=True,
+                    # Flag whether samples should be standardized before map optimization; should almost always be True
+                    workers=1,
+                )  # Number of workers for the parallel optimization; 1 means no parallelization
+
+                tm.optimize()
+
+                kind = "tm"
+                sample_fun = {"kind": kind, "function": tm, "X": X}
+                functions = [sample_fun] * n_obs
+
+                # Shape = (n_obs, n_comp_CCA)
+                self.tm_functions[:, comp_n] = functions  # noqa
+
         if return_samples:
             samples = self.random_sample(
                 X_obs_f=X_obs_f, n_posts=n_posts, mode=mode, init_kde=precomputed_kde
@@ -477,8 +532,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 post_mn = self.posterior_mean
                 post_cv = self.posterior_covariance
 
-            Y_samples = []
+            Y_samples = []  # Samples from the posterior
             for n, (mean, cov) in enumerate(zip(post_mn, post_cv)):
+                Y_samples.append(np.random.multivariate_normal(mean, cov, n_posts))
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )  # Draw n_posts samples from the multivariate normal distribution
@@ -538,6 +594,41 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             uniform_samples = np.ones(self.n_posts) * pv
 
                         Y_samples[i, :, j] = uniform_samples  # noqa
+
+        if self.mode == "tm":
+            n_obs = X_obs_f.shape[0]  # Number of observations
+            Y_samples = np.zeros(
+                (n_obs, self.n_posts, self.tm_functions.shape[1])
+            )  # Shape = (n_obs, n_posts, n_comp_CCA)
+
+            if obs_n is not None:  # If we have a specific observation
+                tm_fn = self.tm_functions[obs_n].reshape(
+                    1, -1
+                )  # Shape = (1, n_comp_CCA)
+            else:
+                tm_fn = self.tm_functions  # Shape = (n_obs, n_comp_CCA)
+
+            # Parses the functions dict
+            for i, fun_per_comp in enumerate(tm_fn):
+                for j, fun in enumerate(fun_per_comp):
+                    tm = fun["function"]
+                    X = fun["X"]
+                    N = X.shape[0]
+                    # Map the target samples to the reference distribution; we only get a N-by-1
+                    # vector because we only defined the map for the second dimension/column of X
+                    norm_samples = tm.map(X)
+                    # Now define the value we wish to condition on
+                    x1_obs = X_obs_f[i][j].reshape(-1)[0]  # our 'observed' value
+
+                    # In the inversion, we pretend that we have already inverted the first dimension
+                    # of X and obtained x1_obs, so we create fake, pre-calculated values for it
+                    X_precalc = np.ones((N, 1)) * x1_obs
+
+                    # Now invert the map conditionally. X_star are the posterior samples.
+                    X_star = tm.inverse_map(
+                        X_precalc=X_precalc, Y=norm_samples
+                    )  # Only necessary when heuristic is deactivated
+                    Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
 
         return np.array(Y_samples)  # noqa
 
