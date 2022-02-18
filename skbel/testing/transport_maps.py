@@ -1,3 +1,5 @@
+# Author: Maximilian Ramgraber, Massachusetts Institute of Technology, USA
+
 import time
 
 import matplotlib.pyplot as plt
