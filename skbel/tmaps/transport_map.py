@@ -350,7 +350,7 @@ class TransportMap:
                         + str(self.regularization)
                     )
 
-    def reset(self, X: np.arrray):
+    def reset(self, X: np.array):
 
         """
         This function is used if the transport map has been initiated with a
