@@ -5,7 +5,7 @@ import copy
 import itertools
 
 import numpy as np
-from scipy.optimize import minimize, LinearConstraint
+from scipy.optimize import minimize
 
 __all__ = ["TransportMap"]
 
