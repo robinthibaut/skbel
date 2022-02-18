@@ -13,30 +13,30 @@ __all__ = ["TransportMap"]
 class TransportMap:
     def __init__(
         self,
-        monotone,
-        nonmonotone,
-        X,
-        polynomial_type="hermite function",
-        monotonicity="integrated rectifier",
-        standardize_samples=True,
-        standardization="standard",
-        workers=1,
-        ST_scale_factor=1.0,
-        ST_scale_mode="dynamic",
-        coeffs_init=0.1,
-        linearization=None,
-        linearization_specified_as_quantiles=True,
-        linearization_increment=1e-6,
-        regularization=None,
-        regularization_lambda=0.1,
-        quadrature_input=None,
-        rectifier_type="exponential",
-        delta=0.0,
+        monotone: list,
+        nonmonotone: list,
+        X: np.array,
+        polynomial_type: str = "hermite function",
+        monotonicity: str = "integrated rectifier",
+        standardize_samples: bool = True,
+        standardization: str = "standard",
+        workers: int = 1,
+        ST_scale_factor: float = 1.0,
+        ST_scale_mode: str = "dynamic",
+        coeffs_init: float = 0.1,
+        linearization: float = None,
+        linearization_specified_as_quantiles: bool = True,
+        linearization_increment: float = 1e-6,
+        regularization: str = None,
+        regularization_lambda: float = 0.1,
+        quadrature_input: dict = None,
+        rectifier_type: str = "exponential",
+        delta: float = 0.0,
     ):
 
         """
         This toolbox contains functions required to construct, optimize, and
-        evaluate transporth methods.
+        evaluate transport methods.
 
         Maximilian Ramgraber, January 2022
 
@@ -350,7 +350,7 @@ class TransportMap:
                         + str(self.regularization)
                     )
 
-    def reset(self, X):
+    def reset(self, X: np.arrray):
 
         """
         This function is used if the transport map has been initiated with a
@@ -463,7 +463,9 @@ class TransportMap:
 
         return
 
-    def write_basis_function(self, term, mode="standard", k=None):
+    def write_basis_function(
+        self, term: list or str, mode: str = "standard", k: int = None
+    ):
 
         """
         This function assembles a string for a specific term of the map
@@ -2165,7 +2167,7 @@ class TransportMap:
 
         return
 
-    def map(self, X=None):
+    def map(self, X: np.array = None):
 
         """
         This function maps the samples X from the target distribution to the
@@ -2207,7 +2209,13 @@ class TransportMap:
 
         return Y
 
-    def s(self, x, k, coeffs_nonmon=None, coeffs_mon=None):
+    def s(
+        self,
+        x: np.array,
+        k: int,
+        coeffs_nonmon: np.array = None,
+        coeffs_mon: np.array = None,
+    ):
 
         """
         This function evaluates the k-th map component.
@@ -2268,17 +2276,17 @@ class TransportMap:
         if self.monotonicity == "integrated rectifier":
 
             # Prepare the integration argument
-            def integral_argument(x, y, coeffs_mon, k):
+            def integral_argument(x_, y, coeffs_mon_, k_):
 
                 # First reconstruct the full X matrix
                 X_loc = copy.copy(y)
-                X_loc[:, self.skip_dimensions + k] = copy.copy(x)
+                X_loc[:, self.skip_dimensions + k_] = copy.copy(x_)
 
                 # Then evaluate the Psi matrix
-                Psi_mon_loc = self.fun_mon[k](X_loc, self)
+                Psi_mon_loc = self.fun_mon[k_](X_loc, self)
 
                 # Determine the gradients
-                rect_arg = np.dot(Psi_mon_loc, coeffs_mon[:, np.newaxis])[..., 0]
+                rect_arg = np.dot(Psi_mon_loc, coeffs_mon_[:, np.newaxis])[..., 0]
 
                 # Send the rectifier argument through the rectifier
                 arg = self.rect.evaluate(rect_arg)
@@ -2289,7 +2297,7 @@ class TransportMap:
                 return arg
 
             # Evaluate the integral
-            monotone_part = self.GaussQuadrature(
+            monotone_part = self.gauss_quadrature(
                 f=integral_argument,
                 a=0,
                 b=x[..., self.skip_dimensions + k],
@@ -2333,7 +2341,7 @@ class TransportMap:
                     # Optimize this map component
                     results = self.worker_task(k=k, task_supervisor=None)
 
-                    # Print optimziation progress
+                    # Print optimization progress
                     if self.verbose:
                         string = "\r" + "Progress: |"
                         string += (k + 1) * "█"
@@ -2476,7 +2484,7 @@ class TransportMap:
 
         return
 
-    def worker_task_monotone(self, k, task_supervisor):
+    def worker_task_monotone(self, k: int, task_supervisor: list):
 
         """
         This function provides the optimization task for the k-th map component
@@ -2664,24 +2672,24 @@ class TransportMap:
             # print(Psi_nonmon.shape)
 
             # Create the objective function
-            def fun_mon_objective(coeffs_mon, A, k):
+            def fun_mon_objective(coeffs_mon_, A_, k_):
 
                 # -------------------------------------------------------------
                 # First part: How close is the ensemble mapped to zero?
                 # -------------------------------------------------------------
 
                 objective = np.linalg.multi_dot(
-                    (coeffs_mon[:, np.newaxis].T, A, coeffs_mon[:, np.newaxis])
+                    (coeffs_mon_[:, np.newaxis].T, A_, coeffs_mon_[:, np.newaxis])
                 )[0, 0]
 
                 # -------------------------------------------------------------
                 # Second part: How much is the ensemble inflated?
                 # -------------------------------------------------------------
 
-                der_Psi_mon = copy.copy(self.der_fun_mon[k](copy.copy(self.X), self))
+                der_Psi_mon = copy.copy(self.der_fun_mon[k_](copy.copy(self.X), self))
 
                 # Determine the gradients of the polynomial functions
-                monotone_part_der = np.dot(der_Psi_mon, coeffs_mon[:, np.newaxis])[
+                monotone_part_der = np.dot(der_Psi_mon, coeffs_mon_[:, np.newaxis])[
                     ..., 0
                 ]
 
@@ -2810,7 +2818,7 @@ class TransportMap:
         # Return both optimized coefficients
         return coeffs_nonmon, coeffs_mon
 
-    def worker_task(self, k, task_supervisor):
+    def worker_task(self, k: int, task_supervisor: list):
 
         """
         This function provides the optimization task for the k-th map component
@@ -2940,7 +2948,7 @@ class TransportMap:
         # Return both optimized coefficients
         return coeffs_nonmon, coeffs_mon
 
-    def objective_function(self, coeffs, k, div=0):
+    def objective_function(self, coeffs: np.array, k: int, div: int = 0):
 
         """
         This function evaluates the objective function used in the optimization
@@ -3101,7 +3109,7 @@ class TransportMap:
 
         return objective
 
-    def objective_function_jacobian(self, coeffs, k, div=0):
+    def objective_function_jacobian(self, coeffs: np.array, k: int, div: int = 0):
 
         """
         This function evaluates the derivative of the objective function used
@@ -3111,7 +3119,7 @@ class TransportMap:
 
             coeffs
                 [vector] : a vector containing the coefficients for both the
-                nonmonotone and monotone terms of the k-th map component
+                non-monotone and monotone terms of the k-th map component
                 function. Is replaced for storage is specified as None.
 
             k
@@ -3125,7 +3133,7 @@ class TransportMap:
 
         # Partition the coefficient vector, if necessary
         if coeffs is not None:
-            # Separate the vector into nonmonotone and monotone coefficients
+            # Separate the vector into non-monotone and monotone coefficients
             coeffs_nonmon = copy.copy(coeffs[:div])
             coeffs_mon = copy.copy(coeffs[div:])
         else:
@@ -3143,24 +3151,24 @@ class TransportMap:
         )
 
         # Define the integration argument
-        def integral_argument_term1_jac(x, coeffs_mon, k):
+        def integral_argument_term1_jac(x, coeffs_mon_, k_):
 
             # First reconstruct the full X matrix
             X_loc = copy.copy(self.X)
-            X_loc[:, self.skip_dimensions + k] = copy.copy(x)
+            X_loc[:, self.skip_dimensions + k_] = copy.copy(x)
 
             # Calculate the local basis function matrix
-            Psi_mon_loc = self.fun_mon[k](X_loc, self)
+            Psi_mon_loc = self.fun_mon[k_](X_loc, self)
 
             # Determine the gradients
-            rec_arg = np.dot(Psi_mon_loc, coeffs_mon[:, np.newaxis])[..., 0]
+            rec_arg = np.dot(Psi_mon_loc, coeffs_mon_[:, np.newaxis])[..., 0]
 
             objective = self.rect.evaluate_dfdc(f=rec_arg, dfdc=Psi_mon_loc)
 
             return objective
 
         # Add the integration
-        term_1_vector_monotone = self.GaussQuadrature(
+        term_1_vector_monotone = self.gauss_quadrature(
             f=integral_argument_term1_jac,
             a=0,
             b=self.X[:, self.skip_dimensions + k],
@@ -3295,7 +3303,7 @@ class TransportMap:
 
         return objective
 
-    def inverse_map(self, Y, X_precalc=None):
+    def inverse_map(self, Y: np.array, X_precalc: np.array = None):
 
         """
         This function evaluates the inverse transport map, mapping samples from
@@ -3312,7 +3320,7 @@ class TransportMap:
                 [array] : N-by-D or N-by-(D-E) array of reference distribution
                 samples to be mapped to the target distribution, where N is the
                 number of samples, D is the number of target distribution
-                dimensions, and E the number of pre-specified dimenions (if
+                dimensions, and E the number of pre-specified dimensions (if
                 X_precalc is specified).
 
             X_precalc - [default = None]
@@ -3413,7 +3421,13 @@ class TransportMap:
         return X[:, self.skip_dimensions :]
 
     def vectorized_root_search_bisection(
-        self, X, Yk, k, max_iterations=100, threshold=1e-9, start_distance=2
+        self,
+        X: np.array,
+        Yk: np.array,
+        k: int,
+        max_iterations: int = 100,
+        threshold: float = 1e-9,
+        start_distance: int = 2,
     ):
 
         """
@@ -3451,8 +3465,6 @@ class TransportMap:
 
         """
 
-        Xc = copy.copy(X)
-
         # Extract number of particles
         N = X.shape[0]
 
@@ -3475,9 +3487,6 @@ class TransportMap:
         bsct_out[indices, 0] = self.s(x=X[indices, :], k=k) - Yk[indices]
         X[indices, self.skip_dimensions + k] = bsct_pts[indices, 1]
         bsct_out[indices, 1] = self.s(x=X[indices, :], k=k) - Yk[indices]
-
-        # troubleshooting_dict['bsct_out_init']  = copy.copy(bsct_out)
-        # troubleshooting_dict['bsct_pts_init']  = copy.copy(bsct_pts)
 
         # Sort the bsct_pts so that bsct_out is increasing
         for n in indices:
@@ -3608,7 +3617,7 @@ class TransportMap:
 
         return X
 
-    def GaussQuadrature(
+    def gauss_quadrature(
         self,
         f,
         a,
@@ -3649,7 +3658,7 @@ class TransportMap:
 
             order - [default = 100]
                 [integer] : order of the Legendre polynomial used for the
-                integration scheme..
+                integration scheme.
 
             args - [default = None]
                 [None or dictionary] : a dictionary with supporting keyword
@@ -3667,7 +3676,7 @@ class TransportMap:
 
             full_output - [default = False]
                 [boolean] : Flag for whether the positions and weights of the
-                integration points should returned along with the integration
+                integration points should be returned along with the integration
                 results. If True, returns a tuple with (results,order,xis,Ws).
                 If False, only returns results.
 
@@ -3744,10 +3753,6 @@ class TransportMap:
                 # differences and sum
                 lim_dif = b - a
                 lim_sum = b + a
-                result = np.zeros(a.shape)
-
-                # print('limdifshape:'+str(lim_dif.shape))
-                # print('resultshape:'+str(result.shape))
 
                 # =============================================================
                 # To understand what's happening here, consider the following:
@@ -3916,7 +3921,7 @@ class TransportMap:
         return result
 
     class Rectifier:
-        def __init__(self, mode="softplus", delta=1e-8):
+        def __init__(self, mode: str = "softplus", delta: float = 1e-8):
 
             """
             This object specifies what function is used to rectify the monotone
@@ -3938,7 +3943,7 @@ class TransportMap:
             self.mode = mode
             self.delta = delta
 
-        def evaluate(self, X):
+        def evaluate(self, X: np.array) -> np.array:
 
             """
             This function evaluates the specified rectifier.
@@ -4029,7 +4034,7 @@ class TransportMap:
 
             return res
 
-        def evaluate_dx(self, X):
+        def evaluate_dx(self, X: np.array) -> np.array:
 
             """
             This function evaluates the derivative of the specified rectifier.
@@ -4115,7 +4120,7 @@ class TransportMap:
 
             return res
 
-        def logevaluate(self, X):
+        def logevaluate(self, X: np.array) -> np.array:
 
             """
             This function evaluates the logarithm of the specified rectifier.
