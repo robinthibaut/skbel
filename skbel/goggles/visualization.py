@@ -426,7 +426,7 @@ def pca_vision(
 
     annotation = _yield_alphabet()
 
-    if d.any():
+    if d:
         X_pc = bel.X_pre_processing.transform(d)  # PCA scores
         if X_obs is not None:
             X_obs_pc = bel.X_pre_processing.transform(
@@ -756,13 +756,13 @@ def _kde_cca(
                 cb = plt.colorbar(cf, ax=[ax_cb], location="left")  # Colorbar
                 cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
 
-        try:
-            reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
-            check_is_fitted(reg)
-            reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-            ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
-        except Exception:  # If no regressor
-            pass
+                try:
+                    reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
+                    check_is_fitted(reg)
+                    reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
+                    ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
+                except Exception:  # If no regressor
+                    pass
         # Vertical line
         ax_joint.axvline(
             x=X_obs_f.T[comp_n],

@@ -220,7 +220,22 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_is_fitted(self.cca)
 
         if X is not None and Y is None:  # If only X is provided
-            X = check_array(X, copy=self.copy)
+            if (
+                    type(X) is list
+            ):  # If more than one dataset used (several features of different nature)
+                # [check_consistent_length(x, Y) for x in X]
+                X = [
+                    self._validate_data(
+                        x,
+                        dtype=np.float64,
+                        copy=self.copy,
+                        # ensure_min_samples=2,
+                        allow_nd=True,
+                    )
+                    for x in X
+                ]
+            else:
+                X = check_array(X, copy=self.copy)
             _xt = self.X_pre_processing.transform(X)  # Pre-processing
             _xc = self.cca.transform(X=_xt)  # CCA
             _xp = self.X_post_processing.transform(_xc)  # Post-processing
@@ -228,7 +243,21 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
-            Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
+            if (
+                    type(Y) is list
+            ):  # If more than one dataset used (several features of different nature)
+                Y = [
+                    check_array(
+                        y,
+                        dtype=np.float64,
+                        copy=self.copy,
+                        ensure_2d=False,
+                        allow_nd=True,
+                    )
+                    for y in Y
+                ]
+            else:
+                Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _yt = self.Y_pre_processing.transform(Y)
             dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy
             _, _yc = self.cca.transform(
@@ -239,6 +268,37 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _yp
 
         else:  # If both X and Y are provided
+            if (
+                    type(X) is list
+            ):  # If more than one dataset used (several features of different nature)
+                # [check_consistent_length(x, Y) for x in X]
+                X = [
+                    self._validate_data(
+                        x,
+                        dtype=np.float64,
+                        copy=self.copy,
+                        # ensure_min_samples=2,
+                        allow_nd=True,
+                    )
+                    for x in X
+                ]
+            else:
+                X = check_array(X, copy=self.copy)
+            if (
+                    type(Y) is list
+            ):  # If more than one dataset used (several features of different nature)
+                Y = [
+                    check_array(
+                        y,
+                        dtype=np.float64,
+                        copy=self.copy,
+                        ensure_2d=False,
+                        allow_nd=True,
+                    )
+                    for y in Y
+                ]
+            else:
+                Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
             _xt, _yt = (
                 self.X_pre_processing.transform(X),
                 self.Y_pre_processing.transform(Y),
