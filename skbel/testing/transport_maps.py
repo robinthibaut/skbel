@@ -150,7 +150,7 @@ print("Map optimization took " + str(end - start) + " seconds.")
 
 # Map the target samples to the reference distribution; we only get a N-by-1
 # vector because we only defined the map for the second dimension/column of X
-#norm_samples = tm.map(X)
+# norm_samples = tm.map(X)
 norm_samples = scipy.stats.norm.rvs(size=(500, 1))
 # Now define the value we wish to condition on
 x1_obs = 2.32  # our 'observed' value
