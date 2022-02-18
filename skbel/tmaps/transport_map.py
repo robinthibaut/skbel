@@ -4,6 +4,7 @@
 import copy
 
 import numpy as np
+from scipy.optimize import minimize, LinearConstraint
 
 __all__ = ["TransportMap"]
 
@@ -2498,8 +2499,6 @@ class TransportMap:
                 not be specified by the user, it only serves to provide
                 information about the optimization progress.
         """
-
-        from scipy.optimize import minimize, LinearConstraint
 
         # -----------------------------------------------------------------
         # Prepare task
