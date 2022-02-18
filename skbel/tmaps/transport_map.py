@@ -279,9 +279,9 @@ class TransportMap:
         #   - fun_mon               : list of monotone functions
         #   - fun_mon_strings       : list of monotone function strings
         #   - coeffs_mon            : list of coefficients for monotone function
-        #   - fun_nonmon            : list of nonmonotone functions
-        #   - fun_nonmon_strings    : list of nonmonotone function strings
-        #   - coeffs_nonmon         : list of coefficients for nonmonotone function
+        #   - fun_nonmon            : list of non-monotone functions
+        #   - fun_nonmon_strings    : list of non-monotone function strings
+        #   - coeffs_nonmon         : list of coefficients for non-monotone function
 
         self.function_constructor_alternative()
 
@@ -291,7 +291,7 @@ class TransportMap:
 
         # The function_constructor yields two variables:
         #   - Psi_mon               : list of monotone basis evaluations
-        #   - Psi_nonmon            : list of nonmonotone basis evaluations
+        #   - Psi_nonmon            : list of non-monotone basis evaluations
 
         self.precalculate()
 
@@ -821,7 +821,7 @@ class TransportMap:
                     # Extract the polynomial
                     var = copy.copy(self.polyfunc_str)
 
-                    # Open outer paranthesis
+                    # Open outer parenthesis
                     var += "(["
 
                     # Add polynomial coefficients
@@ -831,7 +831,7 @@ class TransportMap:
                     # Remove the last ","
                     var = var[:-1]
 
-                    # Close outer paranthesis
+                    # Close outer parenthesis
                     var += "])"
 
                     # Add variable --------------------------------------------
@@ -873,7 +873,7 @@ class TransportMap:
                     # Extract the polynomial
                     varder = copy.copy(self.polyfunc_str)
 
-                    # Open outer paranthesis
+                    # Open outer parenthesis
                     varder += "(["
 
                     # Add polynomial coefficients
@@ -883,7 +883,7 @@ class TransportMap:
                     # Remove the last ","
                     varder = varder[:-1]
 
-                    # Close outer paranthesis
+                    # Close outer parenthesis
                     varder += "])"
 
                     # Add variable --------------------------------------------
@@ -912,7 +912,7 @@ class TransportMap:
                         # Extract the polynomial
                         varbase = copy.copy(self.polyfunc_str)
 
-                        # Open outer paranthesis
+                        # Open outer parenthesis
                         varbase += "(["
 
                         # Add polynomial coefficients
@@ -990,9 +990,7 @@ class TransportMap:
         for k in range(K):
 
             # =================================================================
-            # =================================================================
             # Step 1: Build the monotone function
-            # =================================================================
             # =================================================================
 
             # Define modules to load
@@ -1309,9 +1307,7 @@ class TransportMap:
             exec("self.fun_mon.append(copy.deepcopy(" + funstring + "))")
 
             # =================================================================
-            # =================================================================
-            # Step 2: Build the nonmonotone function
-            # =================================================================
+            # Step 2: Build the non-monotone function
             # =================================================================
 
             # Append the parameters
@@ -1446,7 +1442,7 @@ class TransportMap:
             # Assemble the monotone function
             # =================================================================
 
-            # Only assemble the function if there actually is a nonmonotone term
+            # Only assemble the function if there actually is a non-monotone term
             if len(self.nonmonotone[k]) > 0:
 
                 # Prepare the basis string
@@ -1561,9 +1557,7 @@ class TransportMap:
                 exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
         # =================================================================
-        # =================================================================
         # Step 3: Finalize
-        # =================================================================
         # =================================================================
 
         # If monotonicity mode is 'separable monotonicity', we also require the
@@ -2592,7 +2586,7 @@ class TransportMap:
             N = self.X.shape[0]  # Ensemble size
             A = np.dot(A_sqrt.T, A_sqrt) / N
 
-            def fun_mon_objective(coeffs_mon, A, k):
+            def fun_mon_objective(coeffs_mon_, A_, k_):
 
                 # -------------------------------------------------------------
                 # First part: How close is the ensemble mapped to zero?
@@ -2600,7 +2594,7 @@ class TransportMap:
 
                 objective = (
                     np.linalg.multi_dot(
-                        (coeffs_mon[:, np.newaxis].T, A, coeffs_mon[:, np.newaxis])
+                        (coeffs_mon_[:, np.newaxis].T, A_, coeffs_mon_[:, np.newaxis])
                     )[0, 0]
                     / 2
                 )
@@ -2609,10 +2603,10 @@ class TransportMap:
                 # Second part: How much is the ensemble inflated?
                 # -------------------------------------------------------------
 
-                der_Psi_mon = copy.copy(self.der_fun_mon[k](copy.copy(self.X), self))
+                der_Psi_mon = copy.copy(self.der_fun_mon[k_](copy.copy(self.X), self))
 
                 # Determine the gradients of the polynomial functions
-                monotone_part_der = np.dot(der_Psi_mon, coeffs_mon[:, np.newaxis])[
+                monotone_part_der = np.dot(der_Psi_mon, coeffs_mon_[:, np.newaxis])[
                     ..., 0
                 ]
 
@@ -2646,30 +2640,12 @@ class TransportMap:
                 )
             )
 
-            # print('A')
-            # print(A.shape)
-
-            # print('Psi_mon')
-            # print(Psi_mon.shape)
-
-            # print('Psi_nonmon')
-            # print(Psi_nonmon.shape)
-
             # Step 2: Aggregate
             A = np.dot(
                 (Psi_mon - np.dot(Psi_nonmon, A)).T, Psi_mon - np.dot(Psi_nonmon, A)
             ) / 2 + self.regularization_lambda * (
                 np.dot(A.T, A) + np.identity(A.shape[-1])
             )
-
-            # print('A')
-            # print(A.shape)
-
-            # print('Psi_mon')
-            # print(Psi_mon.shape)
-
-            # print('Psi_nonmon')
-            # print(Psi_nonmon.shape)
 
             # Create the objective function
             def fun_mon_objective(coeffs_mon_, A_, k_):
@@ -2703,29 +2679,11 @@ class TransportMap:
                 # # Now summarize the contributions and take their average
                 # objective   = np.mean(objective)
 
-                # print(objective)
-                # print(coeffs_mon)
-
                 return objective
 
         # ---------------------------------------------------------------------
         # Call the optimization routine
         # ---------------------------------------------------------------------
-
-        # print(self.optimization_constraints_lb[k])
-        # print(self.optimization_constraints_ub[k])
-
-        # Create the linear constraint
-        lincon = LinearConstraint(
-            A=np.identity(len(self.monotone[k])),
-            lb=self.optimization_constraints_lb[k],
-            ub=self.optimization_constraints_ub[k],
-        )
-
-        # print(coeffs_mon)
-        # print(coeffs_nonmon)
-        # print(fun_mon_objective(coeffs_mon,k))
-
         bounds = []
         for idx in range(len(self.optimization_constraints_lb[k])):
             bounds.append(
@@ -2789,8 +2747,6 @@ class TransportMap:
         # ---------------------------------------------------------------------
         # With the monotone coefficients found, calculate the non-monotone coeffs
         # ---------------------------------------------------------------------
-
-        # print(self.Psi_nonmon[k])
 
         if self.regularization is None:
 
@@ -2958,7 +2914,7 @@ class TransportMap:
 
             coeffs
                 [vector] : a vector containing the coefficients for both the
-                nonmonotone and monotone terms of the k-th map component
+                non-monotone and monotone terms of the k-th map component
                 function. Is replaced for storage is specified as None.
 
             k
@@ -2967,7 +2923,7 @@ class TransportMap:
 
             div - [default = 0]
                 [integer] : an integer specifying where the cutoff between the
-                nonmonotone and monotone coefficients in 'coeffs' is.
+                non-monotone and monotone coefficients in 'coeffs' is.
         """
 
         # Partition the coefficient vector, if necessary
@@ -2993,8 +2949,6 @@ class TransportMap:
 
         # Check how close these samples are to the origin
         objective = 1 / 2 * map_result ** 2
-
-        # print(objective)
 
         # ---------------------------------------------------------------------
         # Second part: How much is the ensemble inflated?
