@@ -2,6 +2,7 @@
 # Gent, Belgium
 
 import copy
+import itertools
 
 import numpy as np
 from scipy.optimize import minimize, LinearConstraint
@@ -1154,8 +1155,6 @@ class TransportMap:
                 > 1
             ):
 
-                import itertools
-
                 # Yes, there are multiple special terms. Extract these terms.
                 RBF_terms = [terms[i] for i in ST_indices]
 
@@ -1716,8 +1715,6 @@ class TransportMap:
                 np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
                 > 1
             ):
-
-                import itertools
 
                 # Yes, there are multiple special terms. Extract these terms.
                 RBF_terms = [terms[i] for i in ST_indices]
@@ -2833,8 +2830,6 @@ class TransportMap:
                 not be specified by the user, it only serves to provide
                 information about the optimization progress.
         """
-
-        from scipy.optimize import minimize
 
         # -----------------------------------------------------------------
         # Prepare task
