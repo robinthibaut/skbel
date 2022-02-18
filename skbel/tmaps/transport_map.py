@@ -50,7 +50,7 @@ class TransportMap:
                 the transport map component functions.
 
             nonmonotone
-                [list] : list specifying the structure of the nonmonotone part
+                [list] : list specifying the structure of the non-monotone part
                 of the transport map component functions.
 
             X
@@ -69,7 +69,7 @@ class TransportMap:
 
             standardize_samples - [default = True]
                 [boolean] : a True/False flag determining whether the transport
-                map should standardize the training samples before optimziation
+                map should standardize the training samples before optimization
 
             standardization - [default = 'standard']
                 [string] : keyword which specifies whether standardization uses
@@ -103,7 +103,7 @@ class TransportMap:
 
             linearization - [default = None]
                 [float or None] : float which specifies boundary values used
-                to linearize the map components in the tails. It's role is
+                to linearize the map components in the tails. Its role is
                 specifies by linearization_specified_as_quantiles.
 
             linearization_specified_as_quantiles - [default = True]
