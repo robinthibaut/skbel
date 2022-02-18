@@ -10,7 +10,7 @@ Alternative blueprints could be written in the same style as the BEL class imple
 
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
 import numpy as np
-from scipy import interpolate
+from scipy import interpolate, stats
 from sklearn.base import (
     BaseEstimator,
     TransformerMixin,
@@ -616,7 +616,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     N = X.shape[0]
                     # Map the target samples to the reference distribution; we only get a N-by-1
                     # vector because we only defined the map for the second dimension/column of X
-                    norm_samples = tm.map(X)
+                    if self.n_posts == N:
+                        norm_samples = tm.map(X)
+                    else:
+                        norm_samples = stats.norm.rvs(size=(self.n_posts, 1))
+                        N = self.n_posts
                     # Now define the value we wish to condition on
                     x1_obs = X_obs_f[i][j].reshape(-1)[0]  # our 'observed' value
 

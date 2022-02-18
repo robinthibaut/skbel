@@ -23,6 +23,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param n_components: list of number of components to keep for each dataset
         :param scale: whether to scale the data before applying PCA
         """
+        if type(n_components) is not list:
+            n_components = [n_components]
         self.n_components = n_components
         self.scale = scale
         self.pca_objects = [
@@ -37,6 +39,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
         """
+        if type(Xc) is not list:
+            Xc = [Xc]
         [pca.fit(Xc[i], yc) for i, pca in enumerate(self.pca_objects)]
         return self
 
@@ -47,6 +51,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
         """
+        if type(Xc) is not list:
+            Xc = [Xc]
         [check_is_fitted(p) for p in self.pca_objects]  # Check if fitted
         scores = [
             pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
@@ -63,6 +69,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
         """
+        if type(Xc) is not list:
+            Xc = [Xc]
         return self.fit(Xc, yc).transform(Xc, yc)
 
     def inverse_transform(self, Xr: np.array, yc=None, **fit_params) -> list:
@@ -72,6 +80,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
         """
+        if type(Xr) is not list:
+            Xr = [Xr]
         rm = np.cumsum(
             np.concatenate([[0], self.n_components])
         )  # Cumulative sum of n_components

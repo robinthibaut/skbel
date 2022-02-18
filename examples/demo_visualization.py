@@ -44,8 +44,8 @@ def binary_polygon(
     :param ncol: Number of columns
     :param pzs: Array of ordered vertices coordinates of a polygon.
     :param pzs: Polygon vertices (v, 2)
-    :param outside: Value to assign to the matrix outside of the polygon
-    :param inside: Value to assign to the matrix inside of the polygon
+    :param outside: Value to assign to the matrix outside the polygon
+    :param inside: Value to assign to the matrix inside the polygon
     :return: phi = the binary matrix
     """
 
