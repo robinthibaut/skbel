@@ -1699,7 +1699,7 @@ class TransportMap:
         )
 
         # Create a list keeping track of what dimensions the special terms
-        # occupy; we use this to create grids of multi-dimensional RBFs
+        # occupy; we use this to create grids of multidimensional RBFs
         self.RBF_dims_nm = []
         self.RBF_dims_m = []
 
@@ -1710,7 +1710,7 @@ class TransportMap:
             self.RBF_dims_nm.append([])
             self.RBF_dims_m.append([])
 
-            # Check all nonmonotone terms of this map component
+            # Check all non-monotone terms of this map component
             for entry in self.nonmonotone[k]:
 
                 # If this term is a string, it denotes a special term
@@ -1819,7 +1819,7 @@ class TransportMap:
                                 elif self.ST_scale_mode == "static":
                                     self.ST_scales_m[-1].append([self.ST_scale_factor])
 
-                            elif idx == 1:  # nonmonotone
+                            elif idx == 1:  # non-monotone
 
                                 self.ST_centers_nm[-1].append(
                                     [np.quantile(self.X[:, d], q=0.5)]
@@ -1902,7 +1902,7 @@ class TransportMap:
                                         copy.copy(scales) + self.ST_scale_factor
                                     )
 
-                            elif idx == 1:  # nonmonotone
+                            elif idx == 1:  # non-monotone
 
                                 self.ST_centers_nm[-1].append(
                                     np.quantile(a=self.X[:, d], q=quantiles)
@@ -1979,8 +1979,6 @@ class TransportMap:
                     # Overwrite with static term -marked-
                     self.linearization_threshold[k, 0] = -self.linearization
                     self.linearization_threshold[k, 1] = +self.linearization
-
-        # print(self.linearization_threshold)
 
         return
 
@@ -2315,14 +2313,6 @@ class TransportMap:
             string += "|"
             print(string, end="\r")
 
-        # # Assemble the theta vector we are optimizing
-        # coeffs          = np.zeros(len(self.coeffs_nonmon[k]) + len(self.coeffs_mon[k]))
-        # div             = len(self.coeffs_nonmon[k]) # Divisor for the vector
-
-        # # Write in the coefficients
-        # coeffs[:div]    = copy.copy(self.coeffs_nonmon[k])
-        # coeffs[div:]    = copy.copy(self.coeffs_mon[k])
-
         coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
         coeffs_mon = copy.copy(self.coeffs_mon[k])
 
@@ -2531,12 +2521,12 @@ class TransportMap:
         becomes active if monotonicity = 'integrated rectifier'.
 
         :param k: an integer variable defining what map component is being
-        evaluated. Corresponds to a dimension of sample space.
+            evaluated. Corresponds to a dimension of sample space.
 
         :param task_supervisor: a shared list which informs the main process
-        how many optimization tasks have already been computed. This list
-        should not be specified by the user, it only serves to provide
-        information about the optimization progress.
+            how many optimization tasks have already been computed. This list
+            should not be specified by the user, it only serves to provide
+            information about the optimization progress.
         """
 
         # Prepare task
@@ -3267,43 +3257,43 @@ class TransportMap:
         :param f: function to be integrated element-wise.
 
         :param a: lower bound for integration, defined as either a scalar
-        or a vector.
+            or a vector.
 
         :param b: upper bound for integration, defined as either a scalar
-        or a vector.
+            or a vector.
 
         :param order: order of the Legendre polynomial used for the
-        integration scheme.
+            integration scheme.
 
         :param args: a dictionary with supporting keyword arguments to be
-        passed to the function.
+            passed to the function.
 
         :param Ws: weights of the integration points, can be calculated in
-        advance to speed up the computation. Is calculated by the integration
-        scheme, if not specified.
+            advance to speed up the computation. Is calculated by the integration
+            scheme, if not specified.
 
         :param xis: positions of the integration points, can be calculated
-        in advance to speed up the computation. Is calculated by the
-        integration scheme, if not specified.
+            in advance to speed up the computation. Is calculated by the
+            integration scheme, if not specified.
 
         :param full_output: Flag for whether the positions and weights of
-        the integration points should be returned along with the integration
-        results. If True, returns a tuple with (results,order,xis,Ws). If
-        False, only returns results.
+            the integration points should be returned along with the integration
+            results. If True, returns a tuple with (results,order,xis,Ws). If
+            False, only returns results.
 
         :param adaptive: flag which determines whether the numerical scheme
-        should adjust the order of the Legendre polynomial adaptively
-        (True) or use the integer provided by 'order' (False).
+            should adjust the order of the Legendre polynomial adaptively
+            (True) or use the integer provided by 'order' (False).
 
         :param threshold: threshold for the difference in the adaptive
-        integration, adaptation stops after difference in integration
+            integration, adaptation stops after difference in integration
 
         :param increment: increment by which the order is increased in each
-        adaptation cycle. Higher values correspond to larger steps.
+            adaptation cycle. Higher values correspond to larger steps.
 
         :param verbose: flag which determines whether information about the
-        integration process should be printer to console (True) or not
-        (False).
+            integration process should be printer to console (True) or not
+            (False).
 
         """
 
