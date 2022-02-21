@@ -1,5 +1,5 @@
 # Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology, USA; Robin Thibaut, University of
-# Gent, Belgium
+# Ghent, Belgium
 
 import copy
 import itertools
@@ -2110,12 +2110,10 @@ class TransportMap:
         elif self.monotonicity == "separable monotonicity":
 
             # In the case that monotonicity is enforced through parameterization,
-            # simply evaluate the monotone funciton
+            # simply evaluate the monotone function
             monotone_part = np.dot(self.fun_mon[k](x, self), coeffs_mon[:, np.newaxis])[
                             :, 0
                             ]
-
-            # Combine both terms
 
         # Combine the terms
         result = copy.copy(nonmonotone_part + monotone_part)
@@ -2333,7 +2331,7 @@ class TransportMap:
             exec(self.fun_mon_strings[i].replace("fun", funstring), globals())
             exec("self.fun_mon.append(copy.deepcopy(" + funstring + "))")
 
-            # Create the nonmonotone function
+            # Create the non-monotone function
             funstring = "fun_nonmon_" + str(i)
             exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
             exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
@@ -2573,14 +2571,7 @@ class TransportMap:
                 exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
                 exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
-                # Call the optimization routine
-
-        # # Minimize the objective function
-        # opt     = minimize(
-        #     method  = 'BFGS',#'L-BFGS-B',
-        #     fun     = self.objective_function,
-        #     x0      = coeffs,
-        #     args    = (k,div))
+        # Call the optimization routine
 
         # Minimize the objective function
         opt = minimize(
@@ -3145,7 +3136,6 @@ class TransportMap:
                     bsct_pts[n, 1] = dummy
 
             # Find out the sign of the points which were NOT successful
-            # sign_failure    = np.sign(np.sum(bsct_out[shiftindices,:],axis=1))
             sign_failure = np.sign(bsct_out[shiftindices, 0])
 
             # This difference tells us how much we must shift X to move RIGHT
