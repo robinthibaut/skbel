@@ -6,6 +6,7 @@ import itertools
 
 import numpy as np
 from scipy.optimize import minimize
+from sklearn.preprocessing import StandardScaler
 
 __all__ = ["TransportMap"]
 
@@ -227,7 +228,8 @@ class TransportMap:
         self.X = copy.copy(X)
         self.standardize_samples = standardize_samples
         if self.standardize_samples:
-            self.standardize()
+            self.scaler = StandardScaler()
+            self.X = self.scaler.fit_transform(X)
 
             # Construct the monotone and non-monotone functions
 
@@ -326,7 +328,8 @@ class TransportMap:
 
         # Standardize the samples, if desired
         if self.standardize_samples:
-            self.standardize()
+            self.scaler = StandardScaler()
+            self.X = self.scaler.fit_transform(X)
 
         # Set all parameters to zero
         for k in range(self.D):
@@ -338,44 +341,6 @@ class TransportMap:
 
         # Precalculate the Psi matrices
         self.precalculate()
-
-    def standardize(self):
-
-        """
-        This function centers the samples around zero and re-scales them to
-        have unit standard deviation. This is important for certain function
-        types used in the map component parameterization, for example Hermite
-        functions, which revert to zero farther away from the origin.
-
-        The standardization is applied before any other transport operations,
-        and reverted before results are returned. It should only affect
-        internal computations.
-        """
-
-        # Store the mean and standard deviation of the samples
-        # I have replaced the standard deviation estimate with one based on quantiles, as I fear outliers might
-        # compromise the normal standard deviation estimate more easily.
-
-        if self.standardization.lower() == "standard":
-            self.X_mean = np.mean(self.X, axis=0)
-            self.X_std = np.std(self.X, axis=0)
-        elif (
-                self.standardization.lower() == "quantile"
-                or self.standardization.lower() == "quantiles"
-        ):
-            self.X_mean = np.quantile(self.X, q=0.5, axis=0)
-            self.X_std = (
-                                 np.quantile(self.X - self.X_mean, q=0.8413447460685429, axis=0)
-                                 - np.quantile(self.X - self.X_mean, q=0.15865525393145707, axis=0)
-                         ) / 2
-        else:
-            raise ValueError(
-                "'standardization' must be either 'standard' or 'quantiles'."
-            )
-
-        # Standardize the samples
-        self.X -= self.X_mean
-        self.X /= self.X_std
 
     def precalculate(self):
 
@@ -392,15 +357,13 @@ class TransportMap:
         # Precalculate matrices
         for k in range(self.D):
             # Pre-allocate empty matrices
-            self.Psi_mon.append(copy.copy(self.fun_mon[k](copy.copy(self.X), self)))
+            self.Psi_mon.append(self.fun_mon[k](copy.copy(self.X), self))
             self.Psi_nonmon.append(
-                copy.copy(self.fun_nonmon[k](copy.copy(self.X), self))
+                self.fun_nonmon[k](copy.copy(self.X), self)
             )
 
         # Precalculate locations of any special terms
         self.calculate_special_term_locations()
-
-        return
 
     def write_basis_function(
             self, term: list or str, mode: str = "standard", k: int = None
@@ -496,8 +459,6 @@ class TransportMap:
 
                 if mode == "standard":
 
-                    # https://www.wolframalpha.com/input/?i=%28%28x+-+%5Cmu%29*%281-erf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29+-+%5Csigma*sqrt%282%2F%5Cpi%29*exp%28-%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%5E2%29%29%2F2
-
                     # Construct the string
                     string = (
                             "((__x__[...,"
@@ -510,8 +471,6 @@ class TransportMap:
                     )
 
                 elif mode == "derivative":
-
-                    # https://www.wolframalpha.com/input/?i=derivative+of+%28%28x+-+%5Cmu%29*%281-erf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29+-+%5Csigma*sqrt%282%2F%5Cpi%29*exp%28-%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%5E2%29%29%2F2+wrt+x
 
                     # Construct the string
                     if int(i) == k:
@@ -532,8 +491,6 @@ class TransportMap:
 
                 if mode == "standard":
 
-                    # https://www.wolframalpha.com/input/?i=%28%28x+-+%5Cmu%29*%281%2Berf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29+%2B+%5Csigma*sqrt%282%2F%5Cpi%29*exp%28-%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%5E2%29%29%2F2
-
                     # Construct the string
                     string = (
                             "((__x__[...,"
@@ -546,8 +503,6 @@ class TransportMap:
                     )
 
                 elif mode == "derivative":
-
-                    # https://www.wolframalpha.com/input/?i=derivative+of+%28%28x+-+%5Cmu%29*%281%2Berf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29+%2B+%5Csigma*sqrt%282%2F%5Cpi%29*exp%28-%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%5E2%29%29%2F2+wrt+x
 
                     # Construct the string
                     if int(i) == k:
@@ -568,8 +523,6 @@ class TransportMap:
 
                 if mode == "standard":
 
-                    # https://www.wolframalpha.com/input/?i=1%2F%28sqrt%282*%5Cpi%29*%5Csigma%29*exp%28-%28x+-+%5Cmu%29**2%2F%282*%5Csigma%5E2%29%29
-
                     # Construct the string
                     string = (
                             "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
@@ -578,8 +531,6 @@ class TransportMap:
                     )
 
                 elif mode == "derivative":
-
-                    # https://www.wolframalpha.com/input/?i=derivative+of+1%2F%28sqrt%282*%5Cpi%29*%5Csigma%29*exp%28-%28x+-+%5Cmu%29**2%2F%282*%5Csigma%5E2%29%29+wrt+x
 
                     # Construct the string
                     if int(i) == k:
@@ -602,8 +553,6 @@ class TransportMap:
 
                 if mode == "standard":
 
-                    # https://www.wolframalpha.com/input/?i=%281+%2B+erf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29%2F2
-
                     # Construct the string
                     string = (
                             "(1 + scipy.special.erf((__x__[...,"
@@ -612,8 +561,6 @@ class TransportMap:
                     )
 
                 elif mode == "derivative":
-
-                    # https://www.wolframalpha.com/input/?i=derivative+of+%281+%2B+erf%28%28x+-+%5Cmu%29%2F%28sqrt%282%29*%5Csigma%29%29%29%2F2+wrt+x
 
                     # Construct the string
                     if int(i) == k:
@@ -729,7 +676,7 @@ class TransportMap:
 
                     # Set up function
                     # Extract the polynomial
-                    var = copy.copy(self.polyfunc_str)
+                    var = self.polyfunc_str
 
                     # Open outer parenthesis
                     var += "(["
@@ -755,10 +702,10 @@ class TransportMap:
 
                     # Save the variable
                     if key not in list(modifier_log["variables"].keys()):
-                        modifier_log["variables"][key] = copy.copy(var)
+                        modifier_log["variables"][key] = var
 
                     # Add the variable to the string
-                    string += copy.copy(key)
+                    string += key
 
                     # Add a multiplier, in case there are more terms
                     string += " * "
@@ -779,7 +726,7 @@ class TransportMap:
                     dummy_coefficients_der = self.polyfunc_der(dummy_coefficients)
 
                     # Extract the polynomial
-                    varder = copy.copy(self.polyfunc_str)
+                    varder = self.polyfunc_str
 
                     # Open outer parenthesis
                     varder += "(["
@@ -800,15 +747,13 @@ class TransportMap:
 
                     # Save the variable
                     if keyder not in list(modifier_log["variables"].keys()):
-                        modifier_log["variables"][keyder] = copy.copy(varder)
+                        modifier_log["variables"][keyder] = varder
 
                     # Add the variable to the string
                     if not hermite_function_modifier:
-                        string += copy.copy(varder)
+                        string += varder
 
                     # Add Hermite function
-
-                    # https://www.wolframalpha.com/input/?i=derivative+of+f%28x%29*exp%28-x%5E2%2F4%29+wrt+x
 
                     if hermite_function_modifier:
 
@@ -816,9 +761,8 @@ class TransportMap:
                         # the original form of the polynomial
 
                         # Set up function
-
                         # Extract the polynomial
-                        varbase = copy.copy(self.polyfunc_str)
+                        varbase = self.polyfunc_str
 
                         # Open outer parenthesis
                         varbase += "(["
@@ -839,7 +783,7 @@ class TransportMap:
 
                         # Save the variable -
                         if key not in list(modifier_log["variables"].keys()):
-                            modifier_log["variables"][key] = copy.copy(varbase)
+                            modifier_log["variables"][key] = varbase
 
                         # Now we can construct the actual derivative
 
@@ -961,18 +905,16 @@ class TransportMap:
                         if key not in list(dict_precalc.keys()):
 
                             # No, we haven't. Add it.
-                            dict_precalc[key] = copy.copy(
-                                modifier_log["variables"][key]
-                            ).replace("__x__", "x")
+                            dict_precalc[key] = modifier_log["variables"][key].replace("__x__", "x")
 
                             # Wait a moment! Are we linearizing this term?
                             if key.endswith("_LIN"):
                                 # Yes, we are! What dimension is this?
-                                d = int(copy.copy(key).split("_")[1])
+                                d = int(key.split("_")[1])
 
                                 # Edit the term
                                 dict_precalc[key] = (
-                                        copy.copy(dict_precalc[key]).replace(
+                                        dict_precalc[key].replace(
                                             "__x__", "x_trc"
                                         )
                                         + " * "
@@ -981,7 +923,7 @@ class TransportMap:
                                         + "]/"
                                         + str(self.linearization_increment)
                                         + ") + "
-                                        + copy.copy(dict_precalc[key]).replace(
+                                        + dict_precalc[key].replace(
                                     "__x__", "x_ext"
                                 )
                                         + " * "
@@ -1103,7 +1045,7 @@ class TransportMap:
             # Load module requirements
 
             for entry in modules:
-                string += copy.copy(entry) + "\n\t"
+                string += entry + "\n\t"
             string += "\n\t"  # Another line break for legibility
 
             # Prepare linearization, if necessary
@@ -1994,28 +1936,18 @@ class TransportMap:
         """
 
         if X is not None and self.standardize:
-
-            X = copy.copy(X)
-
-            X -= self.X_mean
-            X /= self.X_std
-
-        else:
-
-            X = copy.copy(self.X)
+            X = self.scaler.fit_transform(X)
 
         # Initialize the output array
         Y = np.zeros((X.shape[0], self.D))
 
         for k in range(self.D):
             # Apply the forward map
-            Y[:, k] = copy.copy(
-                self.s(
-                    x=X,
-                    k=k,
-                    coeffs_nonmon=self.coeffs_nonmon[k],
-                    coeffs_mon=self.coeffs_mon[k],
-                )
+            Y[:, k] = self.s(
+                x=X,
+                k=k,
+                coeffs_nonmon=self.coeffs_nonmon[k],
+                coeffs_mon=self.coeffs_mon[k],
             )
 
         return Y
@@ -2977,8 +2909,7 @@ class TransportMap:
 
             # If we standardized the samples, undo the standardization
             if self.standardize_samples:
-                X *= self.X_std
-                X += self.X_mean
+                X = self.scaler.inverse_transform(X)
 
         # X_precalc was provided, and matches the reduced map definition
 
@@ -2994,8 +2925,8 @@ class TransportMap:
                 X[:, : self.skip_dimensions] = copy.copy(X_precalc)
 
                 if self.standardize_samples:
-                    X[:, : self.skip_dimensions] -= self.X_mean[: self.skip_dimensions]
-                    X[:, : self.skip_dimensions] /= self.X_std[: self.skip_dimensions]
+                    X[:, : self.skip_dimensions] -= self.scaler.mean_[: self.skip_dimensions]
+                    X[:, : self.skip_dimensions] /= self.scaler.scale_[: self.skip_dimensions]
 
                 # Go through all dimensions
                 for k in np.arange(0, self.D, 1):
@@ -3003,8 +2934,7 @@ class TransportMap:
 
                 # If we standardized the samples, undo the standardization
                 if self.standardize_samples:
-                    X *= self.X_std
-                    X += self.X_mean
+                    X = self.scaler.inverse_transform(X)
 
             # A full map was defined, but so were precalculated values
 
@@ -3019,12 +2949,12 @@ class TransportMap:
 
                 # If we standardize the samples, we must also standardize the
                 # precalculated values first
-                X[:, :skip_dimensions] = copy.copy(X_precalc)
+                X[:, :skip_dimensions] = X_precalc
 
                 if self.standardize_samples:
                     # Standardize the precalculated samples for the map
-                    X[:, :skip_dimensions] -= self.X_mean[:skip_dimensions]
-                    X[:, :skip_dimensions] /= self.X_std[:skip_dimensions]
+                    X[:, :skip_dimensions] -= self.scaler.mean_[:skip_dimensions]
+                    X[:, :skip_dimensions] /= self.scaler.scale_[:skip_dimensions]
 
                 # Go through all dimensions
                 for i, k in enumerate(np.arange(skip_dimensions, D, 1)):
@@ -3032,8 +2962,7 @@ class TransportMap:
 
                 # If we standardized the samples, undo the standardization
                 if self.standardize_samples:
-                    X *= self.X_std
-                    X += self.X_mean
+                    X = self.scaler.inverse_transform(X)
 
         return X[:, self.skip_dimensions:]
 
