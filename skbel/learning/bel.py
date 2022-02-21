@@ -24,7 +24,7 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
-from ..develop.transport_map_116 import TransportMap
+from ..tmaps import TransportMap
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
