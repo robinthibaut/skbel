@@ -295,7 +295,7 @@ def pca_scores(
         plt.xlabel("PC number")
         plt.ylabel("PC value")
     plt.tick_params(labelsize=11)
-    locator_params(axis='x', nbins=10)
+    locator_params(axis="x", nbins=10)
 
     # Add legend
     # Add title inside the box
@@ -761,10 +761,14 @@ def _kde_cca(
                 cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
 
                 try:
-                    reg = bel.kde_functions[obs_n][comp_n]["function"]  # Get the regressor
+                    reg = bel.kde_functions[obs_n][comp_n][
+                        "function"
+                    ]  # Get the regressor
                     check_is_fitted(reg)
                     reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-                    ax_joint.plot(bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7)
+                    ax_joint.plot(
+                        bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7
+                    )
                 except Exception:  # If no regressor
                     pass
         # Vertical line

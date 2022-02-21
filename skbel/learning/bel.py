@@ -221,7 +221,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if X is not None and Y is None:  # If only X is provided
             if (
-                    type(X) is list
+                type(X) is list
             ):  # If more than one dataset used (several features of different nature)
                 # [check_consistent_length(x, Y) for x in X]
                 X = [
@@ -244,7 +244,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         elif Y is not None and X is None:  # If only Y is provided
             if (
-                    type(Y) is list
+                type(Y) is list
             ):  # If more than one dataset used (several features of different nature)
                 Y = [
                     check_array(
@@ -269,7 +269,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         else:  # If both X and Y are provided
             if (
-                    type(X) is list
+                type(X) is list
             ):  # If more than one dataset used (several features of different nature)
                 # [check_consistent_length(x, Y) for x in X]
                 X = [
@@ -285,7 +285,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             else:
                 X = check_array(X, copy=self.copy)
             if (
-                    type(Y) is list
+                type(Y) is list
             ):  # If more than one dataset used (several features of different nature)
                 Y = [
                     check_array(

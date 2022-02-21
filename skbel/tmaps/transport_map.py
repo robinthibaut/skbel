@@ -12,26 +12,26 @@ __all__ = ["TransportMap"]
 
 class TransportMap:
     def __init__(
-        self,
-        monotone: list,
-        nonmonotone: list,
-        X: np.array,
-        polynomial_type: str = "hermite function",
-        monotonicity: str = "integrated rectifier",
-        standardize_samples: bool = True,
-        standardization: str = "standard",
-        workers: int = 1,
-        ST_scale_factor: float = 1.0,
-        ST_scale_mode: str = "dynamic",
-        coeffs_init: float = 0.1,
-        linearization: float = None,
-        linearization_specified_as_quantiles: bool = True,
-        linearization_increment: float = 1e-6,
-        regularization: str = None,
-        regularization_lambda: float = 0.1,
-        quadrature_input: dict = None,
-        rectifier_type: str = "exponential",
-        delta: float = 0.0,
+            self,
+            monotone: list,
+            nonmonotone: list,
+            X: np.array,
+            polynomial_type: str = "hermite function",
+            monotonicity: str = "integrated rectifier",
+            standardize_samples: bool = True,
+            standardization: str = "standard",
+            workers: int = 1,
+            ST_scale_factor: float = 1.0,
+            ST_scale_mode: str = "dynamic",
+            coeffs_init: float = 0.1,
+            linearization: float = None,
+            linearization_specified_as_quantiles: bool = True,
+            linearization_increment: float = 1e-6,
+            regularization: str = None,
+            regularization_lambda: float = 0.1,
+            quadrature_input: dict = None,
+            rectifier_type: str = "exponential",
+            delta: float = 0.0,
     ):
 
         """
@@ -40,141 +40,104 @@ class TransportMap:
 
         Maximilian Ramgraber, January 2022
 
+        :param monotone: list specifying the structure of the monotone part of
+            the transport map component functions.
 
-        Variables:
+        :param nonmonotone: list specifying the structure of the non-monotone
+            part of the transport map component functions.
 
-            ===================================================================
-            General variables
-            ===================================================================
+        :param X: N-by-D array of the training samples used to optimize the
+            transport map, where N is the number of samples and D is the
+            number of dimensions
 
-            monotone
-                [list] : list specifying the structure of the monotone part of
-                the transport map component functions.
+        :param polynomial_type: keyword which specifies what kinds of
+            polynomials are used for the transport map component functions.
 
-            nonmonotone
-                [list] : list specifying the structure of the non-monotone part
-                of the transport map component functions.
+        :param monotonicity: keyword which specifies through what method the
+            transport map ensures monotonicity in the last dimensions.
+            Must be 'integrated rectifier' or 'separable monotonicity'.
 
-            X
-                [array] : N-by-D array of the training samples used to optimize
-                the transport map, where N is the number of samples and D is
-                the number of dimensions
+        :param standardize_samples: a True/False flag determining whether the
+            transport map should standardize the training samples before
+            optimization
 
-            polynomial_type - [default = 'hermite function']
-                [string] : keyword which specifies what kinds of polynomials
-                are used for the transport map component functions.
+        :param standardization: keyword which specifies whether standardization
+            uses mean and standard deviation ('standard') or median and
+            quantiles ('quantiles').
 
-            monotonicity - [default = 'integrated rectifier']
-                [string] : keyword which specifies through what method the
-                transport map ensures monotonicity in the last dimensions.
-                Must be 'integrated rectifier' or 'separable monotonicity'.
+        :param workers: number of workers for parallel optimization. If set
+            to 1, parallelized optimization is inactive.
 
-            standardize_samples - [default = True]
-                [boolean] : a True/False flag determining whether the transport
-                map should standardize the training samples before optimization
+        :param ST_scale_factor: a float which scales the width of special
+            terms used in the map components, such as 'RBF 0', 'iRBF 0',
+            'LET 0', or 'RET 0'.
 
-            standardization - [default = 'standard']
-                [string] : keyword which specifies whether standardization uses
-                mean and standard deviation ('standard') or median and
-                quantiles ('quantiles').
+        :param ST_scale_mode: keyword which defines whether the width of
+            special term scale factors is determined based on neighbouring
+            special terms ('dynamic') or fixed as ST_scale_factor ('static').
 
-            workers - [default = 1]
-                [integer] : number of workers for parallel optimization. If set
-                to 1, parallelized optimization is inactive.
+        :param coeffs_init: value used to initialize the coefficients at the
+            start of the map optimization.
 
-            ST_scale_factor - [default = 1.0]
-                [float] : a float which scales the width of special terms used
-                in the map components, such as 'RBF 0', 'iRBF 0', 'LET 0', or
-                'RET 0'.
+        :param linearization: float which specifies boundary values used
+            to linearize the map components in the tails. Its role is
+            specifies by linearization_specified_as_quantiles.
 
-            ST_scale_mode - [default = 'dynamic']
-                [string] : keyword which defines whether the width of special
-                term scale factors is determined based on neighbouring special
-                terms ('dynamic') or fixed as ST_scale_factor ('static').
+        :param linearization_specified_as_quantiles: flag which specifies
+            whether the linearization thresholds are specifies as quantiles
+            (True) or absolute values (False). If True, boundaries are
+            placed at linearization and 1-linearization, if False, at
+            linearization and -linearization. Only used if linearization is
+            not None.
 
-            coeffs_init - [default = 0.]
-                [float] : value used to initialize the coefficients at the
-                start of the map optimization.
+        :param linearization_increment: increment used for the linearization
+            of the map component functions. Only used if linearization is
+            not None.
 
-            verbose - [default = True]
-                [boolean] : a True/False flag which determines whether the map
-                prints updates or not. Set to 'False' if running on a cluster
-                to avoid recording excessive output logs.
+        :param regularization: keyword which specifies if regularization is
+            used, and if so, what kind of regularization ('L1' or 'L2').
 
-            Linearization -----------------------------------------------------
+        :param regularization_lambda: float which specifies the weight for
+            the map coeff-icient regularization. Only used if regularization
+            is not None.
 
-            linearization - [default = None]
-                [float or None] : float which specifies boundary values used
-                to linearize the map components in the tails. Its role is
-                specifies by linearization_specified_as_quantiles.
+        :param quadrature_input: dictionary for optional keywords to overwrite
+            the default variables in the function Gauss_quadrature. Only
+            used if monotonicity = 'integrated rectifier'.
 
-            linearization_specified_as_quantiles - [default = True]
-                [boolean] : flag which specifies whether the linearization
-                thresholds are specifies as quantiles (True) or absolute values
-                (False). If True, boundaries are placed at linearization and
-                1-linearization, if False, at linearization and -linearization.
-                Only used if linearization is not None.
+        :param rectifier_type: keyword which specifies which function is
+            used to rectify the monotone map components. Only used if
+            monotonicity = 'integrated rectifier'.
 
-            linearization_increment - [default = 1E-6]
-                [float] : increment used for the linearization of the map
-                component functions. Only used if linearization is not None.
-
-            Regularization ----------------------------------------------------
-
-            regularization - [default = None]
-                [string or None] : keyword which specifies if regularization is
-                used, and if so, what kind of regularization ('L1' or 'L2').
-
-            regularization_lambda - [default = 0.1]
-                [float] : float which specifies the weight for the map coeff-
-                icient regularization. Only used if regularization is not None.
-
-            ===================================================================
-            Variables for monotonicity = 'integrated rectifier'
-            ===================================================================
-
-            quadrature_input - [default = {}]
-                [dictionary] : dictionary for optional keywords to overwrite
-                the default variables in the function Gauss_quadrature. Only
-                used if monotonicity = 'integrated rectifier'.
-
-            rectifier_type - [default = 'exponential']
-                [string] : keyword which specifies which function is used to
-                rectify the monotone map components. Only used if
-                monotonicity = 'integrated rectifier'.
-
-            delta - [default = 0.]
-                [float] : small increment added to the rectifier to prevent
-                numerical underflow. Only used if monotonicity = 'integrated
-                rectifier'.
-
+        :param delta: small increment added to the rectifier to prevent
+            numerical underflow. Only used if monotonicity = 'integrated
+            rectifier'.
         """
 
         if quadrature_input is None:
             quadrature_input = {}
 
-        # ---------------------------------------------------------------------
-        # Load in pre-defined variables
-        # ---------------------------------------------------------------------
+            # Load in pre-defined variables
 
-        self.D = len(monotone)
+        self.D = len(monotone)  # number of dimensions
 
-        self.skip_dimensions = X.shape[-1] - self.D
+        self.skip_dimensions = X.shape[-1] - self.D  # number of dimensions to skip
 
-        self.monotone = copy.deepcopy(monotone)
-        self.nonmonotone = copy.deepcopy(nonmonotone)
+        self.monotone = copy.deepcopy(monotone)  # monotonicity constraints
+        self.nonmonotone = copy.deepcopy(nonmonotone)  # non-monotonicity constraints
 
-        self.workers = workers
+        self.workers = workers  # number of workers for parallelization
 
-        self.rectifier_type = rectifier_type
-        self.delta = delta
-        self.rect = self.Rectifier(mode=self.rectifier_type, delta=self.delta)
+        self.rectifier_type = rectifier_type  # type of rectifier used
+        self.delta = delta  # small increment added to rectifier
+        self.rect = self.Rectifier(
+            mode=self.rectifier_type, delta=self.delta
+        )  # rectifier function
 
         self.quadrature_input = quadrature_input
 
         self.ST_scale_factor = ST_scale_factor
         self.ST_scale_mode = ST_scale_mode
-
         self.standardization = standardization
 
         self.coeffs_init = coeffs_init
@@ -203,33 +166,31 @@ class TransportMap:
         if self.ST_scale_mode not in ["dynamic", "static"]:
             raise ValueError("'ST_scale_mode' must be either 'dynamic' or 'static'.")
 
-        # ---------------------------------------------------------------------
         # Read and assign the polynomial type
-        # ---------------------------------------------------------------------
 
         self.polynomial_type = polynomial_type
 
         # Determine the derivative and polynomial terms depending on the chosen type
         if (
-            polynomial_type.lower() == "standard"
-            or polynomial_type.lower() == "polynomial"
-            or polynomial_type.lower() == "power series"
+                polynomial_type.lower() == "standard"
+                or polynomial_type.lower() == "polynomial"
+                or polynomial_type.lower() == "power series"
         ):
             self.polyfunc = np.polynomial.polynomial.Polynomial
             self.polyfunc_der = np.polynomial.polynomial.polyder
             self.polyfunc_str = "np.polynomial.Polynomial"
         elif (
-            polynomial_type.lower() == "hermite"
-            or polynomial_type.lower() == "phycisist's hermite"
-            or polynomial_type.lower() == "phycisists hermite"
+                polynomial_type.lower() == "hermite"
+                or polynomial_type.lower() == "phycisist's hermite"
+                or polynomial_type.lower() == "phycisists hermite"
         ):
             self.polyfunc = np.polynomial.hermite.Hermite
             self.polyfunc_der = np.polynomial.hermite.hermder
             self.polyfunc_str = "np.polynomial.Hermite"
         elif (
-            polynomial_type.lower() == "hermite_e"
-            or polynomial_type.lower() == "probabilist's hermite"
-            or polynomial_type.lower() == "probabilists hermite"
+                polynomial_type.lower() == "hermite_e"
+                or polynomial_type.lower() == "probabilist's hermite"
+                or polynomial_type.lower() == "probabilists hermite"
         ):
             self.polyfunc = np.polynomial.hermite_e.HermiteE
             self.polyfunc_der = np.polynomial.hermite_e.hermeder
@@ -247,9 +208,9 @@ class TransportMap:
             self.polyfunc_der = np.polynomial.legendre.legder
             self.polyfunc_str = "np.polynomial.Legendre"
         elif (
-            polynomial_type.lower() == "hermite function"
-            or polynomial_type.lower() == "hermite_function"
-            or polynomial_type.lower() == "hermite functions"
+                polynomial_type.lower() == "hermite function"
+                or polynomial_type.lower() == "hermite_function"
+                or polynomial_type.lower() == "hermite functions"
         ):
             self.polynomial_type = "hermite function"  # Unify this polynomial string, so we can use it as a flag
             self.polyfunc = np.polynomial.hermite_e.HermiteE
@@ -261,9 +222,7 @@ class TransportMap:
                 "'hermite', 'hermite_e', 'chebyshev', 'laguerre', or 'legendre'. "
             )
 
-        # ---------------------------------------------------------------------
         # Load and prepare the variables
-        # ---------------------------------------------------------------------
 
         # Load and standardize the samples
         self.X = copy.copy(X)
@@ -271,9 +230,7 @@ class TransportMap:
         if self.standardize_samples:
             self.standardize()
 
-        # ---------------------------------------------------------------------
-        # Construct the monotone and non-monotone functions
-        # ---------------------------------------------------------------------
+            # Construct the monotone and non-monotone functions
 
         # The function_constructor yields six variables:
         #   - fun_mon               : list of monotone functions
@@ -285,9 +242,7 @@ class TransportMap:
 
         self.function_constructor_alternative()
 
-        # ---------------------------------------------------------------------
         # Precalculate the Psi matrices
-        # ---------------------------------------------------------------------
 
         # The function_constructor yields two variables:
         #   - Psi_mon               : list of monotone basis evaluations
@@ -317,8 +272,8 @@ class TransportMap:
             raise ValueError("'ST_scale_mode' must be either 'dynamic' or 'static'.")
 
         if (
-            self.hermite_function_threshold_mode != "composite"
-            and self.hermite_function_threshold_mode != "individual"
+                self.hermite_function_threshold_mode != "composite"
+                and self.hermite_function_threshold_mode != "individual"
         ):
             raise ValueError(
                 "The flag hermite_function_threshold_mode must be "
@@ -357,12 +312,9 @@ class TransportMap:
         different set of samples. It resets the standardization variables and
         the map's coefficients, requiring new optimization.
 
-        Variables:
-
-            X
-                [array] : N-by-D array of the training samples used to optimize
-                the transport map, where N is the number of samples and D is
-                the number of dimensions
+        :param X: N-by-D array of the training samples used to
+        optimize the transport map, where N is the number of samples and D is
+        the number of dimensions
         """
 
         if len(X.shape) != 2:
@@ -385,18 +337,6 @@ class TransportMap:
             self.coeffs_mon[k] += self.coeffs_init  # 1E-3
             self.coeffs_nonmon[k] += self.coeffs_init  # 1E-3
 
-            # for i,val in enumerate(self.monotone[k]):
-
-            #     val     = [j for j in val if type(j) != str]
-
-            #     self.coeffs_mon[k][i] = 10**(-len(val))
-
-            # for i,val in enumerate(self.nonmonotone[k]):
-
-            #     val     = [j for j in val if type(j) != str]
-
-            #     self.coeffs_nonmon[k][i] = 10**(-len(val))
-
         # Precalculate the Psi matrices
         self.precalculate()
 
@@ -413,22 +353,22 @@ class TransportMap:
         internal computations.
         """
 
-        # Store the mean and standard deviation of the samples        # I have replaced the standard deviation
-        # estimate with one based on quantiles, as I fear outliers might compromise the normal standard deviation
-        # estimate more easily.
+        # Store the mean and standard deviation of the samples
+        # I have replaced the standard deviation estimate with one based on quantiles, as I fear outliers might
+        # compromise the normal standard deviation estimate more easily.
 
         if self.standardization.lower() == "standard":
             self.X_mean = np.mean(self.X, axis=0)
             self.X_std = np.std(self.X, axis=0)
         elif (
-            self.standardization.lower() == "quantile"
-            or self.standardization.lower() == "quantiles"
+                self.standardization.lower() == "quantile"
+                or self.standardization.lower() == "quantiles"
         ):
             self.X_mean = np.quantile(self.X, q=0.5, axis=0)
             self.X_std = (
-                np.quantile(self.X - self.X_mean, q=0.8413447460685429, axis=0)
-                - np.quantile(self.X - self.X_mean, q=0.15865525393145707, axis=0)
-            ) / 2
+                                 np.quantile(self.X - self.X_mean, q=0.8413447460685429, axis=0)
+                                 - np.quantile(self.X - self.X_mean, q=0.15865525393145707, axis=0)
+                         ) / 2
         else:
             raise ValueError(
                 "'standardization' must be either 'standard' or 'quantiles'."
@@ -464,7 +404,7 @@ class TransportMap:
         return
 
     def write_basis_function(
-        self, term: list or str, mode: str = "standard", k: int = None
+            self, term: list or str, mode: str = "standard", k: int = None
     ):
 
         """
@@ -472,27 +412,22 @@ class TransportMap:
         component functions. This can be a polynomial, a Hermite function, a
         radial basis function, or similar.
 
-        Variables:
+        :param term: either an empty list, a list, or a string, which
+            specifies what function type this term is supposed to be.
+            Empty lists correspond to a constant, lists specify polynomials
+            or Hermite functions, and strings denote special terms such as
+            radial basis functions.
 
-            term
-                [variable] : either an empty list, a list, or a string, which
-                specifies what function type this term is supposed to be.
-                Empty lists correspond to a constant, lists specify polynomials
-                or Hermite functions, and strings denote special terms such as
-                radial basis functions.
+        :param mode: a keyword which defines whether the term's string
+            returned should be conventional ('standard') or its derivative
+            ('derivative').
 
-            mode - [default = 'standard']
-                [string] : a keyword which defines whether the term's string
-                returned should be conventional ('standard') or its derivative
-                ('derivative').
-
-            k - [default = None]
-                [integer or None] : an integer specifying what dimension of the
-                samples the 'term' corresponds to. Used to clarify with respect
-                to what variable we take the derivative.
+        :param k: an integer specifying what dimension of the samples the
+            'term' corresponds to. Used to clarify with respect to what
+            variable we take the derivative.
         """
 
-        # First, check for input errors ---------------------------------------
+        # First, check for input errors
 
         # Check if mode is valid
         if mode not in ["standard", "derivative"]:
@@ -515,7 +450,7 @@ class TransportMap:
                 "the derivative. Currently specified: k = " + str(k)
             )
 
-        # Initiate the modifier log -------------------------------------------
+        # Initiate the modifier log
 
         # This variable returns information about whether there is anything
         # special about this term. If this is not None, it is a dictionary with
@@ -528,10 +463,7 @@ class TransportMap:
 
         modifier_log = {}
 
-        # =====================================================================
         # Constant
-        # =====================================================================
-
         # If the entry is an empty list, add a constant
         if not term:
 
@@ -548,9 +480,7 @@ class TransportMap:
             # Log this term
             modifier_log = {"constant": None}
 
-        # =====================================================================
         # Special term
-        # =====================================================================
 
         # If the entry is a string, it denotes a special term
         elif type(term) == str:
@@ -561,9 +491,7 @@ class TransportMap:
             # Log this term
             modifier_log = {"ST": int(i)}
 
-            # --------------------------------------------------------------W---
             # Left edge term
-            # -----------------------------------------------------------------
 
             if STtype.lower() == "let":  # The special term is a left edge term
 
@@ -573,13 +501,13 @@ class TransportMap:
 
                     # Construct the string
                     string = (
-                        "((__x__[...,"
-                        + i
-                        + "] - __mu__)*(1-scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))) - __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
+                            "((__x__[...,"
+                            + i
+                            + "] - __mu__)*(1-scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))) - __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
                     )
 
                 elif mode == "derivative":
@@ -590,18 +518,16 @@ class TransportMap:
                     if int(i) == k:
 
                         string = (
-                            "(1 - scipy.special.erf((__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                                "(1 - scipy.special.erf((__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                         )
 
                     else:
 
                         string = "np.zeros(__x__.shape[:-1])"
 
-            # -----------------------------------------------------------------
             # Right edge term
-            # -----------------------------------------------------------------
 
             elif STtype.lower() == "ret":  # The special term is a right edge term
 
@@ -611,13 +537,13 @@ class TransportMap:
 
                     # Construct the string
                     string = (
-                        "((__x__[...,"
-                        + i
-                        + "] - __mu__)*(1+scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))) + __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
+                            "((__x__[...,"
+                            + i
+                            + "] - __mu__)*(1+scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))) + __scale__*np.sqrt(2/np.pi)*np.exp(-((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__))**2))/2"
                     )
 
                 elif mode == "derivative":
@@ -628,18 +554,16 @@ class TransportMap:
                     if int(i) == k:
 
                         string = (
-                            "(1 + scipy.special.erf((__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                                "(1 + scipy.special.erf((__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                         )
 
                     else:
 
                         string = "np.zeros(__x__.shape[:-1])"
 
-            # -----------------------------------------------------------------
             # Radial basis function
-            # -----------------------------------------------------------------
 
             elif STtype.lower() == "rbf":  # The special term is a right edge term
 
@@ -649,9 +573,9 @@ class TransportMap:
 
                     # Construct the string
                     string = (
-                        "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
-                        + i
-                        + "] - __mu__)**2/(2*__scale__**2))"
+                            "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
+                            + i
+                            + "] - __mu__)**2/(2*__scale__**2))"
                     )
 
                 elif mode == "derivative":
@@ -662,20 +586,18 @@ class TransportMap:
                     if int(i) == k:
 
                         string = (
-                            "(__x__[...,"
-                            + i
-                            + "] - __mu__)/(np.sqrt(2*np.pi)*__scale__**3)*np.exp(-(__x__[...,"
-                            + i
-                            + "] - __mu__)**2/(2*__scale__**2))"
+                                "(__x__[...,"
+                                + i
+                                + "] - __mu__)/(np.sqrt(2*np.pi)*__scale__**3)*np.exp(-(__x__[...,"
+                                + i
+                                + "] - __mu__)**2/(2*__scale__**2))"
                         )
 
                     else:
 
                         string = "np.zeros(__x__.shape[:-1])"
 
-            # -----------------------------------------------------------------
             # Integrated radial basis function
-            # -----------------------------------------------------------------
 
             elif STtype.lower() == "irbf":  # The special term is a right edge term
 
@@ -685,9 +607,9 @@ class TransportMap:
 
                     # Construct the string
                     string = (
-                        "(1 + scipy.special.erf((__x__[...,"
-                        + i
-                        + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
+                            "(1 + scipy.special.erf((__x__[...,"
+                            + i
+                            + "] - __mu__)/(np.sqrt(2)*__scale__)))/2"
                     )
 
                 elif mode == "derivative":
@@ -698,18 +620,16 @@ class TransportMap:
                     if int(i) == k:
 
                         string = (
-                            "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
-                            + i
-                            + "] - __mu__)**2/(2*__scale__**2))"
+                                "1/(np.sqrt(2*np.pi)*__scale__)*np.exp(-(__x__[...,"
+                                + i
+                                + "] - __mu__)**2/(2*__scale__**2))"
                         )
 
                     else:
 
                         string = "np.zeros(__x__.shape[:-1])"
 
-            # -----------------------------------------------------------------
             # Unrecognized special term
-            # -----------------------------------------------------------------
 
             else:
 
@@ -721,16 +641,12 @@ class TransportMap:
                     + "are implemented."
                 )
 
-        # =====================================================================
         # Polynomial term
-        # =====================================================================
 
         # Otherwise, it is a standard polynomial term
         else:
 
-            # -----------------------------------------------------------------
             # Check for modifiers
-            # -----------------------------------------------------------------
 
             # Check for Hermite function modifier
             # TRUE if modifier is active, else FALSE
@@ -754,9 +670,7 @@ class TransportMap:
             # Remove all string-based modifiers
             term = [i for i in term if type(i) != str]
 
-            # -----------------------------------------------------------------
             # Construct the polynomial term
-            # -----------------------------------------------------------------
 
             # Extract the unique entries and their counts
             ui, ct = np.unique(term, return_counts=True)
@@ -803,9 +717,7 @@ class TransportMap:
                     # Scale the polynomial coefficient to normalize its maximum value
                     dummy_coefficients[-1] = 1 / np.max(np.abs(hfeval))
 
-                # -------------------------------------------------------------
                 # Standard polynomial
-                # -------------------------------------------------------------
 
                 if mode == "standard" or (mode == "derivative" and ui[i] != k):
 
@@ -816,8 +728,7 @@ class TransportMap:
                     if linearize:
                         key += "_LIN"
 
-                    # Set up function -----------------------------------------
-
+                    # Set up function
                     # Extract the polynomial
                     var = copy.copy(self.polyfunc_str)
 
@@ -834,28 +745,26 @@ class TransportMap:
                     # Close outer parenthesis
                     var += "])"
 
-                    # Add variable --------------------------------------------
+                    # Add variable
 
                     var += "(__x__[...," + str(ui[i]) + "])"
 
-                    # Add Hermite function ------------------------------------
+                    # Add Hermite function
 
                     if hermite_function_modifier:
                         var += "*np.exp(-__x__[...," + str(ui[i]) + "]**2/4)"
 
-                    # Save the variable ---------------------------------------
+                    # Save the variable
                     if key not in list(modifier_log["variables"].keys()):
                         modifier_log["variables"][key] = copy.copy(var)
 
-                    # Add the variable to the string --------------------------
+                    # Add the variable to the string
                     string += copy.copy(key)
 
                     # Add a multiplier, in case there are more terms
                     string += " * "
 
-                # -------------------------------------------------------------
                 # Derivative of polynomial
-                # -------------------------------------------------------------
 
                 elif mode == "derivative":
 
@@ -865,7 +774,7 @@ class TransportMap:
                     # Create a variable key for its derivative
                     keyder = "P_" + str(ui[i]) + "_O_" + str(ct[i]) + "_DER"
 
-                    # Set up function -----------------------------------------
+                    # Set up function
 
                     # Find the derivative coefficients
                     dummy_coefficients_der = self.polyfunc_der(dummy_coefficients)
@@ -886,19 +795,19 @@ class TransportMap:
                     # Close outer parenthesis
                     varder += "])"
 
-                    # Add variable --------------------------------------------
+                    # Add variable
 
                     varder += "(__x__[...," + str(ui[i]) + "])"
 
-                    # Save the variable ---------------------------------------
+                    # Save the variable
                     if keyder not in list(modifier_log["variables"].keys()):
                         modifier_log["variables"][keyder] = copy.copy(varder)
 
-                    # Add the variable to the string --------------------------
+                    # Add the variable to the string
                     if not hermite_function_modifier:
                         string += copy.copy(varder)
 
-                    # Add Hermite function ------------------------------------
+                    # Add Hermite function
 
                     # https://www.wolframalpha.com/input/?i=derivative+of+f%28x%29*exp%28-x%5E2%2F4%29+wrt+x
 
@@ -907,7 +816,7 @@ class TransportMap:
                         # If we have a hermite function modifier, we also need
                         # the original form of the polynomial
 
-                        # Set up function -------------------------------------
+                        # Set up function
 
                         # Extract the polynomial
                         varbase = copy.copy(self.polyfunc_str)
@@ -922,32 +831,32 @@ class TransportMap:
                         # Remove the last ","
                         varbase = varbase[:-1]
 
-                        # Close outer paranthesis
+                        # Close outer parenthesis
                         varbase += "])"
 
-                        # Add variable ----------------------------------------
+                        # Add variable-
 
                         varbase += "(__x__[...," + str(ui[i]) + "])"
 
-                        # Save the variable -----------------------------------
+                        # Save the variable -
                         if key not in list(modifier_log["variables"].keys()):
                             modifier_log["variables"][key] = copy.copy(varbase)
 
-                        # Now we can construct the actual derivative ----------
+                        # Now we can construct the actual derivative
 
                         string = (
-                            "-1/2*np.exp(-__x__[...,"
-                            + str(ui[i])
-                            + "]**2/4)*(__x__[...,"
-                            + str(ui[i])
-                            + "]*"
-                            + key
-                            + " - 2*"
-                            + keyder
-                            + ")"
+                                "-1/2*np.exp(-__x__[...,"
+                                + str(ui[i])
+                                + "]**2/4)*(__x__[...,"
+                                + str(ui[i])
+                                + "]*"
+                                + key
+                                + " - 2*"
+                                + keyder
+                                + ")"
                         )
 
-                    # Add a multiplier, in case there are more terms ----------
+                    # Add a multiplier, in case there are more terms
                     string += " * "
 
             # Remove the last multiplier " * "
@@ -989,19 +898,17 @@ class TransportMap:
         # Go through all terms
         for k in range(K):
 
-            # =================================================================
             # Step 1: Build the monotone function
-            # =================================================================
 
             # Define modules to load
             modules = [" ", ""]
 
             # Check if this term is linear
             if (
-                len(self.monotone[k]) == 1
-                and type(self.monotone[k][0]) != str
-                and len(self.monotone[k][0]) != 0
-                and self.monotonicity == "separable monotonicity"
+                    len(self.monotone[k]) == 1
+                    and type(self.monotone[k][0]) != str
+                    and len(self.monotone[k][0]) != 0
+                    and self.monotonicity == "separable monotonicity"
             ):
 
                 # Criteria:
@@ -1018,9 +925,7 @@ class TransportMap:
 
                 self.monotone_term_is_linear.append(False)
 
-            # =================================================================
             # Extract the terms
-            # =================================================================
 
             # Define the terms composing the transport map component
             terms = []
@@ -1038,18 +943,14 @@ class TransportMap:
             # Go through all terms
             for i, entry in enumerate(self.monotone[k]):
 
-                # -------------------------------------------------------------
                 # Convert the map specification to a function
-                # -------------------------------------------------------------
 
                 # Find the term's function
                 term, modifier_log = self.write_basis_function(
                     term=entry, mode="standard"
                 )
 
-                # -------------------------------------------------------------
                 # Extract any precalculations, where applicable
-                # -------------------------------------------------------------
 
                 # If this term includes and precalculations, extract them
                 if "variables" in list(modifier_log.keys()):
@@ -1072,28 +973,26 @@ class TransportMap:
 
                                 # Edit the term
                                 dict_precalc[key] = (
-                                    copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_trc"
-                                    )
-                                    + " * "
-                                    + "(1 - vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
-                                    + ") + "
-                                    + copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_ext"
-                                    )
-                                    + " * "
-                                    + "vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
+                                        copy.copy(dict_precalc[key]).replace(
+                                            "__x__", "x_trc"
+                                        )
+                                        + " * "
+                                        + "(1 - vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
+                                        + ") + "
+                                        + copy.copy(dict_precalc[key]).replace(
+                                    "__x__", "x_ext"
+                                )
+                                        + " * "
+                                        + "vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
                                 )
 
-                # -------------------------------------------------------------
-                # Post-processing for special terms
-                # -------------------------------------------------------------
+                                # Post-processing for special terms
 
                 # Is this term a special term?
                 if "ST" in list(modifier_log.keys()):
@@ -1135,9 +1034,7 @@ class TransportMap:
                     # Increment the special term counter
                     ST_counter[idx] += 1
 
-                # -------------------------------------------------------------
-                # Add the term to the list
-                # -------------------------------------------------------------
+                    # Add the term to the list
 
                 # If any dummy __x__ remain, replace them
                 term = term.replace("__x__", "x")
@@ -1145,14 +1042,12 @@ class TransportMap:
                 # Store the term
                 terms.append(copy.copy(term))
 
-            # -----------------------------------------------------------------
-            # If there are special cross-terms, create them
-            # -----------------------------------------------------------------
+                # If there are special cross-terms, create them
 
             # Are there multiple special terms?
             if (
-                np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
-                > 1
+                    np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
+                    > 1
             ):
 
                 # Yes, there are multiple special terms. Extract these terms.
@@ -1196,31 +1091,23 @@ class TransportMap:
                 # Now add all the grid terms
                 terms += RBF_terms_grid
 
-            # -----------------------------------------------------------------
-            # Add monotone coefficients
-            # -----------------------------------------------------------------
+                # Add monotone coefficients
 
             # Append the parameters
             self.coeffs_mon.append(np.ones(len(terms)) * self.coeffs_init)
 
-            # =================================================================
             # Assemble the monotone function
-            # =================================================================
 
             # Prepare the basis string
             string = "def fun(x,self):\n\t\n\t"
 
-            # -----------------------------------------------------------------
             # Load module requirements
-            # -----------------------------------------------------------------
 
             for entry in modules:
                 string += copy.copy(entry) + "\n\t"
             string += "\n\t"  # Another line break for legibility
 
-            # -----------------------------------------------------------------
             # Prepare linearization, if necessary
-            # -----------------------------------------------------------------
 
             # If linearization is active, truncate the input x
             if self.linearization is not None:
@@ -1255,23 +1142,19 @@ class TransportMap:
                 # Also crate an extrapolated version of x_trc
                 string += "x_ext = copy.copy(x_trc);\n\t"
                 string += (
-                    "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
+                        "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
                 )  # Offset all values which have been snapped by a small increment
 
                 # Add a space to the next block
                 string += "\n\t"
 
-            # -----------------------------------------------------------------
-            # Prepare precalculated variables
-            # -----------------------------------------------------------------
+                # Prepare precalculated variables
 
             # Add all precalculation terms
             for key in list(dict_precalc.keys()):
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
-            # -----------------------------------------------------------------
-            # Assemble function output
-            # -----------------------------------------------------------------
+                # Assemble function output
 
             # Prepare the result string
             if len(terms) == 1:  # Only a single term, no need for stacking
@@ -1294,9 +1177,7 @@ class TransportMap:
             # Return the result
             string += "return result"
 
-            # -----------------------------------------------------------------
             # Finish function construction
-            # -----------------------------------------------------------------
 
             # Append the function string
             self.fun_mon_strings.append(string)
@@ -1306,9 +1187,7 @@ class TransportMap:
             exec(string.replace("fun", funstring), globals())
             exec("self.fun_mon.append(copy.deepcopy(" + funstring + "))")
 
-            # =================================================================
             # Step 2: Build the non-monotone function
-            # =================================================================
 
             # Append the parameters
             self.coeffs_nonmon.append(
@@ -1318,9 +1197,7 @@ class TransportMap:
             # Define modules to load
             modules = [" ", ""]
 
-            # =================================================================
             # Extract the terms
-            # =================================================================
 
             # Define the terms composing the transport map component
             terms = []
@@ -1334,18 +1211,14 @@ class TransportMap:
             # Go through all terms
             for entry in self.nonmonotone[k]:
 
-                # -------------------------------------------------------------
                 # Convert the map specification to a function
-                # -------------------------------------------------------------
 
                 # Find the term's function
                 term, modifier_log = self.write_basis_function(
                     term=entry, mode="standard"
                 )
 
-                # -------------------------------------------------------------
                 # Extract any precalculations, where applicable
-                # -------------------------------------------------------------
 
                 # If this term includes and precalculations, extract them
                 if "variables" in list(modifier_log.keys()):
@@ -1368,28 +1241,26 @@ class TransportMap:
 
                                 # Edit the term
                                 dict_precalc[key] = (
-                                    copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_trc"
-                                    )
-                                    + " * "
-                                    + "(1 - vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
-                                    + ") + "
-                                    + copy.copy(dict_precalc[key]).replace(
-                                        "__x__", "x_ext"
-                                    )
-                                    + " * "
-                                    + "vec[:,"
-                                    + str(d)
-                                    + "]/"
-                                    + str(self.linearization_increment)
+                                        copy.copy(dict_precalc[key]).replace(
+                                            "__x__", "x_trc"
+                                        )
+                                        + " * "
+                                        + "(1 - vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
+                                        + ") + "
+                                        + copy.copy(dict_precalc[key]).replace(
+                                    "__x__", "x_ext"
+                                )
+                                        + " * "
+                                        + "vec[:,"
+                                        + str(d)
+                                        + "]/"
+                                        + str(self.linearization_increment)
                                 )
 
-                # -------------------------------------------------------------
-                # Post-processing for special terms
-                # -------------------------------------------------------------
+                                # Post-processing for special terms
 
                 # Is this term a special term?
                 if "ST" in list(modifier_log.keys()):
@@ -1428,9 +1299,7 @@ class TransportMap:
                     # Increment the special term counter
                     ST_counter[idx] += 1
 
-                # -------------------------------------------------------------
-                # Add the term to the list
-                # -------------------------------------------------------------
+                    # Add the term to the list
 
                 # If any dummy __x__ remain, replace them
                 term = term.replace("__x__", "x")
@@ -1438,9 +1307,7 @@ class TransportMap:
                 # Store the term
                 terms.append(copy.copy(term))
 
-            # =================================================================
             # Assemble the monotone function
-            # =================================================================
 
             # Only assemble the function if there actually is a non-monotone term
             if len(self.nonmonotone[k]) > 0:
@@ -1448,17 +1315,13 @@ class TransportMap:
                 # Prepare the basis string
                 string = "def fun(x,self):\n\t\n\t"
 
-                # -------------------------------------------------------------
                 # Load module requirements
-                # -------------------------------------------------------------
 
                 for entry in modules:
                     string += copy.copy(entry) + "\n\t"
                 string += "\n\t"  # Another line break for legibility
 
-                # -------------------------------------------------------------
                 # Prepare linearization, if necessary
-                # -------------------------------------------------------------
 
                 # If linearization is active, truncate the input x
                 if self.linearization is not None:
@@ -1489,29 +1352,25 @@ class TransportMap:
                     # Also crate an extrapolated version of x_trc
                     string += "x_ext = copy.copy(x_trc);\n\t"
                     string += (
-                        "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
+                            "x_ext += shift*" + str(self.linearization_increment) + ";\n\t"
                     )  # Offset all values which have been snapped by a small increment
 
                     # Add a space to the next block
                     string += "\n\t"
 
-                # -------------------------------------------------------------
-                # Prepare precalculated variables
-                # -------------------------------------------------------------
+                    # Prepare precalculated variables
 
                 # Add all precalculation terms
                 for key in list(dict_precalc.keys()):
                     string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
-                # -------------------------------------------------------------
-                # Assemble function output
-                # -------------------------------------------------------------
+                    # Assemble function output
 
                 # Prepare the result string
                 if len(terms) == 1:  # Only a single term, no need for stacking
 
                     string += (
-                        "result = " + copy.copy(terms[0]) + "[:,np.newaxis];\n\t\n\t"
+                            "result = " + copy.copy(terms[0]) + "[:,np.newaxis];\n\t\n\t"
                     )
 
                 else:  # If we have more than one term, start stacking the result
@@ -1530,9 +1389,7 @@ class TransportMap:
                 # Return the result
                 string += "return result"
 
-                # -------------------------------------------------------------
                 # Finish function construction
-                # -------------------------------------------------------------
 
                 # Append the function string
                 self.fun_nonmon_strings.append(string)
@@ -1556,9 +1413,7 @@ class TransportMap:
                 exec(string.replace("fun", funstring), globals())
                 exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
-        # =================================================================
         # Step 3: Finalize
-        # =================================================================
 
         # If monotonicity mode is 'separable monotonicity', we also require the
         # derivative of the monotone part of the map
@@ -1588,11 +1443,7 @@ class TransportMap:
         # Go through all terms
         for k in range(K):
 
-            # =================================================================
-            # =================================================================
             # Step 1: Build the monotone function
-            # =================================================================
-            # =================================================================
 
             # Set optimization constraints
             self.optimization_constraints_lb.append(np.zeros(len(self.monotone[k])))
@@ -1617,27 +1468,21 @@ class TransportMap:
             dict_precalc = {}
             for j, entry in enumerate(self.monotone[k]):
 
-                # -------------------------------------------------------------
                 # Convert the map specification to a function
-                # -------------------------------------------------------------
 
                 # Find the term's function
                 term, modifier_log = self.write_basis_function(
                     term=entry, mode="derivative", k=k + self.skip_dimensions
                 )
 
-                # -------------------------------------------------------------
                 # If this is a constant term, undo the lower constraint
-                # -------------------------------------------------------------
 
                 if "constant" in list(modifier_log.keys()):
                     # Assign linear constraints
                     self.optimization_constraints_lb[k][j] = -np.inf
                     self.optimization_constraints_ub[k][j] = +np.inf
 
-                # -------------------------------------------------------------
-                # Extract any precalculations, where applicable
-                # -------------------------------------------------------------
+                    # Extract any precalculations, where applicable
 
                 # If this term includes and precalculations, extract them
                 if "variables" in list(modifier_log.keys()):
@@ -1652,9 +1497,7 @@ class TransportMap:
                                 modifier_log["variables"][key]
                             ).replace("__x__", "x")
 
-                # -------------------------------------------------------------
-                # Post-processing for special terms
-                # -------------------------------------------------------------
+                            # Post-processing for special terms
 
                 # Is this term a special term?
                 if "ST" in list(modifier_log.keys()):
@@ -1696,9 +1539,7 @@ class TransportMap:
                     # Increment the special term counter
                     ST_counter[idx] += 1
 
-                # -------------------------------------------------------------
-                # Add the term to the list
-                # -------------------------------------------------------------
+                    # Add the term to the list
 
                 # If any dummy __x__ remain, replace them
                 term = term.replace("__x__", "x")
@@ -1708,8 +1549,8 @@ class TransportMap:
 
             # Are there multiple special terms?
             if (
-                np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
-                > 1
+                    np.sum([True if x != 0 else False for x in self.RBF_counter_m[k, :]])
+                    > 1
             ):
 
                 # Yes, there are multiple special terms. Extract these terms.
@@ -1753,25 +1594,19 @@ class TransportMap:
                 # Now add all the grid terms
                 terms += RBF_terms_grid
 
-            # =================================================================
             # Assemble the monotone derivative function
-            # =================================================================
 
             # Prepare the basis string
             string = "def fun(x,self):\n\t\n\t"
 
-            # -----------------------------------------------------------------
             # Load module requirements
-            # -----------------------------------------------------------------
 
             # Add all module requirements
             for entry in modules:
                 string += copy.copy(entry) + "\n\t"
             string += "\n\t"  # Another line break for legibility
 
-            # -----------------------------------------------------------------
             # Prepare linearization, if necessary
-            # -----------------------------------------------------------------
 
             # If linearization is active, truncate the input x
             if self.linearization is not None:
@@ -1802,17 +1637,13 @@ class TransportMap:
                 # The derivative of a linearized function outside its range is
                 # constant, so we do not require x_ext
 
-            # -----------------------------------------------------------------
-            # Prepare precalculated variables
-            # -----------------------------------------------------------------
+                # Prepare precalculated variables
 
             # Add all precalculation terms
             for key in list(dict_precalc.keys()):
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
-            # -----------------------------------------------------------------
-            # Assemble function output
-            # -----------------------------------------------------------------
+                # Assemble function output
 
             # Prepare the result string
             if len(terms) == 1:  # Only a single term, no need for stacking
@@ -1835,9 +1666,7 @@ class TransportMap:
             # Return the result
             string += "return result"
 
-            # -----------------------------------------------------------------
             # Finish function construction
-            # -----------------------------------------------------------------
 
             # Append the function string
             self.der_fun_mon_strings.append(string)
@@ -1929,7 +1758,7 @@ class TransportMap:
         for k in range(self.D):
 
             for idx, RBF_counter in enumerate(
-                [self.RBF_counter_m, self.RBF_counter_nm]
+                    [self.RBF_counter_m, self.RBF_counter_nm]
             ):
 
                 if np.sum(RBF_counter[k, :]) == 0:  # No special terms are defined
@@ -1959,9 +1788,7 @@ class TransportMap:
                     # Go through all dimensions
                     for d in range(self.X.shape[-1]):
 
-                        # ---------------------------------------------------------
                         # Zero special terms
-                        # ---------------------------------------------------------
 
                         if RBF_counter[k, d] == 0:  # No ST for this dimension
 
@@ -1975,9 +1802,7 @@ class TransportMap:
                                 self.ST_centers_nm[-1].append([])
                                 self.ST_scales_nm[-1].append([])
 
-                        # ---------------------------------------------------------
-                        # One special term
-                        # ---------------------------------------------------------
+                                # One special term
 
                         elif RBF_counter[k, d] == 1:  # One ST is special
 
@@ -2009,15 +1834,13 @@ class TransportMap:
                                 elif self.ST_scale_mode == "static":
                                     self.ST_scales_nm[-1].append([self.ST_scale_factor])
 
-                        # ---------------------------------------------------------
-                        # Multiple special terms
-                        # ---------------------------------------------------------
+                                    # Multiple special terms
 
                         else:  # We have two or more STs
 
                             # Decide where to place the special terms
                             quantiles = np.arange(1, RBF_counter[k, d] + 1, 1) / (
-                                RBF_counter[k, d] + 1
+                                    RBF_counter[k, d] + 1
                             )
 
                             # Append an empty list, then fill it
@@ -2038,36 +1861,36 @@ class TransportMap:
                                         if i == 0:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][1]
-                                                    - self.ST_centers_m[-1][d][0]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][1]
+                                                            - self.ST_centers_m[-1][d][0]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Right edge-case: base is half distance to previous basis
                                         elif i == RBF_counter[k, d] - 1:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][i]
-                                                    - self.ST_centers_m[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][i]
+                                                            - self.ST_centers_m[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Otherwise: base is average distance to neighbours
                                         else:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_m[-1][d][i + 1]
-                                                    - self.ST_centers_m[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_m[-1][d][i + 1]
+                                                            - self.ST_centers_m[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                     # Copy the scales into the array
@@ -2094,36 +1917,36 @@ class TransportMap:
                                         if i == 0:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][1]
-                                                    - self.ST_centers_nm[-1][d][0]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][1]
+                                                            - self.ST_centers_nm[-1][d][0]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Right edge-case: base is half distance to previous basis
                                         elif i == RBF_counter[k, d] - 1:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][i]
-                                                    - self.ST_centers_nm[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][i]
+                                                            - self.ST_centers_nm[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                         # Otherwise: base is average distance to neighbours
                                         else:
 
                                             scales[i] = (
-                                                (
-                                                    self.ST_centers_nm[-1][d][i + 1]
-                                                    - self.ST_centers_nm[-1][d][i - 1]
-                                                )
-                                                / 2
-                                                * self.ST_scale_factor
+                                                    (
+                                                            self.ST_centers_nm[-1][d][i + 1]
+                                                            - self.ST_centers_nm[-1][d][i - 1]
+                                                    )
+                                                    / 2
+                                                    * self.ST_scale_factor
                                             )
 
                                     # Copy the scales into the array
@@ -2168,12 +1991,9 @@ class TransportMap:
         standard multivariate Gaussian reference distribution. If X has not
         been provided, the samples in storage will be used instead
 
-        Variables:
-
-            X - [default = None]
-                [None or array] : N-by-D array of the training samples used to
-                optimize the transport map, where N is the number of samples
-                and D is the number of dimensions.
+        :param X: N-by-D array of the training samples used to optimize the
+            transport map, where N is the number of samples and D is the
+            number of dimensions.
         """
 
         if X is not None and self.standardize:
@@ -2204,39 +2024,33 @@ class TransportMap:
         return Y
 
     def s(
-        self,
-        x: np.array,
-        k: int,
-        coeffs_nonmon: np.array = None,
-        coeffs_mon: np.array = None,
+            self,
+            x: np.array,
+            k: int,
+            coeffs_nonmon: np.array = None,
+            coeffs_mon: np.array = None,
     ):
 
         """
         This function evaluates the k-th map component.
 
-        Variables:
+        :param x: N-by-D array of the training samples used to optimize the
+            transport map, where N is the number of samples and D is the
+            number of dimensions. Can be None, at which point it is
+            replaced with X from storage.
 
-            x
-                [array] : N-by-D array of the training samples used to optimize
-                the transport map, where N is the number of samples and D is
-                the number of dimensions. Can be None, at which point it is
-                replaced with X from storage.
+        :param k: an integer variable defining what map component is being
+            evaluated. Corresponds to a dimension of sample space.
 
-            k
-                [integer] : an integer variable defining what map component
-                is being evaluated. Corresponds to a dimension of sample space.
+        :param coeffs_nonmon: a vector specifying the coefficients of the
+            non-monotone part of the map component's terms, i.e., those
+            entries which do not depend on x_k. This vector is replaced from
+            storage if it is not overwritten.
 
-            coeffs_nonmon - [default = None]
-                [vector] : a vector specifying the coefficients of the non-
-                monotone part of the map component's terms, i.e., those entries
-                which do not depend on x_k. This vector is replaced from
-                storage if it is not overwritten.
-
-            coeffs_nonmon - [default = None]
-                [vector] : a vector specifying the coefficients of the monotone
-                part of the map component's terms, i.e., those entries which do
-                not depend on x_k. This vector is replaced from storage if it
-                is not overwritten.
+        :param coeffs_mon: a vector specifying the coefficients of the
+            monotone part of the map component's terms, i.e., those entries
+            which do not depend on x_k. This vector is replaced from
+            storage if it is not overwritten.
         """
 
         # Load in values if required
@@ -2254,18 +2068,14 @@ class TransportMap:
         if coeffs_nonmon is None:
             coeffs_nonmon = self.coeffs_nonmon[k]
 
-        # ---------------------------------------------------------------------
-        # Calculate the non-monotone part
-        # ---------------------------------------------------------------------
+            # Calculate the non-monotone part
 
         if Psi_nonmon is not None:
             nonmonotone_part = np.dot(Psi_nonmon, coeffs_nonmon[:, np.newaxis])[..., 0]
         else:
             nonmonotone_part = 0
 
-        # ---------------------------------------------------------------------
-        # Calculate the monotone part
-        # ---------------------------------------------------------------------
+            # Calculate the monotone part
 
         if self.monotonicity == "integrated rectifier":
 
@@ -2304,12 +2114,10 @@ class TransportMap:
             # In the case that monotonicity is enforced through parameterization,
             # simply evaluate the monotone funciton
             monotone_part = np.dot(self.fun_mon[k](x, self), coeffs_mon[:, np.newaxis])[
-                :, 0
-            ]
+                            :, 0
+                            ]
 
-        # ---------------------------------------------------------------------
-        # Combine both terms
-        # ---------------------------------------------------------------------
+            # Combine both terms
 
         # Combine the terms
         result = copy.copy(nonmonotone_part + monotone_part)
@@ -2373,17 +2181,13 @@ class TransportMap:
             from multiprocessing import Pool, Manager
             from itertools import repeat
 
-            # ---------------------------------------------------------------------
             # Prepare parallelization
-            # ---------------------------------------------------------------------
 
             # Create the task supervisor
             manager = Manager()
             task_supervisor = manager.list([0] * self.D)
 
-            # ---------------------------------------------------------------------
             # Start parallel tasks
-            # ---------------------------------------------------------------------
 
             if self.monotonicity == "integrated rectifier":
 
@@ -2423,9 +2227,7 @@ class TransportMap:
                 p.close()
                 p.join()
 
-            # ---------------------------------------------------------------------
-            # Post-process parallel task
-            # ---------------------------------------------------------------------
+                # Post-process parallel task
 
             if self.verbose:
                 # Make final update to the task supervisor
@@ -2486,22 +2288,16 @@ class TransportMap:
         sequence (if no parallelization is used). This specific function only
         becomes active if monotonicity = 'separable monotonicity'.
 
-        Variables:
+        :param k: an integer variable defining what map component
+            is being evaluated. Corresponds to a dimension of sample space.
 
-            k
-                [integer] : an integer variable defining what map component
-                is being evaluated. Corresponds to a dimension of sample space.
-
-            task supervisor
-                [list] : a shared list which informs the main process how many
-                optimization tasks have already been computed. This list should
-                not be specified by the user, it only serves to provide
-                information about the optimization progress.
+        :param task_supervisor: a shared list which informs the main process
+            how many optimization tasks have already been computed. This
+            list should not be specified by the user, it only serves to
+            provide information about the optimization progress.
         """
 
-        # -----------------------------------------------------------------
         # Prepare task
-        # -----------------------------------------------------------------
 
         if task_supervisor is not None and self.verbose:
 
@@ -2530,9 +2326,7 @@ class TransportMap:
         coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
         coeffs_mon = copy.copy(self.coeffs_mon[k])
 
-        # ---------------------------------------------------------------------
         # Re-create the functions
-        # ---------------------------------------------------------------------
 
         # Restore the functions we previously deleted
         self.der_fun_mon = []
@@ -2554,9 +2348,7 @@ class TransportMap:
             exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
             exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
-        # ---------------------------------------------------------------------
-        # Define special objective for the monotone function
-        # ---------------------------------------------------------------------
+            # Define special objective for the monotone function
 
         Psi_mon = copy.copy(self.fun_mon[k](copy.copy(self.X), self))
 
@@ -2564,44 +2356,27 @@ class TransportMap:
 
         if self.regularization is None:
 
-            # -----------------------------------------------------------------
             # No regularization, use standard objective
-            # -----------------------------------------------------------------
 
             Q, R = np.linalg.qr(Psi_nonmon, mode="reduced")
 
             A_sqrt = Psi_mon - np.linalg.multi_dot((Q, Q.T, Psi_mon))
-
-            # A_sqrt  = np.dot(
-            #     np.identity(self.X.shape[0]) - \
-            #     np.linalg.multi_dot((
-            #         Psi_nonmon,
-            #         np.linalg.inv(
-            #             np.dot(
-            #                 Psi_nonmon.T,
-            #                 Psi_nonmon)),
-            #         Psi_nonmon.T)),
-            #     Psi_mon)
 
             N = self.X.shape[0]  # Ensemble size
             A = np.dot(A_sqrt.T, A_sqrt) / N
 
             def fun_mon_objective(coeffs_mon_, A_, k_):
 
-                # -------------------------------------------------------------
                 # First part: How close is the ensemble mapped to zero?
-                # -------------------------------------------------------------
 
                 objective = (
-                    np.linalg.multi_dot(
-                        (coeffs_mon_[:, np.newaxis].T, A_, coeffs_mon_[:, np.newaxis])
-                    )[0, 0]
-                    / 2
+                        np.linalg.multi_dot(
+                            (coeffs_mon_[:, np.newaxis].T, A_, coeffs_mon_[:, np.newaxis])
+                        )[0, 0]
+                        / 2
                 )
 
-                # -------------------------------------------------------------
                 # Second part: How much is the ensemble inflated?
-                # -------------------------------------------------------------
 
                 der_Psi_mon = copy.copy(self.der_fun_mon[k_](copy.copy(self.X), self))
 
@@ -2613,20 +2388,11 @@ class TransportMap:
                 # Subtract this from the objective
                 objective -= np.mean(np.log(monotone_part_der))
 
-                # -------------------------------------------------------------
-                # Average the objective function
-                # -------------------------------------------------------------
-
-                # # Now summarize the contributions and take their average
-                # objective   = np.mean(objective)
-
                 return objective
 
         elif self.regularization.lower() == "l2":
 
-            # -----------------------------------------------------------------
             # L2 regularization, use alternative objective
-            # -----------------------------------------------------------------
 
             # Step 1: Calculate basis for the supporting variable A
             A = np.linalg.multi_dot(
@@ -2644,23 +2410,19 @@ class TransportMap:
             A = np.dot(
                 (Psi_mon - np.dot(Psi_nonmon, A)).T, Psi_mon - np.dot(Psi_nonmon, A)
             ) / 2 + self.regularization_lambda * (
-                np.dot(A.T, A) + np.identity(A.shape[-1])
-            )
+                        np.dot(A.T, A) + np.identity(A.shape[-1])
+                )
 
             # Create the objective function
             def fun_mon_objective(coeffs_mon_, A_, k_):
 
-                # -------------------------------------------------------------
                 # First part: How close is the ensemble mapped to zero?
-                # -------------------------------------------------------------
 
                 objective = np.linalg.multi_dot(
                     (coeffs_mon_[:, np.newaxis].T, A_, coeffs_mon_[:, np.newaxis])
                 )[0, 0]
 
-                # -------------------------------------------------------------
                 # Second part: How much is the ensemble inflated?
-                # -------------------------------------------------------------
 
                 der_Psi_mon = copy.copy(self.der_fun_mon[k_](copy.copy(self.X), self))
 
@@ -2672,18 +2434,15 @@ class TransportMap:
                 # Subtract this from the objective
                 objective -= np.sum(np.log(monotone_part_der))
 
-                # -------------------------------------------------------------
                 # Average the objective function
-                # -------------------------------------------------------------
 
                 # # Now summarize the contributions and take their average
                 # objective   = np.mean(objective)
 
                 return objective
 
-        # ---------------------------------------------------------------------
-        # Call the optimization routine
-        # ---------------------------------------------------------------------
+                # Call the optimization routine
+
         bounds = []
         for idx in range(len(self.optimization_constraints_lb[k])):
             bounds.append(
@@ -2703,16 +2462,7 @@ class TransportMap:
             args=(A, k),
         )
 
-        # opt     = minimize(
-        #     fun     = fun_mon_objective,
-        #     method  = 'SLSQP',
-        #     x0      = coeffs_mon,
-        #     constraints = lincon,
-        #     args    = (A,k))
-
-        # ---------------------------------------------------------------------
         # Post-process the optimization results
-        # ---------------------------------------------------------------------
 
         # Retrieve the optimized coefficients
         coeffs_mon = copy.copy(opt.x)
@@ -2722,7 +2472,7 @@ class TransportMap:
             # If optimization was a success, mark it as such
             if opt.success:
 
-                # '1' represents initial sucess ('█')
+                # '1' represents initial success ('█')
                 task_supervisor[k] = 1
 
             else:
@@ -2744,14 +2494,12 @@ class TransportMap:
             string += "|"
             print(string, end="\r")
 
-        # ---------------------------------------------------------------------
-        # With the monotone coefficients found, calculate the non-monotone coeffs
-        # ---------------------------------------------------------------------
+            # With the monotone coefficients found, calculate the non-monotone coeffs
 
         if self.regularization is None:
 
             # In the standard formulation, use the QR decomposition to calculate
-            # the nonmonotone coefficients
+            # the non-monotone coefficients
             coeffs_nonmon = -np.linalg.multi_dot(
                 (np.linalg.inv(R), Q.T, Psi_mon, coeffs_mon[:, np.newaxis])
             )[:, 0]
@@ -2782,22 +2530,16 @@ class TransportMap:
         sequence (if no parallelization is used). This specific function only
         becomes active if monotonicity = 'integrated rectifier'.
 
-        Variables:
+        :param k: an integer variable defining what map component is being
+        evaluated. Corresponds to a dimension of sample space.
 
-            k
-                [integer] : an integer variable defining what map component
-                is being evaluated. Corresponds to a dimension of sample space.
-
-            task supervisor
-                [list] : a shared list which informs the main process how many
-                optimization tasks have already been computed. This list should
-                not be specified by the user, it only serves to provide
-                information about the optimization progress.
+        :param task_supervisor: a shared list which informs the main process
+        how many optimization tasks have already been computed. This list
+        should not be specified by the user, it only serves to provide
+        information about the optimization progress.
         """
 
-        # -----------------------------------------------------------------
         # Prepare task
-        # -----------------------------------------------------------------
 
         if task_supervisor is not None and self.verbose:
 
@@ -2823,9 +2565,7 @@ class TransportMap:
         coeffs[:div] = copy.copy(self.coeffs_nonmon[k])
         coeffs[div:] = copy.copy(self.coeffs_mon[k])
 
-        # ---------------------------------------------------------------------
         # Re-create the functions
-        # ---------------------------------------------------------------------
 
         if self.workers > 1:
 
@@ -2843,9 +2583,7 @@ class TransportMap:
                 exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
                 exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
 
-        # ---------------------------------------------------------------------
-        # Call the optimization routine
-        # ---------------------------------------------------------------------
+                # Call the optimization routine
 
         # # Minimize the objective function
         # opt     = minimize(
@@ -2863,9 +2601,7 @@ class TransportMap:
             args=(k, div),
         )
 
-        # ---------------------------------------------------------------------
         # Post-process the optimization results
-        # ---------------------------------------------------------------------
 
         # Retrieve the optimized coefficients
         coeffs_opt = copy.copy(opt.x)
@@ -2938,9 +2674,7 @@ class TransportMap:
             coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
             coeffs_mon = copy.copy(self.coeffs_mon[k])
 
-        # ---------------------------------------------------------------------
-        # First part: How close is the ensemble mapped to zero?
-        # ---------------------------------------------------------------------
+            # First part: How close is the ensemble mapped to zero?
 
         # Map the samples to the reference marginal
         map_result = self.s(
@@ -2950,9 +2684,7 @@ class TransportMap:
         # Check how close these samples are to the origin
         objective = 1 / 2 * map_result ** 2
 
-        # ---------------------------------------------------------------------
         # Second part: How much is the ensemble inflated?
-        # ---------------------------------------------------------------------
 
         Psi_mon = self.fun_mon[k](self.X, self)
 
@@ -2977,16 +2709,12 @@ class TransportMap:
         # Subtract this from the objective
         objective -= obj
 
-        # ---------------------------------------------------------------------
         # Average the objective function
-        # ---------------------------------------------------------------------
 
         # Now summarize the contributions and take their average
         objective = np.mean(objective)
 
-        # ---------------------------------------------------------------------
         # Add regularization, if desired
-        # ---------------------------------------------------------------------
 
         if self.regularization is not None:
 
@@ -3095,9 +2823,7 @@ class TransportMap:
             coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
             coeffs_mon = copy.copy(self.coeffs_mon[k])
 
-        # =====================================================================
         # Prepare term 1
-        # =====================================================================
 
         # First, handle the scalar
         term_1_scalar = self.s(
@@ -3150,9 +2876,7 @@ class TransportMap:
         # Combine to obtain the full term 1
         term_1 = np.einsum("i,ij->ij", term_1_scalar, term_1_vector)
 
-        # =====================================================================
         # Prepare term 2
-        # =====================================================================
 
         # Create term_2
         # https://www.wolframalpha.com/input/?i=derivative+of+log%28f%28c%29%29+wrt+c
@@ -3171,18 +2895,10 @@ class TransportMap:
             # If we have non-monotone terms, expand the term accordingly
             term_2 = np.column_stack((np.zeros((term_2.shape[0], div)), term_2))
 
-        # print(term_1)
-        # print(term_2)
-
-        # =====================================================================
         # Combine both terms
-        # =====================================================================
-
         objective = np.mean(term_1 - term_2, axis=0)
 
-        # ---------------------------------------------------------------------
         # Add regularization, if desired
-        # ---------------------------------------------------------------------
 
         if self.regularization is not None:
 
@@ -3204,10 +2920,10 @@ class TransportMap:
 
                         # Add l1 regularization for all coefficients
                         term = (
-                            np.asarray(
-                                list(np.sign(coeffs_nonmon)) + list(np.sign(coeffs_mon))
-                            )
-                            * self.regularization_lambda[k]
+                                np.asarray(
+                                    list(np.sign(coeffs_nonmon)) + list(np.sign(coeffs_mon))
+                                )
+                                * self.regularization_lambda[k]
                         )
 
                     else:
@@ -3233,8 +2949,8 @@ class TransportMap:
 
                         # Add l2 regularization for all coefficients
                         term = (
-                            np.asarray(list(2 * coeffs_nonmon) + list(2 * coeffs_mon))
-                            * self.regularization_lambda[k]
+                                np.asarray(list(2 * coeffs_nonmon) + list(2 * coeffs_mon))
+                                * self.regularization_lambda[k]
                         )
 
                     else:
@@ -3295,9 +3011,7 @@ class TransportMap:
         # Extract number of samples
         N = Y.shape[0]
 
-        # =====================================================================
         # No X_precalc was provided
-        # =====================================================================
 
         if X_precalc is None:  # Yes
 
@@ -3313,9 +3027,7 @@ class TransportMap:
                 X *= self.X_std
                 X += self.X_mean
 
-        # =====================================================================
         # X_precalc was provided, and matches the reduced map definition
-        # =====================================================================
 
         if X_precalc is not None:
 
@@ -3341,9 +3053,8 @@ class TransportMap:
                     X *= self.X_std
                     X += self.X_mean
 
-            # =================================================================
+
             # A full map was defined, but so were precalculated values
-            # =================================================================
 
             elif self.skip_dimensions == 0 and X_precalc is not None:
 
@@ -3372,16 +3083,16 @@ class TransportMap:
                     X *= self.X_std
                     X += self.X_mean
 
-        return X[:, self.skip_dimensions :]
+        return X[:, self.skip_dimensions:]
 
     def vectorized_root_search_bisection(
-        self,
-        X: np.array,
-        Yk: np.array,
-        k: int,
-        max_iterations: int = 100,
-        threshold: float = 1e-9,
-        start_distance: int = 2,
+            self,
+            X: np.array,
+            Yk: np.array,
+            k: int,
+            max_iterations: int = 100,
+            threshold: float = 1e-9,
+            start_distance: int = 2,
     ):
 
         """
@@ -3453,9 +3164,7 @@ class TransportMap:
                 bsct_pts[n, 0] = bsct_pts[n, 1]
                 bsct_pts[n, 1] = dummy
 
-        # =====================================================================
         # Shift windows
-        # =====================================================================
 
         # An initial proposal for the windows has been made. If zero is not
         # between the two bsct_pts, we must shift the window
@@ -3530,9 +3239,7 @@ class TransportMap:
             failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
             shiftindices = shiftindices[failure]
 
-        # =====================================================================
         # Start the actual root search
-        # =====================================================================
 
         # Prepare iteration counter
         itr_counter = 0
@@ -3572,19 +3279,19 @@ class TransportMap:
         return X
 
     def gauss_quadrature(
-        self,
-        f,
-        a,
-        b,
-        order=100,
-        args=None,
-        Ws=None,
-        xis=None,
-        adaptive=False,
-        threshold=1e-6,
-        increment=1,
-        verbose=False,
-        full_output=False,
+            self,
+            f,
+            a,
+            b,
+            order=100,
+            args=None,
+            Ws=None,
+            xis=None,
+            adaptive=False,
+            threshold=1e-6,
+            increment=1,
+            verbose=False,
+            full_output=False,
     ):
 
         """
@@ -3659,9 +3366,7 @@ class TransportMap:
 
         """
 
-        # =========================================================================
         # Here the actual magic starts
-        # =========================================================================
 
         # If adaptation is desired, we must iterate; prepare a flag for this
         repeat = True
@@ -3710,7 +3415,6 @@ class TransportMap:
 
                 # =============================================================
                 # To understand what's happening here, consider the following:
-                #
                 # lim_dif and lim_sum   - shape (N)
                 # funcres               - shape (N) up to shape (N-by-C-by-C)
 
@@ -3718,16 +3422,16 @@ class TransportMap:
                 if args is None:
 
                     result = (
-                        lim_dif
-                        * 0.5
-                        * (Ws[0] * f(lim_dif * 0.5 * xis[0] + lim_sum * 0.5))
+                            lim_dif
+                            * 0.5
+                            * (Ws[0] * f(lim_dif * 0.5 * xis[0] + lim_sum * 0.5))
                     )
 
                     for i in np.arange(1, len(Ws)):
                         result += (
-                            lim_dif
-                            * 0.5
-                            * (Ws[i] * f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5))
+                                lim_dif
+                                * 0.5
+                                * (Ws[i] * f(lim_dif * 0.5 * xis[i] + lim_sum * 0.5))
                         )
 
                 # Otherwise, pass the arguments on as well
@@ -3735,10 +3439,8 @@ class TransportMap:
 
                     funcres = f(lim_dif * 0.5 * xis[0] + lim_sum * 0.5, *args)
 
-                    # =========================================================
                     # Depending on what shape the output function returns, we
                     # must take special precautions to ensure the product works
-                    # =========================================================
 
                     # If the function output is the same size as its input
                     if len(funcres.shape) == len(lim_dif.shape):
@@ -3810,16 +3512,16 @@ class TransportMap:
                 # If no additional arguments were given, simply call the function
                 if args is None:
                     result = (
-                        (b - a)
-                        * 0.5
-                        * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5))
+                            (b - a)
+                            * 0.5
+                            * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5))
                     )
                 # Otherwise, pass the arguments on as well
                 else:
                     result = (
-                        (b - a)
-                        * 0.5
-                        * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5, *args))
+                            (b - a)
+                            * 0.5
+                            * np.sum(Ws * f((b - a) * 0.5 * xis + (b + a) * 0.5, *args))
                     )
 
             # if adaptive, store results for next iteration
