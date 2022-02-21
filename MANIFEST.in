@@ -4,6 +4,7 @@ include skbel/learning/*
 include skbel/preprocessing/*
 include skbel/spatial/*
 include skbel/testing/*
+include skbel/tmaps/*
 
 include docs/examples/*.py
 include docs/examples/dataset/*.pkl
