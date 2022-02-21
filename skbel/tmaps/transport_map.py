@@ -1,5 +1,4 @@
-# Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology, USA; Robin Thibaut, University of
-# Ghent, Belgium
+# Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology, USA; Robin Thibaut, Ghent University, Belgium
 
 import copy
 import itertools
