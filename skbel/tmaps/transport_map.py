@@ -1935,7 +1935,7 @@ class TransportMap:
             number of dimensions.
         """
 
-        if X is not None and self.standardize:
+        if X is not None and self.standardize_samples:
             X = self.scaler.fit_transform(X)
 
         # Initialize the output array
