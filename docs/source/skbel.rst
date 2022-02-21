@@ -13,6 +13,7 @@ Subpackages
    skbel.preprocessing
    skbel.spatial
    skbel.testing
+   skbel.tmaps
    skbel.utils
 
 Module contents
