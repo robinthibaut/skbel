@@ -9,4 +9,5 @@ SKBEL
    skbel.learning
    skbel.preprocessing
    skbel.spatial
+   skbel.tmaps
    skbel.utils
