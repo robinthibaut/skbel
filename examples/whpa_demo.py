@@ -4,7 +4,6 @@ import os
 from os.path import join as jp
 
 import pandas as pd
-from loguru import logger
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
@@ -111,12 +110,6 @@ if __name__ == "__main__":
     # The posterior distribution is computed within the method below.
     y_predicted = model.predict(X_test)
 
-    # Save the fitted BEL model
-    # joblib.dump(model, jp(obj_dir, "bel.pkl"))
-
-    # msg = f"model trained and saved in {obj_dir}"
-    # logger.info(msg)
-
     # %% Visualization
 
     # Plot raw data
@@ -129,7 +122,7 @@ if __name__ == "__main__":
         Y_obs=y_test,
         base_dir=sub_dir,
     )
-    #
+
     # Plot PCA
     pca_vision(
         model,
