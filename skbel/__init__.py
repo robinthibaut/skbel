@@ -4,8 +4,9 @@
 # from os.path import join as jp
 #
 # from loguru import logger
+from .learning import *
 
-__version__ = "1.1.2"
+__version__ = "2.1.x"
 
 source = __name__.split(".")[-1]
 # Set up logger
@@ -20,7 +21,7 @@ __all__ = [
     "utils",
     "goggles",
     "algorithms",
-    "learning",
+    "BEL",
     "preprocessing",
     "spatial",
     "tmaps",

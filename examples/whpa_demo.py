@@ -13,7 +13,7 @@ import demo_visualization as myvis
 from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
-from skbel.learning.bel import BEL
+from skbel import BEL
 
 
 def init_bel():
