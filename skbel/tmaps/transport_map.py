@@ -1,4 +1,5 @@
-# Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology, USA; Robin Thibaut, Ghent University, Belgium
+# Copyright (c) 2022. Maximilian Ramgraber, Massachusetts Institute of Technology, USA; Robin Thibaut,
+# Ghent University, Belgium
 
 import copy
 import itertools
@@ -166,7 +167,6 @@ class TransportMap:
             raise ValueError("'ST_scale_mode' must be either 'dynamic' or 'static'.")
 
         # Read and assign the polynomial type
-
         self.polynomial_type = polynomial_type
 
         # Determine the derivative and polynomial terms depending on the chosen type
@@ -312,8 +312,8 @@ class TransportMap:
         the map's coefficients, requiring new optimization.
 
         :param X: N-by-D array of the training samples used to
-        optimize the transport map, where N is the number of samples and D is
-        the number of dimensions
+            optimize the transport map, where N is the number of samples and D is
+            the number of dimensions
         """
 
         if len(X.shape) != 2:
