@@ -26,6 +26,8 @@ from sklearn.utils.validation import (
 from ..algorithms import mvn_inference, posterior_conditional, it_sampling, kde_params
 from ..tmaps import TransportMap
 
+__all__ = ["BEL"]
+
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """Heart of the framework.
