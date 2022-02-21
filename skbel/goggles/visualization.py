@@ -9,7 +9,7 @@ from os.path import join as jp
 
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import legend
+from matplotlib.pyplot import legend, locator_params
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
 from sklearn.utils import check_array
@@ -295,6 +295,8 @@ def pca_scores(
         plt.xlabel("PC number")
         plt.ylabel("PC value")
     plt.tick_params(labelsize=11)
+    locator_params(axis='x', nbins=10)
+
     # Add legend
     # Add title inside the box
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
@@ -426,7 +428,7 @@ def pca_vision(
 
     annotation = _yield_alphabet()
 
-    if d:
+    try:
         X_pc = bel.X_pre_processing.transform(d)  # PCA scores
         if X_obs is not None:
             X_obs_pc = bel.X_pre_processing.transform(
@@ -459,6 +461,8 @@ def pca_vision(
                 )
             except (AttributeError, KeyError):
                 pass
+    except Exception:
+        pass
 
     try:
         h_pc_training = bel.Y_pre_processing.transform(h)
