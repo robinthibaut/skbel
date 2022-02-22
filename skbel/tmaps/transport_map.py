@@ -118,10 +118,10 @@ class TransportMap:
 
         self.D = len(monotone)  # number of dimensions
 
-        self.skip_dimensions = X.shape[-1] - self.D  # number of dimensions to skip
+        self.skip_dimensions = X.ndim - self.D  # number of dimensions to skip
 
-        self.monotone = copy.deepcopy(monotone)  # monotonicity constraints
-        self.nonmonotone = copy.deepcopy(nonmonotone)  # non-monotonicity constraints
+        self.monotone = monotone  # monotonicity constraints
+        self.nonmonotone = nonmonotone  # non-monotonicity constraints
 
         self.workers = workers  # number of workers for parallelization
 
@@ -220,7 +220,7 @@ class TransportMap:
         # Load and prepare the variables
 
         # Load and standardize the samples
-        self.X = copy.copy(X)
+        self.X = X
         self.standardize_samples = standardize_samples
         if self.standardize_samples:
             self.scaler = StandardScaler()
@@ -319,7 +319,7 @@ class TransportMap:
                 "Current shape of X is " + str(X.shape)
             )
 
-        self.X = copy.copy(X)
+        self.X = X
 
         # Standardize the samples, if desired
         if self.standardize_samples:
@@ -352,8 +352,8 @@ class TransportMap:
         # Precalculate matrices
         for k in range(self.D):
             # Pre-allocate empty matrices
-            self.Psi_mon.append(self.fun_mon[k](copy.copy(self.X), self))
-            self.Psi_nonmon.append(self.fun_nonmon[k](copy.copy(self.X), self))
+            self.Psi_mon.append(self.fun_mon[k](self.X, self))
+            self.Psi_nonmon.append(self.fun_nonmon[k](self.X, self))
 
         # Precalculate locations of any special terms
         self.calculate_special_term_locations()
@@ -974,7 +974,7 @@ class TransportMap:
                 term = term.replace("__x__", "x")
 
                 # Store the term
-                terms.append(copy.copy(term))
+                terms.append(term)
 
                 # If there are special cross-terms, create them
 
@@ -1974,11 +1974,9 @@ class TransportMap:
 
         # Load in values if required
         if x is None:
-            x = copy.copy(self.X)
-            # Psi_mon         = copy.copy(self.Psi_mon[k])
+            x = self.X
             Psi_nonmon = copy.copy(self.Psi_nonmon[k])
         else:
-            # Psi_mon         = copy.copy(self.fun_mon[k](x,self))
             Psi_nonmon = copy.copy(self.fun_nonmon[k](x, self))
 
         if coeffs_mon is None:
@@ -2091,8 +2089,8 @@ class TransportMap:
                         logger.info(string, end="\r")
 
                     # Extract and store the optimized coefficients
-                    self.coeffs_nonmon[k] = copy.deepcopy(results[0])
-                    self.coeffs_mon[k] = copy.deepcopy(results[1])
+                    self.coeffs_nonmon[k] = results[0]
+                    self.coeffs_mon[k] = results[1]
 
         elif self.workers > 1:  # If we have more than one worker, parallelize
 
@@ -2229,8 +2227,8 @@ class TransportMap:
             string += "|"
             logger.info(string, end="\r")
 
-        coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
-        coeffs_mon = copy.copy(self.coeffs_mon[k])
+        coeffs_nonmon = self.coeffs_nonmon[k]
+        coeffs_mon = self.coeffs_mon[k]
 
         # Re-create the functions
 
@@ -2240,19 +2238,19 @@ class TransportMap:
         self.fun_nonmon = []
         for i in range(self.D):
             # Create the derivative of the monotone function
-            funstring = "der_fun_mon_" + str(i)
+            funstring = f"der_fun_mon_{i}"
             exec(self.der_fun_mon_strings[i].replace("fun", funstring), globals())
-            exec("self.der_fun_mon.append(copy.deepcopy(" + funstring + "))")
+            exec(f"self.der_fun_mon.append(copy.deepcopy({funstring}))")
 
             # Create the monotone function
-            funstring = "fun_mon_" + str(i)
+            funstring = f"fun_mon_{i}"
             exec(self.fun_mon_strings[i].replace("fun", funstring), globals())
-            exec("self.fun_mon.append(copy.deepcopy(" + funstring + "))")
+            exec(f"self.fun_mon.append(copy.deepcopy({funstring}))")
 
             # Create the non-monotone function
-            funstring = "fun_nonmon_" + str(i)
+            funstring = f"fun_nonmon_{i}"
             exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
-            exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
+            exec(f"self.fun_nonmon.append(copy.deepcopy({funstring}))")
 
             # Define special objective for the monotone function
 
@@ -2480,14 +2478,14 @@ class TransportMap:
             self.fun_nonmon = []
             for i in range(self.D):
                 # Create the function
-                funstring = "fun_mon_" + str(i)
+                funstring = f"fun_mon_{i}"
                 exec(self.fun_mon_strings[i].replace("fun", funstring), globals())
-                exec("self.fun_mon.append(copy.deepcopy(" + funstring + "))")
+                exec(f"self.fun_mon.append(copy.deepcopy({funstring}))")
 
                 # Create the function
-                funstring = "fun_nonmon_" + str(i)
+                funstring = f"fun_nonmon_{i}"
                 exec(self.fun_nonmon_strings[i].replace("fun", funstring), globals())
-                exec("self.fun_nonmon.append(copy.deepcopy(" + funstring + "))")
+                exec(f"self.fun_nonmon.append(copy.deepcopy({funstring}))")
 
         # Call the optimization routine
 
@@ -3120,10 +3118,8 @@ class TransportMap:
             below = np.where(mid_out < 0)[0]
             above = np.where(mid_out > 0)[0]
 
-            # bsct_pts[indices[below],maxidx] = copy.copy(bsct_pts[indices[below],minidx])
             bsct_pts[indices[below], 0] = copy.copy(mid_pt[below])
 
-            # bsct_pts[indices[above],minidx] = copy.copy(bsct_pts[indices[above],maxidx])
             bsct_pts[indices[above], 1] = copy.copy(mid_pt[above])
 
             not_converged = np.where(np.abs(mid_out) > threshold)
