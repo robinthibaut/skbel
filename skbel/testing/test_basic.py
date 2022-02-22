@@ -1,6 +1,6 @@
-"""pytest unit tests for skbel.basic."""
+"""pytest unit tests for skbel"""
 
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
+#  Copyright (c) 2022. Robin Thibaut, Ghent University
 
 import os
 from os.path import join as jp
@@ -170,7 +170,6 @@ def test_tm():
         workers=1,
     )
 
-    # Optimize the transport map
     tm.optimize()
 
     norm_samples = scipy.stats.norm.rvs(size=(500, 1), random_state=42)
