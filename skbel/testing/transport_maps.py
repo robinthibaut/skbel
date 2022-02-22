@@ -123,9 +123,15 @@ monotone = [
 # -------------------------------------------------------------------------
 
 # Initialize a transport map object
-tm = TransportMap(monotone=monotone, nonmonotone=nonmonotone, X=X, polynomial_type="probabilist's hermite",
-                  monotonicity="separable monotonicity", standardize_samples=True,
-                  workers=1)  # Number of workers for the parallel optimization; 1 means no parallelization
+tm = TransportMap(
+    monotone=monotone,
+    nonmonotone=nonmonotone,
+    X=X,
+    polynomial_type="probabilist's hermite",
+    monotonicity="separable monotonicity",
+    standardize_samples=True,
+    workers=1,
+)  # Number of workers for the parallel optimization; 1 means no parallelization
 
 # Optimize the transport map
 start = time.time()

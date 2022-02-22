@@ -520,10 +520,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             for comp_n in range(n_cca):
                 X = np.vstack((self.X_f.T[comp_n], self.Y_f.T[comp_n])).T
                 # Initialize a transport map object
-                tm = TransportMap(monotone=monotone, nonmonotone=nonmonotone, X=X,
-                                  polynomial_type="probabilist's hermite", monotonicity="separable monotonicity",
-                                  standardize_samples=True,
-                                  workers=1)  # Number of workers for the parallel optimization; 1 means no parallelization
+                tm = TransportMap(
+                    monotone=monotone,
+                    nonmonotone=nonmonotone,
+                    X=X,
+                    polynomial_type="probabilist's hermite",
+                    monotonicity="separable monotonicity",
+                    standardize_samples=True,
+                    workers=1,
+                )  # Number of workers for the parallel optimization; 1 means no parallelization
 
                 tm.optimize()
 
