@@ -123,17 +123,9 @@ monotone = [
 # -------------------------------------------------------------------------
 
 # Initialize a transport map object
-tm = TransportMap(
-    monotone=monotone,  # What are the monotone terms of the transport map components?
-    nonmonotone=nonmonotone,  # What are the nonmonotone terms of the transport map components?
-    X=X,  # Samples from the target distribution, N-by-D
-    polynomial_type="probabilist's hermite",  # Which polynomial function to use for the map component basis functions?
-    monotonicity="separable monotonicity",
-    # There are two ways to enforce monotonicity; we enforce it through coefficients for now
-    standardize_samples=True,
-    # Flag whether samples should be standardized before map optimization; should almost always be True
-    workers=1,
-)  # Number of workers for the parallel optimization; 1 means no parallelization
+tm = TransportMap(monotone=monotone, nonmonotone=nonmonotone, X=X, polynomial_type="probabilist's hermite",
+                  monotonicity="separable monotonicity", standardize_samples=True,
+                  workers=1)  # Number of workers for the parallel optimization; 1 means no parallelization
 
 # Optimize the transport map
 start = time.time()

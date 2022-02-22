@@ -7,33 +7,18 @@ import itertools
 import numpy as np
 from scipy.optimize import minimize
 from sklearn.preprocessing import StandardScaler
+from loguru import logger
 
 __all__ = ["TransportMap"]
 
 
 class TransportMap:
-    def __init__(
-            self,
-            monotone: list,
-            nonmonotone: list,
-            X: np.array,
-            polynomial_type: str = "hermite function",
-            monotonicity: str = "integrated rectifier",
-            standardize_samples: bool = True,
-            standardization: str = "standard",
-            workers: int = 1,
-            ST_scale_factor: float = 1.0,
-            ST_scale_mode: str = "dynamic",
-            coeffs_init: float = 0.1,
-            linearization: float = None,
-            linearization_specified_as_quantiles: bool = True,
-            linearization_increment: float = 1e-6,
-            regularization: str = None,
-            regularization_lambda: float = 0.1,
-            quadrature_input: dict = None,
-            rectifier_type: str = "exponential",
-            delta: float = 0.0,
-    ):
+    def __init__(self, monotone: list, nonmonotone: list, X: np.array, polynomial_type: str = "hermite function",
+                 monotonicity: str = "integrated rectifier", standardize_samples: bool = True, workers: int = 1,
+                 ST_scale_factor: float = 1.0, ST_scale_mode: str = "dynamic", coeffs_init: float = 0.1,
+                 linearization: float = None, linearization_specified_as_quantiles: bool = True,
+                 linearization_increment: float = 1e-6, regularization: str = None, regularization_lambda: float = 0.1,
+                 quadrature_input: dict = None, rectifier_type: str = "exponential", delta: float = 0.0):
 
         """
         This toolbox contains functions required to construct, optimize, and
@@ -61,10 +46,6 @@ class TransportMap:
         :param standardize_samples: a True/False flag determining whether the
             transport map should standardize the training samples before
             optimization
-
-        :param standardization: keyword which specifies whether standardization
-            uses mean and standard deviation ('standard') or median and
-            quantiles ('quantiles').
 
         :param workers: number of workers for parallel optimization. If set
             to 1, parallelized optimization is inactive.
@@ -139,7 +120,6 @@ class TransportMap:
 
         self.ST_scale_factor = ST_scale_factor
         self.ST_scale_mode = ST_scale_mode
-        self.standardization = standardization
 
         self.coeffs_init = coeffs_init
 
@@ -820,13 +800,13 @@ class TransportMap:
         components, then converts these strings into functions.
         """
 
-        self.fun_mon = []
-        self.fun_mon_strings = []
-        self.coeffs_mon = []
+        self.fun_mon = []  # Initialize the list of monotone functions
+        self.fun_mon_strings = []  # Initialize the list of monotone function strings
+        self.coeffs_mon = []  # Initialize the list of monotone coefficients
 
-        self.fun_nonmon = []
-        self.fun_nonmon_strings = []
-        self.coeffs_nonmon = []
+        self.fun_nonmon = []  # Initialize the list of non-monotone functions
+        self.fun_nonmon_strings = []  # Initialize the list of non-monotone function strings
+        self.coeffs_nonmon = []  # Initialize the list of non-monotone coefficients
 
         # Find out how many function terms we are building
         K = len(self.monotone)
@@ -1617,8 +1597,6 @@ class TransportMap:
             exec(string.replace("fun", funstring), globals())
             exec("self.der_fun_mon.append(copy.deepcopy(" + funstring + "))")
 
-        return
-
     def check_for_special_terms(self):
 
         """
@@ -1673,8 +1651,6 @@ class TransportMap:
                     # Mark it in memory
                     self.RBF_counter_m[k, index] += 1
 
-        return
-
     def calculate_special_term_locations(self):
 
         """
@@ -1688,11 +1664,11 @@ class TransportMap:
         to be on the left side.
         """
 
-        self.ST_centers_m = []
-        self.ST_scales_m = []
+        self.ST_centers_m = []  # Centers of RBFs in monotone terms
+        self.ST_scales_m = []  # Scales of RBFs in monotone terms
 
-        self.ST_centers_nm = []
-        self.ST_scales_nm = []
+        self.ST_centers_nm = []  # Centers of RBFs in non-monotone terms
+        self.ST_scales_nm = []  # Scales of RBFs in non-monotone terms
 
         self.linearization_threshold = np.zeros((self.X.shape[-1], 2))
 
@@ -1937,7 +1913,8 @@ class TransportMap:
 
         if X is not None and self.standardize_samples:
             X = self.scaler.fit_transform(X)
-
+        elif X is None:
+            X = self.X
         # Initialize the output array
         Y = np.zeros((X.shape[0], self.D))
 
@@ -2012,8 +1989,8 @@ class TransportMap:
             def integral_argument(x_, y, coeffs_mon_, k_):
 
                 # First reconstruct the full X matrix
-                X_loc = copy.copy(y)
-                X_loc[:, self.skip_dimensions + k_] = copy.copy(x_)
+                X_loc = y
+                X_loc[:, self.skip_dimensions + k_] = x_
 
                 # Then evaluate the Psi matrix
                 Psi_mon_loc = self.fun_mon[k_](X_loc, self)
@@ -2076,7 +2053,7 @@ class TransportMap:
                         string += (k + 1) * "█"
                         string += (self.D - k - 1) * " "
                         string += "|"
-                        print(string, end="\r")
+                        logger.info(string, end="\r")
 
                     # Extract and store the optimized coefficients
                     self.coeffs_nonmon[k] = copy.deepcopy(results[0])
@@ -2097,7 +2074,7 @@ class TransportMap:
                         string += (k + 1) * "█"
                         string += (self.D - k - 1) * " "
                         string += "|"
-                        print(string, end="\r")
+                        logger.info(string, end="\r")
 
                     # Extract and store the optimized coefficients
                     self.coeffs_nonmon[k] = copy.deepcopy(results[0])
@@ -2113,6 +2090,7 @@ class TransportMap:
             # Create the task supervisor
             manager = Manager()
             task_supervisor = manager.list([0] * self.D)
+            p = Pool(processes=self.workers)
 
             # Start parallel tasks
 
@@ -2127,12 +2105,10 @@ class TransportMap:
                 # We flip the order of the tasks because components farther down in the
                 # transport map take longer to computer; it is computationally useful
                 # to tackle these tasks first, so we don't leave the longest task last
-                p = Pool(processes=self.workers)
                 results = p.starmap(
                     func=self.worker_task,
                     iterable=zip(np.flip(np.arange(self.D)), repeat(task_supervisor)),
                 )
-                p.close()
                 p.join()
 
             elif self.monotonicity == "separable monotonicity":
@@ -2146,12 +2122,10 @@ class TransportMap:
                 # We flip the order of the tasks because components farther down in the
                 # transport map take longer to computer; it is computationally useful
                 # to tackle these tasks first, so we don't leave the longest task last
-                p = Pool(processes=self.workers)
                 results = p.starmap(
                     func=self.worker_task_monotone,
                     iterable=zip(np.flip(np.arange(self.D)), repeat(task_supervisor)),
                 )
-                p.close()
                 p.join()
 
                 # Post-process parallel task
@@ -2169,7 +2143,7 @@ class TransportMap:
                     else:
                         string += " "  # Unfinished task (should not occur)
                 string += "|"
-                print(string)
+                logger.info(string)
 
             # Reverse the results back into proper order
             results.reverse()
@@ -2204,8 +2178,7 @@ class TransportMap:
                         self.der_fun_mon_strings[k].replace("fun", funstring), globals()
                     )
                     exec("self.der_fun_mon.append(copy.deepcopy(" + funstring + "))")
-
-        return
+            p.close()
 
     def worker_task_monotone(self, k: int, task_supervisor: list):
 
@@ -2240,7 +2213,7 @@ class TransportMap:
                 else:
                     string += " "
             string += "|"
-            print(string, end="\r")
+            logger.info(string, end="\r")
 
         coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
         coeffs_mon = copy.copy(self.coeffs_mon[k])
@@ -2411,7 +2384,7 @@ class TransportMap:
                 else:
                     string += " "
             string += "|"
-            print(string, end="\r")
+            logger.info(string, end="\r")
 
             # With the monotone coefficients found, calculate the non-monotone coeffs
 
@@ -2474,7 +2447,7 @@ class TransportMap:
                 else:
                     string += " "
             string += "|"
-            print(string, end="\r")
+            logger.info(string, end="\r")
 
         # Assemble the theta vector we are optimizing
         coeffs = np.zeros(len(self.coeffs_nonmon[k]) + len(self.coeffs_mon[k]))
@@ -2547,7 +2520,7 @@ class TransportMap:
                 else:
                     string += " "
             string += "|"
-            print(string, end="\r")
+            logger.info(string, end="\r")
 
         # Return both optimized coefficients
         return coeffs_nonmon, coeffs_mon
@@ -2575,7 +2548,7 @@ class TransportMap:
             coeffs_mon = copy.copy(coeffs[div:])
         else:
             if self.verbose:
-                print("loading")
+                logger.info("loading")
             # Otherwise, load them from object
             coeffs_nonmon = copy.copy(self.coeffs_nonmon[k])
             coeffs_mon = copy.copy(self.coeffs_mon[k])
@@ -2768,8 +2741,6 @@ class TransportMap:
         # Prepare term 2
 
         # Create term_2
-        # https://www.wolframalpha.com/input/?i=derivative+of+log%28f%28c%29%29+wrt+c
-
         rec_arg = np.dot(self.Psi_mon[k], coeffs_mon[:, np.newaxis])[
             ..., 0
         ]  # This is dfdk
@@ -3140,13 +3111,8 @@ class TransportMap:
             not_converged = np.where(np.abs(mid_out) > threshold)
             indices = indices[not_converged]
 
-        if itr_counter == max_iterations and self.verbose:
-            print(
-                "WARNING: root search for particles "
-                + str(indices)
-                + " stopped"
-                + " at maximum iterations."
-            )
+        if itr_counter == max_iterations and self.verbose:   
+            logger.warning(f"Root search for particles {indices} stopped at maximum iterations.")
 
         return X
 
@@ -3210,7 +3176,7 @@ class TransportMap:
             adaptation cycle. Higher values correspond to larger steps.
 
         :param verbose: flag which determines whether information about the
-            integration process should be printer to console (True) or not
+            integration process should be logger.infoer to console (True) or not
             (False).
 
         """
@@ -3327,15 +3293,8 @@ class TransportMap:
                             )
 
                     else:
-
                         raise Exception(
-                            "Shape of input dimension is "
-                            + str(lim_sum.shape)
-                            + " and shape of output dimension is "
-                            + str(funcres.shape)
-                            + ". Currently, we have only implemented "
-                            + "situations in which input and output are the same shape, "
-                            + "or where output is one or two dimensions larger."
+                            f"Shape of input dimension is {lim_sum.shape} and shape of output dimension is {funcres.shape}. Currently, we have only implemented situations in which input and output are the same shape, or where output is one or two dimensions larger."
                         )
 
             else:
@@ -3377,17 +3336,14 @@ class TransportMap:
                         repeat = False
 
                         if iteration > 1000 and self.verbose:
-                            print(
-                                "WARNING: Adaptive integration stopped after "
-                                + "1000 iteration cycles. Final change: "
-                                + str(change)
+                            logger.warning(
+                                f"Adaptive integration stopped after 1000 iteration cycles. Final change: {change}"
                             )
 
                         # Print the final change if required
                         if verbose and self.verbose:
-                            print(
-                                "Final maximum change of Gauss Quadrature: "
-                                + str(np.max(change))
+                            logger.info(
+                                f"Final maximum change of Gauss Quadrature: {np.max(change)}"
                             )
 
                 # If we must still continue repeating, increment order and store
@@ -3405,7 +3361,7 @@ class TransportMap:
             result = (result, order, xis, Ws)
 
         if verbose and self.verbose:
-            print("Order: " + str(order))
+            logger.info(f"Order: {order}")
 
         return result
 
@@ -3566,8 +3522,6 @@ class TransportMap:
 
             elif self.mode == "exponential":
 
-                # https://www.wolframalpha.com/input/?i=derivative+of+exp%28f%28c%29%29+wrt+c
-
                 res = np.exp(f)
 
                 # Combine with dfdc
@@ -3575,16 +3529,12 @@ class TransportMap:
 
             elif self.mode == "expneg":
 
-                # https://www.wolframalpha.com/input/?i=derivative+of+exp%28-f%28c%29%29+wrt+c
-
                 res = -np.exp(-f)
 
                 # Combine with dfdc
                 res = np.einsum("i,ij->ij", res, dfdc)
 
             elif self.mode == "softplus":
-
-                # https://www.wolframalpha.com/input/?i=derivative+of+log%282%5Ef%28c%29%2B1%29%2Flog%282%29+wrt+c
 
                 # Calculate the first part
                 a = np.log(2)
