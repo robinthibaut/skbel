@@ -17,7 +17,7 @@ from skbel.tmaps import TransportMap  # My transport map toolbox
 N = 1000
 
 # Let's draw samples from a banana-shaped distribution!
-X = scipy.stats.norm.rvs(size=(N, 2))
+X = scipy.stats.norm.rvs(size=(N, 2), random_state=123456)
 b = 1  # Twist factor
 X[:, 1] += b * X[:, 0] ** 2
 
@@ -151,7 +151,7 @@ print("Map optimization took " + str(end - start) + " seconds.")
 # Map the target samples to the reference distribution; we only get a N-by-1
 # vector because we only defined the map for the second dimension/column of X
 # norm_samples = tm.map(X)
-norm_samples = scipy.stats.norm.rvs(size=(500, 1))
+norm_samples = scipy.stats.norm.rvs(size=(500, 1), random_state=42)
 # Now define the value we wish to condition on
 x1_obs = 2.32  # our 'observed' value
 

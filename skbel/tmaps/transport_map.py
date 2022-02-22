@@ -770,7 +770,7 @@ class TransportMap:
                         # Close outer parenthesis
                         varbase += "])"
 
-                        # Add variable-
+                        # Add variable
 
                         varbase += "(__x__[...," + str(ui[i]) + "])"
 
@@ -2338,11 +2338,6 @@ class TransportMap:
                 # Subtract this from the objective
                 objective -= np.sum(np.log(monotone_part_der))
 
-                # Average the objective function
-
-                # # Now summarize the contributions and take their average
-                # objective   = np.mean(objective)
-
                 return objective
 
                 # Call the optimization routine
@@ -2873,9 +2868,6 @@ class TransportMap:
         # Y.shape[:-1] N2  = X_precalc.shape[:-1] if N1 != N2: raise Exception('Sample size of input ('+str(N1)+')
         # and pre-calculated output ('+str(N2)+') are not consistent.')
 
-        # Create a local copy of Y to prevent overwriting the input
-        Y = copy.copy(Y)
-
         # Extract number of samples
         N = Y.shape[0]
 
@@ -3036,7 +3028,6 @@ class TransportMap:
         failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
         shiftindices = shiftindices[failure]
 
-        # While
         while len(shiftindices) > 0:
 
             # Re-sort the windows if necessary
@@ -3192,7 +3183,7 @@ class TransportMap:
             adaptation cycle. Higher values correspond to larger steps.
 
         :param verbose: flag which determines whether information about the
-            integration process should be logger.infoer to console (True) or not
+            integration process should be printed to console (True) or not
             (False).
 
         """
