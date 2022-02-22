@@ -3101,7 +3101,7 @@ class TransportMap:
             # Propose bisection
             mid_pt = np.mean(bsct_pts[indices, :], axis=1)
 
-            # Calculate the biscetion point output
+            # Calculate the bisection point output
             X[indices, self.skip_dimensions + k] = mid_pt
             mid_out = self.s(x=X[indices, :], k=k) - Yk[indices]
 
