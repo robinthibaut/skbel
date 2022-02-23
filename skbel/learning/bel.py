@@ -90,8 +90,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Parameters for sampling
         self.random_state = random_state
 
-        # Original dataset
+        # Original dataset dimensions
         self.x_dim, self.y_dim = x_dim, y_dim
+
+        # Pre-processed data, possibly dimension reduced
+        self._x_pre_processed, self._y_pre_processed = None, None
 
     # The following properties are central to the BEL framework
     @property
@@ -132,6 +135,24 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.random_state = s
         np.random.seed(self.random_state)
 
+    @property
+    def x_pre_processed(self):
+        """Pre-processed predictor."""
+        return self._x_pre_processed
+
+    @x_pre_processed.setter
+    def x_pre_processed(self, x_pre_processed):
+        self._x_pre_processed = x_pre_processed
+
+    @property
+    def y_pre_processed(self):
+        """Pre-processed target."""
+        return self._y_pre_processed
+
+    @y_pre_processed.setter
+    def y_pre_processed(self, y_pre_processed):
+        self._y_pre_processed = y_pre_processed
+
     def fit(self, X, Y):
         """Fit all pipelines.
 
@@ -139,56 +160,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param Y: Target array.
         :return: self
         """
-        if (
-            type(X) is list
-        ):  # If more than one dataset used (several features of different nature)
-            # [check_consistent_length(x, Y) for x in X]
-            _X = [
-                self._validate_data(
-                    x,
-                    dtype=np.float64,
-                    copy=self.copy,
-                    ensure_min_samples=2,
-                    allow_nd=True,
-                )
-                for x in X
-            ]
-        else:
-            # check_consistent_length(X, Y)
-            _X = self._validate_data(
-                X,
-                dtype=np.float64,
-                copy=self.copy,
-                ensure_min_samples=2,
-                allow_nd=True,
-            )
-
-        if (
-            type(Y) is list
-        ):  # If more than one dataset used (several features of different nature)
-            _Y = [
-                check_array(
-                    y,
-                    dtype=np.float64,
-                    copy=self.copy,
-                    ensure_2d=False,
-                    allow_nd=True,
-                )
-                for y in Y
-            ]
-        else:
-            # check_consistent_length(X, Y)
-            _Y = check_array(
-                Y,
-                dtype=np.float64,
-                copy=self.copy,
-                ensure_2d=False,
-                allow_nd=True,
-            )
 
         _xt, _yt = (
-            self.X_pre_processing.fit_transform(_X),
-            self.Y_pre_processing.fit_transform(_Y),
+            self.X_pre_processing.fit_transform(X),
+            self.Y_pre_processing.fit_transform(Y),
         )  # Pre-processing
 
         # Canonical variates
@@ -207,7 +182,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             self.Y_post_processing.fit_transform(_yc),
         )  # Post-processing
 
-        self.X_f, self.Y_f = _xf, _yf  # At the moment, we have to save those.
+        self.X_f, self.Y_f = _xf, _yf  # At the moment, we have to save these.
 
         return self
 
@@ -222,46 +197,21 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         check_is_fitted(self.cca)
 
         if X is not None and Y is None:  # If only X is provided
-            if (
-                type(X) is list
-            ):  # If more than one dataset used (several features of different nature)
-                # [check_consistent_length(x, Y) for x in X]
-                X = [
-                    self._validate_data(
-                        x,
-                        dtype=np.float64,
-                        copy=self.copy,
-                        # ensure_min_samples=2,
-                        allow_nd=True,
-                    )
-                    for x in X
-                ]
+            if self._x_pre_processed is None:
+                _xt = self.X_pre_processing.transform(X)  # Pre-processing
             else:
-                X = check_array(X, copy=self.copy)
-            _xt = self.X_pre_processing.transform(X)  # Pre-processing
+                _xt = self._x_pre_processed
             _xc = self.cca.transform(X=_xt)  # CCA
             _xp = self.X_post_processing.transform(_xc)  # Post-processing
 
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
-            if (
-                type(Y) is list
-            ):  # If more than one dataset used (several features of different nature)
-                Y = [
-                    check_array(
-                        y,
-                        dtype=np.float64,
-                        copy=self.copy,
-                        ensure_2d=False,
-                        allow_nd=True,
-                    )
-                    for y in Y
-                ]
+            if self._y_pre_processed is None:
+                _yt = self.Y_pre_processing.transform(Y)
             else:
-                Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
-            _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy
+                _yt = self._y_pre_processed
+            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy used for CCA
             _, _yc = self.cca.transform(
                 X=dummy, Y=_yt
             )  # CCA. We only need the Y-loadings, so we pass dummy X
@@ -270,41 +220,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _yp
 
         else:  # If both X and Y are provided
-            if (
-                type(X) is list
-            ):  # If more than one dataset used (several features of different nature)
-                # [check_consistent_length(x, Y) for x in X]
-                X = [
-                    self._validate_data(
-                        x,
-                        dtype=np.float64,
-                        copy=self.copy,
-                        # ensure_min_samples=2,
-                        allow_nd=True,
-                    )
-                    for x in X
-                ]
+            if self._x_pre_processed is None:
+                _xt = self.X_pre_processing.transform(X)  # Pre-processing
             else:
-                X = check_array(X, copy=self.copy)
-            if (
-                type(Y) is list
-            ):  # If more than one dataset used (several features of different nature)
-                Y = [
-                    check_array(
-                        y,
-                        dtype=np.float64,
-                        copy=self.copy,
-                        ensure_2d=False,
-                        allow_nd=True,
-                    )
-                    for y in Y
-                ]
+                _xt = self._x_pre_processed
+
+            if self._y_pre_processed is None:
+                _yt = self.Y_pre_processing.transform(Y)
             else:
-                Y = check_array(Y, copy=self.copy, ensure_2d=False, allow_nd=True)
-            _xt, _yt = (
-                self.X_pre_processing.transform(X),
-                self.Y_pre_processing.transform(Y),
-            )
+                _yt = self._y_pre_processed
+
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
             _xp, _yp = (
