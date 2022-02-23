@@ -295,7 +295,7 @@ def pca_scores(
         plt.xlabel("PC number")
         plt.ylabel("PC value")
     plt.tick_params(labelsize=11)
-    locator_params(axis="x", nbins=10)
+    locator_params(axis="x", nbins=10, integer=True)
 
     # Add legend
     # Add title inside the box
@@ -929,7 +929,7 @@ def cca_vision(
     bel,
     X_obs: np.array,
     Y_obs: np.array,
-    obs_n: int = None,
+    obs_n: int = 0,
     fig_dir: str = None,
     show: bool = False,
 ):

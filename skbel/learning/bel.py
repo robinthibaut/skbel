@@ -93,8 +93,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Original dataset dimensions
         self.x_dim, self.y_dim = x_dim, y_dim
 
-        # Pre-processed data, possibly dimension reduced
+        # Pre-processed predictor training data, possibly dimension reduced
         self._x_pre_processed, self._y_pre_processed = None, None
+        # Pre-processed observation predictor, possibly dimension reduced
+        self._x_obs_pre_processed = None
 
     # The following properties are central to the BEL framework
     @property
@@ -153,7 +155,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def y_pre_processed(self, y_pre_processed):
         self._y_pre_processed = y_pre_processed
 
-    def fit(self, X, Y):
+    @property
+    def x_observation(self):
+        """Pre-processed observation."""
+        return self._x_obs_pre_processed
+
+    @x_observation.setter
+    def x_observation(self, x_observation):
+        self._x_obs_pre_processed = x_observation
+
+    def fit(self, X: np.array = None, Y: np.array = None):
         """Fit all pipelines.
 
         :param X: Predictor array.
@@ -161,10 +172,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: self
         """
 
-        _xt, _yt = (
-            self.X_pre_processing.fit_transform(X),
-            self.Y_pre_processing.fit_transform(Y),
-        )  # Pre-processing
+        if self.x_pre_processed is None:
+            _xt = self.X_pre_processing.fit_transform(X)
+        else:
+            _xt = self.x_pre_processed
+
+        if self.y_pre_processed is None:
+            _yt = self.Y_pre_processing.fit_transform(Y)
+        else:
+            _yt = self.y_pre_processed
 
         # Canonical variates
         try:
@@ -194,23 +210,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: Post-processed variables
         """
 
-        check_is_fitted(self.cca)
-
         if X is not None and Y is None:  # If only X is provided
-            if self._x_pre_processed is None:
-                _xt = self.X_pre_processing.transform(X)  # Pre-processing
-            else:
-                _xt = self._x_pre_processed
+            _xt = self.X_pre_processing.transform(X)  # Pre-processing
             _xc = self.cca.transform(X=_xt)  # CCA
             _xp = self.X_post_processing.transform(_xc)  # Post-processing
 
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
-            if self._y_pre_processed is None:
-                _yt = self.Y_pre_processing.transform(Y)
-            else:
-                _yt = self._y_pre_processed
+            _yt = self.Y_pre_processing.transform(Y)
             dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy used for CCA
             _, _yc = self.cca.transform(
                 X=dummy, Y=_yt
@@ -220,15 +228,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _yp
 
         else:  # If both X and Y are provided
-            if self._x_pre_processed is None:
-                _xt = self.X_pre_processing.transform(X)  # Pre-processing
-            else:
-                _xt = self._x_pre_processed
-
-            if self._y_pre_processed is None:
-                _yt = self.Y_pre_processing.transform(Y)
-            else:
-                _yt = self._y_pre_processed
+            _xt = self.X_pre_processing.transform(X)  # Pre-processing
+            _yt = self.Y_pre_processing.transform(Y)
 
             _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
 
@@ -252,7 +253,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def predict(
         self,
-        X_obs: np.array,
+        X_obs: np.array = None,
         n_posts: int = None,
         mode: str = None,
         noise: float = None,
@@ -264,15 +265,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         :param X_obs: The observed data.
         :param n_posts: The number of posterior samples to draw.
-        :param mode: The mode of inference to use. Default is "kde".
+        :param mode: The mode of inference to use. Default is "tm".
         :param noise: The noise level of the model (only if mode == 'mvn').
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
          original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
          reduced space, which is much faster, so that the samples can be back-transformed later. Default=True.
         :param precomputed_kde: (if mode="kde) Precomputed KDE functions. Computing the KDEs can be time-consuming.
-         If the KDEs are
-         precomputed, they can be passed as an argument.
+         If the KDEs are precomputed, they can be passed as an argument.
         :return: The posterior samples in the original space or in the transformed space.
         """
         if mode is not None:  # If mode is provided
@@ -284,37 +284,38 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if n_posts is not None:  # If n_posts is provided
             self.n_posts = n_posts  # Set the number of posterior samples
 
-        if type(X_obs) is list:  # If X_obs is a list
-            try:
-                X_obs = [
-                    check_array(x, allow_nd=True) for x in X_obs
-                ]  # Check if it is a list of arrays
-            except ValueError:  # If it is not a list of arrays
-                try:
-                    X_obs = [
-                        check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
-                    ]  # Check if it is a list of pd.Series
-                except AttributeError:  # If it is not a list of pd.Series
-                    X_obs = [
-                        check_array(x.reshape(1, -1)) for x in X_obs
-                    ]  # Check if it is a list of arrays
-        else:  # If it is not a list
-            try:
-                X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
-            except ValueError:
-                try:
-                    X_obs = check_array(
-                        X_obs.to_numpy().reshape(1, -1)
-                    )  # Check if it is a pd.Series
-                except AttributeError:
-                    X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
-        # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
-        # consistent.
-
         # Project observed data into canonical space.
-        X_obs_pc = self.X_pre_processing.transform(
-            X_obs
-        )  # Project observed data into PC space.
+        if self._x_obs_pre_processed is None:
+            if type(X_obs) is list:  # If X_obs is a list
+                try:
+                    X_obs = [
+                        check_array(x, allow_nd=True) for x in X_obs
+                    ]  # Check if it is a list of arrays
+                except ValueError:  # If it is not a list of arrays
+                    try:
+                        X_obs = [
+                            check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
+                        ]  # Check if it is a list of pd.Series
+                    except AttributeError:  # If it is not a list of pd.Series
+                        X_obs = [
+                            check_array(x.reshape(1, -1)) for x in X_obs
+                        ]  # Check if it is a list of arrays
+            else:  # If it is not a list
+                try:
+                    X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
+                except ValueError:
+                    try:
+                        X_obs = check_array(
+                            X_obs.to_numpy().reshape(1, -1)
+                        )  # Check if it is a pd.Series
+                    except AttributeError:
+                        X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
+            # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
+            # consistent.
+            X_obs_pc = self.X_pre_processing.transform(X_obs)
+        else:
+            X_obs_pc = self._x_obs_pre_processed
+
         X_obs_c = self.cca.transform(
             X_obs_pc
         )  # Project observed data into Canonical space.
@@ -323,6 +324,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Estimate the posterior mean and covariance
         n_obs = X_obs_f.shape[0]  # Number of observations
         n_cca = self.cca.n_components  # Number of canonical variables
+
         if self.mode == "mvn":  # If mode is mvn
             self.posterior_mean, self.posterior_covariance = np.zeros(
                 (n_obs, n_cca)
