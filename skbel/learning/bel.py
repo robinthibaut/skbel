@@ -311,7 +311,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             X_obs.to_numpy().reshape(1, -1)
                         )  # Check if it is a pd.Series
                     except AttributeError:
-                        X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
+                        X_obs = check_array(
+                            X_obs.reshape(1, -1)
+                        )  # Check if it is an array
             # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
             # consistent.
             X_obs_pc = self.X_pre_processing.transform(X_obs)
@@ -470,7 +472,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if return_samples:
             samples = self.random_sample(
-                X_obs_f=X_obs_f, n_posts=n_posts, mode=mode, init_kde=precomputed_kde, dtype=dtype
+                X_obs_f=X_obs_f,
+                n_posts=n_posts,
+                mode=mode,
+                init_kde=precomputed_kde,
+                dtype=dtype,
             )  # Samples from the posterior
             if inverse_transform:
                 return self.inverse_transform(samples)  # Inverse transform
