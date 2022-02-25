@@ -260,6 +260,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return_samples: bool = True,
         inverse_transform: bool = True,
         precomputed_kde: np.array = None,
+        dtype: str = "float64",
     ) -> np.array:
         """Predict the posterior distribution of the target variable.
 
@@ -273,6 +274,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
          reduced space, which is much faster, so that the samples can be back-transformed later. Default=True.
         :param precomputed_kde: (if mode="kde) Precomputed KDE functions. Computing the KDEs can be time-consuming.
          If the KDEs are precomputed, they can be passed as an argument.
+        :param dtype: The data type of the samples. Default=float64.
         :return: The posterior samples in the original space or in the transformed space.
         """
         if mode is not None:  # If mode is provided
@@ -309,7 +311,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                             X_obs.to_numpy().reshape(1, -1)
                         )  # Check if it is a pd.Series
                     except AttributeError:
-                        X_obs = check_array(X_obs.reshape(1, -1))  # Check if it is an array
+                        X_obs = check_array(
+                            X_obs.reshape(1, -1)
+                        )  # Check if it is an array
             # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
             # consistent.
             X_obs_pc = self.X_pre_processing.transform(X_obs)
@@ -468,7 +472,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if return_samples:
             samples = self.random_sample(
-                X_obs_f=X_obs_f, n_posts=n_posts, mode=mode, init_kde=precomputed_kde
+                X_obs_f=X_obs_f,
+                n_posts=n_posts,
+                mode=mode,
+                init_kde=precomputed_kde,
+                dtype=dtype,
             )  # Samples from the posterior
             if inverse_transform:
                 return self.inverse_transform(samples)  # Inverse transform
@@ -482,6 +490,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         n_posts: int = None,
         mode: str = None,
         init_kde: np.array = None,
+        dtype: str = "float64",
     ) -> np.array:
         """Random sample the inferred posterior distribution. It can be used to
         generate samples from the posterior.
@@ -492,6 +501,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
         :param init_kde: Initial KDE function. If None, the KDE function is computed from the observed data.
+        :param dtype: Data type of the samples.
         :return: Samples from the posterior distribution (n_obs, n_posts, n_comp_CCA)
         """
         if mode is not None:
@@ -620,7 +630,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Only necessary when heuristic is deactivated
                     Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
 
-        return np.array(Y_samples)  # noqa
+        return np.array(Y_samples, dtype=dtype)  # noqa
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """Initialize the KDEs, i.e. the functions that will be used to sample
