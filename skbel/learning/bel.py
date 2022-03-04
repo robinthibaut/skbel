@@ -627,7 +627,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Only necessary when heuristic is deactivated
                     Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
 
-        return Y_samples # noqa
+        return Y_samples  # noqa
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """Initialize the KDEs, i.e. the functions that will be used to sample
@@ -670,11 +670,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 init_samples[i, j] = pv  # noqa
         return init_samples
 
-    def inverse_transform(
-        self,
-        Y_pred: np.array,
-        dtype: str = 'float64'
-    ) -> np.array:
+    def inverse_transform(self, Y_pred: np.array, dtype: str = "float64") -> np.array:
         """Back-transforms the posterior samples Y_pred to their physical
         space.
 
