@@ -901,17 +901,17 @@ def _kde_cca(
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
-            colors=["black", "white", "red", "deepskyblue"],
-            labels=["$Training$", "$Test$", "$d^{c}_{*}$", "$h^{c}_{True}$"],
-            marker=["o", "o", "-", "-"],
-            pec=["k", "k", None, None],
+            colors=["black", "white", "green", "red", "deepskyblue"],
+            labels=["$Training$", "$Test$", "$Samples$", "$d^{c}_{*}$", "$h^{c}_{True}$"],
+            marker=["o", "o", "o", "-", "-"],
+            pec=["k", "k", "k", None, None],
             fz=10,
         )
 
         if sdir:
             skbel.utils.dirmaker(sdir, erase=False)
             plt.savefig(
-                jp(sdir, f"cca_kde_{comp_n}.png"),
+                jp(sdir, f"cca_{comp_n}.png"),
                 bbox_inches="tight",
                 dpi=300,
                 transparent=False,

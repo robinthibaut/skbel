@@ -476,10 +476,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 n_posts=n_posts,
                 mode=mode,
                 init_kde=precomputed_kde,
-                dtype=dtype,
             )  # Samples from the posterior
             if inverse_transform:
-                return self.inverse_transform(samples)  # Inverse transform
+                return self.inverse_transform(samples, dtype=dtype)  # Inverse transform
             else:
                 return samples  # Return samples
 
@@ -490,7 +489,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         n_posts: int = None,
         mode: str = None,
         init_kde: np.array = None,
-        dtype: str = "float64",
     ) -> np.array:
         """Random sample the inferred posterior distribution. It can be used to
         generate samples from the posterior.
@@ -501,7 +499,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param n_posts: Number of posterior samples
         :param mode: How to sample the posterior distribution
         :param init_kde: Initial KDE function. If None, the KDE function is computed from the observed data.
-        :param dtype: Data type of the samples.
         :return: Samples from the posterior distribution (n_obs, n_posts, n_comp_CCA)
         """
         if mode is not None:
@@ -630,7 +627,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Only necessary when heuristic is deactivated
                     Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
 
-        return np.array(Y_samples, dtype=dtype)  # noqa
+        return Y_samples # noqa
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """Initialize the KDEs, i.e. the functions that will be used to sample
@@ -676,11 +673,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def inverse_transform(
         self,
         Y_pred: np.array,
+        dtype: str = 'float64'
     ) -> np.array:
         """Back-transforms the posterior samples Y_pred to their physical
         space.
 
         :param Y_pred: The posterior samples (shape = (n_obs, n_components, n_samples))
+        :param dtype: The dtype of the output array
         :return: The back-transformed samples
         """
         check_is_fitted(self.cca)
@@ -734,4 +733,4 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             Y_post.append(y_post_raw)
 
-        return np.array(Y_post)
+        return np.array(Y_post, dtype=dtype)
