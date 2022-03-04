@@ -273,14 +273,15 @@ def pca_scores(
     plt.plot(training.T[:n_comp], "ob", markersize=3.5, alpha=0.1)
 
     if pc_post is not None:
-        colors += ["green"]
+        colors += ["lightgreen"]
         labels += ["Posterior"]
         plt.plot(
-            pc_post.T[:n_comp] + 0.1,
-            "og",
-            markersize=1,
-            # markeredgecolor="k",
-            # markeredgewidth=0.4,
+            pc_post.T[:n_comp],
+            "o",
+            markerfacecolor="lightgreen",
+            markersize=2,
+            markeredgecolor="k",
+            markeredgewidth=0.1,
             alpha=1,
         )
 
@@ -305,10 +306,10 @@ def pca_scores(
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
             "ro",
-            markersize=3,
+            markersize=3.5,
             markeredgecolor="k",
             markeredgewidth=0.4,
-            alpha=0.8,
+            alpha=0.7,
         )
     if labels:
         plt.title("Principal Components")
@@ -814,17 +815,20 @@ def _cca_plot(
             bel.X_f.T[comp_n],
             bel.Y_f.T[comp_n],
             "ko",
-            markersize=2,
+            markersize=2.5,
             markeredgecolor="w",
             markeredgewidth=0.2,
-            alpha=0.9,
+            alpha=0.8,
         )
         ax_joint.plot(
             np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
             samples.T[comp_n],
-            "go",
-            markersize=2,
-            alpha=0.3,
+            marker="o",
+            markerfacecolor="lightgreen",
+            markersize=2.5,
+            markeredgecolor="k",
+            markeredgewidth=0.2,
+            alpha=0.5,
         )  # Samples
         # Point
         try:
@@ -920,7 +924,7 @@ def _cca_plot(
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
-            colors=["black", "white", "green", "red", "deepskyblue"],
+            colors=["black", "white", "lightgreen", "red", "deepskyblue"],
             labels=[
                 "$Training$",
                 "$Test$",
