@@ -26,7 +26,6 @@ __all__ = [
     "pca_scores",
     "pca_vision",
     "cca_vision",
-    "cca_plot",
     "_despine",
     "_cca_plot",
 ]
@@ -340,64 +339,6 @@ def pca_scores(
         plt.close()
 
 
-def cca_plot(
-    bel,
-    d: np.array,
-    h: np.array,
-    d_pc_prediction: np.array,
-    sdir: str = None,
-    show: bool = False,
-):
-    """CCA plots. Receives d, h PC components to be predicted, transforms them
-    in CCA space and adds it to the plots.
-
-    :param bel: BEL object
-    :param d: d CCA scores
-    :param h: h CCA scores
-    :param d_pc_prediction: d test PC scores
-    :param sdir: Path to save directory
-    :param show: Show figure
-    """
-
-    cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=bel.cca.n_components
-    )  # Gets correlation coefficient
-
-    # CCA plots for each observation:
-    for i in range(bel.cca.n_components):
-        for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
-            pass
-
-        subtitle = _my_alphabet(i)
-
-        # Add title inside the box
-        an = [f"{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}"]
-        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
-
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["black", "white"],
-            labels=["Training", "Test"],
-            marker=["o", "o"],
-            pec=["k", "k"],
-        )
-
-        if sdir:
-            skbel.utils.dirmaker(sdir)
-            plt.savefig(
-                jp(sdir, "cca{}.png".format(i)),
-                bbox_inches="tight",
-                dpi=300,
-                transparent=False,
-            )
-            if show:
-                plt.show()
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
-
-
 def pca_vision(
     bel,
     d: np.array = None,
@@ -692,7 +633,6 @@ def _cca_plot(
 ):
     """Plot the Canonical Variate Pairs.
 
-    :param samples:
     :param bel: The BEL object.
     :param obs_n: The index of the observation to plot.
     :param X_obs: The X observations.
@@ -828,7 +768,7 @@ def _cca_plot(
             markersize=2.5,
             markeredgecolor="k",
             markeredgewidth=0.2,
-            alpha=0.5,
+            alpha=0.7,
         )  # Samples
         # Point
         try:
