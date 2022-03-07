@@ -26,9 +26,8 @@ __all__ = [
     "pca_scores",
     "pca_vision",
     "cca_vision",
-    "cca_plot",
     "_despine",
-    "_kde_cca",
+    "_cca_plot",
 ]
 
 
@@ -239,6 +238,7 @@ def explained_variance(
 def pca_scores(
     training: np.array,
     prediction: np.array = None,
+    pc_post: np.array = None,
     n_comp: int = None,
     annotation: list = None,
     fig_file: str = None,
@@ -248,14 +248,17 @@ def pca_scores(
     """PCA scores plot, displays scores of observations above those of
     training.
 
+    :param pc_post:
     :param labels: labels for the plot
     :param training: Training scores
     :param prediction: Test scores
+    :param pc_post: PCA scores of the posterior (Y)
     :param n_comp: How many components to show
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
     """
+
     # Scores plot
     if annotation is None:
         annotation = []
@@ -263,9 +266,27 @@ def pca_scores(
     plt.grid(alpha=0.2)
 
     # Plot all training scores
-    plt.plot(training.T[:n_comp], "ob", markersize=3, alpha=0.1)
+    # We assume that we have a training set
+    colors = ["blue"]
+    labels = ["Training"]
+    plt.plot(training.T[:n_comp], "ob", markersize=3.5, alpha=0.1)
+
+    if pc_post is not None:
+        colors += ["lightgreen"]
+        labels += ["Posterior"]
+        plt.plot(
+            pc_post.T[:n_comp],
+            "o",
+            markerfacecolor="lightgreen",
+            markersize=2,
+            markeredgecolor="k",
+            markeredgewidth=0.1,
+            alpha=1,
+        )
 
     if prediction is not None:
+        colors += ["red"]
+        labels += ["Test"]
         # For each sample used for prediction:
         # Select observation
         pc_obs = prediction.reshape(1, -1)
@@ -277,19 +298,18 @@ def pca_scores(
             )  # type: BSpline
             power_smooth = spl(xnew)
             # I forgot why I had to put '-1'
-            plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.9)
+            plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.4)
         except ValueError:
             pass
 
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
             "ro",
-            markersize=3,
+            markersize=3.5,
             markeredgecolor="k",
             markeredgewidth=0.4,
-            alpha=0.8,
+            alpha=0.7,
         )
-
     if labels:
         plt.title("Principal Components")
         plt.xlabel("PC number")
@@ -301,20 +321,12 @@ def pca_scores(
     # Add title inside the box
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
 
-    if prediction is not None:
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["blue", "red"],
-            labels=["Training", "Test"],
-            marker=["o", "o"],
-        )
-    else:
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["blue"],
-            labels=["Training"],
-            marker=["o"],
-        )
+    _proxy_legend(
+        legend1=legend_a,
+        colors=colors,
+        labels=labels,
+        marker=["o"] * len(colors),
+    )
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
@@ -327,64 +339,6 @@ def pca_scores(
         plt.close()
 
 
-def cca_plot(
-    bel,
-    d: np.array,
-    h: np.array,
-    d_pc_prediction: np.array,
-    sdir: str = None,
-    show: bool = False,
-):
-    """CCA plots. Receives d, h PC components to be predicted, transforms them
-    in CCA space and adds it to the plots.
-
-    :param bel: BEL object
-    :param d: d CCA scores
-    :param h: h CCA scores
-    :param d_pc_prediction: d test PC scores
-    :param sdir: Path to save directory
-    :param show: Show figure
-    """
-
-    cca_coefficient = np.corrcoef(d, h).diagonal(
-        offset=bel.cca.n_components
-    )  # Gets correlation coefficient
-
-    # CCA plots for each observation:
-    for i in range(bel.cca.n_components):
-        for sample_n in range(len(d_pc_prediction)):  # For each 'observation'
-            pass
-
-        subtitle = _my_alphabet(i)
-
-        # Add title inside the box
-        an = [f"{subtitle}. Pair {i + 1} - R = {round(cca_coefficient[i], 3)}"]
-        legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
-
-        _proxy_legend(
-            legend1=legend_a,
-            colors=["black", "white"],
-            labels=["Training", "Test"],
-            marker=["o", "o"],
-            pec=["k", "k"],
-        )
-
-        if sdir:
-            skbel.utils.dirmaker(sdir)
-            plt.savefig(
-                jp(sdir, "cca{}.png".format(i)),
-                bbox_inches="tight",
-                dpi=300,
-                transparent=False,
-            )
-            if show:
-                plt.show()
-            plt.close()
-        if show:
-            plt.show()
-            plt.close()
-
-
 def pca_vision(
     bel,
     d: np.array = None,
@@ -392,6 +346,7 @@ def pca_vision(
     obs_n: int = 0,
     X_obs: np.array = None,
     Y_obs: np.array = None,
+    pc_post: np.array = None,
     scores: bool = True,
     exvar: bool = True,
     thrx: float = 0.8,
@@ -402,12 +357,14 @@ def pca_vision(
 ):
     """Loads PCA pickles and plot scores for all folders.
 
+    :param pc_post:
     :param bel: BEL object
     :param d: bool: Plot d scores
     :param h: bool: Plot h scores
     :param obs_n: Observation number
     :param X_obs: X_obs
     :param Y_obs: np.array: "True" target array
+    :param pc_post: np.array: PC scores of the posterior (Y)
     :param scores: bool: Plot scores
     :param exvar: bool: Plot explained variance
     :param thrx: float: Threshold for X (explained variance plot)
@@ -443,8 +400,8 @@ def pca_vision(
                 prediction=X_obs_pc,
                 n_comp=X_pc.shape[1],
                 annotation=[next(annotation)],
-                labels=labels,
                 fig_file=fig_file,
+                labels=labels,
                 show=show,
             )
         # Explained variance plots
@@ -486,8 +443,8 @@ def pca_vision(
                 prediction=h_pc_prediction,
                 n_comp=h_pc_training.shape[1],
                 annotation=[next(annotation)],
-                labels=labels,
                 fig_file=fig_file,
+                labels=labels,
                 show=show,
             )
         # Explained variance plots
@@ -664,21 +621,23 @@ def _get_defaults_kde_plot():
     return ax_joint, ax_marg_x, ax_marg_y, ax_cb
 
 
-def _kde_cca(
+def _cca_plot(
     bel,
     obs_n: int = 0,
     X_obs: np.array = None,
     Y_obs: np.array = None,
+    samples=None,
     sdir: str = None,
     show: bool = False,
     annotation_callback=None,
 ):
-    """Plot the kernel density estimate of the CCA.
+    """Plot the Canonical Variate Pairs.
 
     :param bel: The BEL object.
     :param obs_n: The index of the observation to plot.
     :param X_obs: The X observations.
     :param Y_obs: The Y observations.
+    :param samples: The samples to plot.
     :param sdir: The directory to save the plot to.
     :param show: Whether to show the plot.
     :param annotation_callback: A callback function to annotate the plot.
@@ -716,9 +675,10 @@ def _kde_cca(
     except ValueError:
         X_obs_f = bel.transform(X=X_obs)
 
-    samples = bel.random_sample(
-        X_obs_f=X_obs_f, obs_n=obs_n, n_posts=bel.n_posts
-    )  # Get 100 samples
+    if samples is None:
+        samples = bel.random_sample(
+            X_obs_f=X_obs_f, obs_n=obs_n, n_posts=bel.n_posts
+        )  # Get 100 samples
 
     for comp_n in range(bel.cca.n_components):
         # Get figure default parameters
@@ -795,17 +755,20 @@ def _kde_cca(
             bel.X_f.T[comp_n],
             bel.Y_f.T[comp_n],
             "ko",
-            markersize=2,
+            markersize=2.5,
             markeredgecolor="w",
             markeredgewidth=0.2,
-            alpha=0.9,
+            alpha=0.8,
         )
         ax_joint.plot(
             np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
             samples.T[comp_n],
-            "go",
-            markersize=2,
-            alpha=0.3,
+            marker="o",
+            markerfacecolor="lightgreen",
+            markersize=2.5,
+            markeredgecolor="k",
+            markeredgewidth=0.2,
+            alpha=0.7,
         )  # Samples
         # Point
         try:
@@ -901,17 +864,23 @@ def _kde_cca(
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
-            colors=["black", "white", "red", "deepskyblue"],
-            labels=["$Training$", "$Test$", "$d^{c}_{*}$", "$h^{c}_{True}$"],
-            marker=["o", "o", "-", "-"],
-            pec=["k", "k", None, None],
+            colors=["black", "white", "lightgreen", "red", "deepskyblue"],
+            labels=[
+                "$Training$",
+                "$Test$",
+                "$Samples$",
+                "$d^{c}_{*}$",
+                "$h^{c}_{True}$",
+            ],
+            marker=["o", "o", "o", "-", "-"],
+            pec=["k", "k", "k", None, None],
             fz=10,
         )
 
         if sdir:
             skbel.utils.dirmaker(sdir, erase=False)
             plt.savefig(
-                jp(sdir, f"cca_kde_{comp_n}.png"),
+                jp(sdir, f"cca_{comp_n}.png"),
                 bbox_inches="tight",
                 dpi=300,
                 transparent=False,
@@ -929,6 +898,7 @@ def cca_vision(
     bel,
     X_obs: np.array,
     Y_obs: np.array,
+    samples=None,
     obs_n: int = 0,
     fig_dir: str = None,
     show: bool = False,
@@ -937,7 +907,8 @@ def cca_vision(
 
     :param bel: BEL model
     :param X_obs: Observed X (n_obs, n_comp)
-    :param Y_obs: True target array
+    :param Y_obs: True target array (n_obs, n_comp)
+    :param samples: Samples array
     :param obs_n: Observation number
     :param fig_dir: Base directory path
     :param show: Show figure
@@ -947,11 +918,12 @@ def cca_vision(
 
     annotation_call = _yield_alphabet()
     # KDE plots which consume a lot of time.
-    _kde_cca(
+    _cca_plot(
         bel,
+        obs_n=obs_n,
         X_obs=X_obs,
         Y_obs=Y_obs,
-        obs_n=obs_n,
+        samples=samples,
         sdir=fig_dir,
         show=show,
         annotation_callback=annotation_call,

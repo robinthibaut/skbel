@@ -1154,14 +1154,7 @@ def pca_vision(
     if d:
         fig_file = os.path.join(subdir, "d_scores.png")
         if scores:
-            pca_scores(
-                training=bel.X_pc,
-                prediction=bel.X_obs_pc,
-                n_comp=bel.X_n_pc,
-                # annotation=["C"],
-                labels=labels,
-                fig_file=fig_file,
-            )
+            pca_scores(training=bel.X_pc, prediction=bel.X_obs_pc, n_comp=bel.X_n_pc, fig_file=fig_file, labels=labels)
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(subdir, "d_exvar.png")
@@ -1185,14 +1178,8 @@ def pca_vision(
         # Plot
         fig_file = os.path.join(subdir, "h_pca_scores.png")
         if scores:
-            pca_scores(
-                training=h_pc_training,
-                prediction=h_pc_prediction,
-                n_comp=bel.Y_n_pc,
-                # annotation=["D"],
-                labels=labels,
-                fig_file=fig_file,
-            )
+            pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=bel.Y_n_pc, fig_file=fig_file,
+                       labels=labels)
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(subdir, "h_pca_exvar.png")

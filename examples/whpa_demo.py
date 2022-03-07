@@ -124,11 +124,7 @@ if __name__ == "__main__":
     )
 
     # Plot PCA
-    pca_vision(
-        model,
-        Y_obs=y_test,
-        fig_dir=fig_pca_dir,
-    )
+    pca_vision(model, Y_obs=y_test, fig_dir=fig_pca_dir)
 
     # Plot CCA
     cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
