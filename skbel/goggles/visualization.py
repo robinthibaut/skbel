@@ -226,7 +226,13 @@ def explained_variance(
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=False)
+        plt.savefig(
+            fig_file,
+            dpi=300,
+            pad_inches=0.01,
+            bbox_inches="tight",
+            transparent=True,
+        )
         if show:
             plt.show()
         plt.close()
@@ -330,7 +336,13 @@ def pca_scores(
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
-        plt.savefig(fig_file, dpi=300, transparent=False)
+        plt.savefig(
+            fig_file,
+            dpi=300,
+            pad_inches=0,
+            bbox_inches="tight",
+            transparent=True,
+        )
         if show:
             plt.show()
         plt.close()
@@ -881,9 +893,10 @@ def _cca_plot(
             skbel.utils.dirmaker(sdir, erase=False)
             plt.savefig(
                 jp(sdir, f"cca_{comp_n}.png"),
-                bbox_inches="tight",
                 dpi=300,
-                transparent=False,
+                pad_inches=0.01,
+                bbox_inches="tight",
+                transparent=True,
             )
             if show:
                 plt.show()
@@ -959,9 +972,10 @@ def cca_vision(
 
     plt.savefig(
         os.path.join(fig_dir, "coefs.png"),
-        bbox_inches="tight",
         dpi=300,
-        transparent=False,
+        bbox_inches="tight",
+        pad_inches=0,
+        transparent=True,
     )
     if show:
         plt.show()
