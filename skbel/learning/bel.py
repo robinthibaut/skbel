@@ -88,7 +88,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.cca = cca
         self.n_comp_cca = n_comp_cca
         # Parameters for sampling
-        self.random_state = random_state
+        self._seed = random_state
 
         # Original dataset dimensions
         self.x_dim, self.y_dim = x_dim, y_dim
@@ -130,12 +130,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @property
     def seed(self):
         """Seed a.k.a. random state to reproduce the same samples"""
-        return self.random_state
+        return self._seed
 
     @seed.setter
     def seed(self, s):
-        self.random_state = s
-        np.random.seed(self.random_state)
+        self._seed = s
+        np.random.seed(self._seed)
 
     @property
     def x_pre_processed(self):
