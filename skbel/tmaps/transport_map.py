@@ -2884,7 +2884,7 @@ class TransportMap:
 
             # If we standardized the samples, undo the standardization
             if self.standardize_samples:
-                X = self.scaler.inverse_transform(X)
+                X = self.scaler.inverse_transform(X)  # overflow can occur here
 
         # X_precalc was provided, and matches the reduced map definition
 

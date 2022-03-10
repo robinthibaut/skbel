@@ -931,7 +931,7 @@ def cca_vision(
 
     annotation_call = _yield_alphabet()
     # KDE plots which consume a lot of time.
-    _cca_plot(
+    ac = _cca_plot(
         bel,
         obs_n=obs_n,
         X_obs=X_obs,
@@ -967,7 +967,7 @@ def cca_vision(
     plt.xlabel("Component number")
 
     # Add annotation
-    legendary = _proxy_annotate(annotation=next(annotation_call), fz=14, loc=1)
+    legendary = _proxy_annotate(annotation=next(ac), fz=14, loc=1)
     plt.gca().add_artist(legendary)
 
     plt.savefig(
@@ -981,4 +981,4 @@ def cca_vision(
         plt.show()
     plt.close()
 
-    return annotation_call  # Return the iterator so that it can be used again
+    return ac  # Return the iterator so that it can be used again
