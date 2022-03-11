@@ -2996,8 +2996,8 @@ class TransportMap:
             # x is a multivariate vector
             return self.s(x=np.array(list(zip(X[:, 0], x))), k=0) - Yk
 
-        sol = root(f, X[:, 0])
-        X[:, self.skip_dimensions + k] = sol.x
+        sol = root(f, X[:, 0])  # find the root of the function
+        X[:, self.skip_dimensions + k] = sol.x  # store the root in the output array
 
         # # Extract number of particles
         # N = X.shape[0]
