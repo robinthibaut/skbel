@@ -2881,7 +2881,7 @@ class TransportMap:
             # Go through all dimensions
             for k in np.arange(0, self.D, 1):
                 X = self.vectorized_root_search_bisection(Yk=Y[:, k], X=X, k=k)
-                # replaces infs and -infs by the mean of the corresponding dimension whithout the infs and -infs
+                # replaces infs and -infs by the mean of the corresponding dimension without the infs and -infs
                 X[np.isinf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
                 X[np.isneginf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
 
@@ -2913,7 +2913,7 @@ class TransportMap:
                 # Go through all dimensions
                 for k in np.arange(0, self.D, 1):
                     X = self.vectorized_root_search_bisection(Yk=Y[:, k], X=X, k=k)
-                    # replaces infs and -infs by the mean of the corresponding dimension whithout the infs and -infs
+                    # replaces infs and -infs by the mean of the corresponding dimension without the infs and -infs
                     X[np.isinf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
                     X[np.isneginf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
 
@@ -2944,6 +2944,9 @@ class TransportMap:
                 # Go through all dimensions
                 for i, k in enumerate(np.arange(skip_dimensions, D, 1)):
                     X = self.vectorized_root_search_bisection(Yk=Y[:, i], X=X, k=k)
+                    # replaces infs and -infs by the mean of the corresponding dimension without the infs and -infs
+                    X[np.isinf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
+                    X[np.isneginf(X[:, k])] = np.mean(X[np.isreal(X[:, k]), k])
 
                 # If we standardized the samples, undo the standardization
                 if self.standardize_samples:
