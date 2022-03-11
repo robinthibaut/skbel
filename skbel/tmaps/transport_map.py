@@ -5,7 +5,7 @@ import copy
 import itertools
 
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import minimize, root
 from sklearn.preprocessing import StandardScaler
 from loguru import logger
 
@@ -2988,144 +2988,151 @@ class TransportMap:
 
         """
 
-        # Extract number of particles
-        N = X.shape[0]
+        def f(x):
+            # y is a multivariate vector
+            return self.s(x=np.array(list(zip(X[:, 0], x))), k=0) - Yk
 
-        # Check whether samples have been marked for removal
-        indices = np.arange(N)  # Indices of all particles
-        failure = np.isnan(
-            X[:, self.skip_dimensions + k]
-        )  # Particles marked for removal
-        indices = indices[~failure]  # Kill the associated indices
+        sol = root(f, X[:, 0])
+        X[:, self.skip_dimensions + k] = sol.x
 
-        # Initialize the start bisection points
-        bsct_pts = np.zeros((N, 2))
-        bsct_pts[:, 0] = -np.ones(N) * start_distance
-        bsct_pts[:, 1] = +np.ones(N) * start_distance
-
-        bsct_out = np.zeros((N, 2))
-
-        # Calculate the initial bracket
-        X[indices, self.skip_dimensions + k] = bsct_pts[indices, 0]
-        bsct_out[indices, 0] = self.s(x=X[indices, :], k=k) - Yk[indices]
-        X[indices, self.skip_dimensions + k] = bsct_pts[indices, 1]
-        bsct_out[indices, 1] = self.s(x=X[indices, :], k=k) - Yk[indices]
-
-        # Sort the bsct_pts so that bsct_out is increasing
-        for n in indices:
-            if bsct_out[n, 0] > bsct_out[n, 1]:
-                dummy = bsct_out[n, 0]
-                bsct_out[n, 0] = bsct_out[n, 1]
-                bsct_out[n, 1] = dummy
-
-                dummy = bsct_pts[n, 0]
-                bsct_pts[n, 0] = bsct_pts[n, 1]
-                bsct_pts[n, 1] = dummy
-
-        # Shift windows
-
-        # An initial proposal for the windows has been made. If zero is not
-        # between the two bsct_pts, we must shift the window
-
-        # Create a copy of indices
-        shiftindices = copy.copy(indices)
-
-        # Where the product has different signs, zero is in-between
-        failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
-        shiftindices = shiftindices[failure]
-
-        while len(shiftindices) > 0:
-
-            # Re-sort the windows if necessary
-            for n in shiftindices:
-                if bsct_out[n, 0] > bsct_out[n, 1]:
-                    dummy = bsct_out[n, 0]
-                    bsct_out[n, 0] = bsct_out[n, 1]
-                    bsct_out[n, 1] = dummy
-
-                    dummy = bsct_pts[n, 0]
-                    bsct_pts[n, 0] = bsct_pts[n, 1]
-                    bsct_pts[n, 1] = dummy
-
-            # Find out the sign of the points which were NOT successful
-            sign_failure = np.sign(bsct_out[shiftindices, 0])
-
-            # This difference tells us how much we must shift X to move RIGHT
-            difference = np.diff(bsct_pts[shiftindices, :], axis=1)[:, 0]
-
-            # For positive signs, shift the window to the LEFT bound
-            failure_pos = np.where(sign_failure > 0)[0]
-            bsct_pts[shiftindices[failure_pos], 1] = copy.copy(
-                bsct_pts[shiftindices[failure_pos], 0]
-            )
-            bsct_pts[shiftindices[failure_pos], 0] -= difference[failure_pos] * 2
-
-            # Re-simulate that
-            bsct_out[shiftindices[failure_pos], 1] = copy.copy(
-                bsct_out[shiftindices[failure_pos], 0]
-            )
-            X[shiftindices[failure_pos], self.skip_dimensions + k] = copy.copy(
-                bsct_pts[shiftindices[failure_pos], 0]
-            )
-            bsct_out[shiftindices[failure_pos], 0] = copy.copy(
-                self.s(x=X[shiftindices[failure_pos], :], k=k)
-                - Yk[shiftindices[failure_pos]]
-            )
-
-            # For negative signs, shift the window to the RIGHT bound
-            failure_neg = np.where(sign_failure < 0)[0]
-            bsct_pts[shiftindices[failure_neg], 0] = copy.copy(
-                bsct_pts[shiftindices[failure_neg], 1]
-            )
-            bsct_pts[shiftindices[failure_neg], 1] += difference[failure_neg] * 2
-
-            # Re-simulate that
-            bsct_out[shiftindices[failure_neg], 0] = copy.copy(
-                bsct_out[shiftindices[failure_neg], 1]
-            )
-            X[shiftindices[failure_neg], self.skip_dimensions + k] = copy.copy(
-                bsct_pts[shiftindices[failure_neg], 1]
-            )
-            bsct_out[shiftindices[failure_neg], 1] = copy.copy(
-                self.s(x=X[shiftindices[failure_neg], :], k=k)
-                - Yk[shiftindices[failure_neg]]
-            )
-
-            # Where the product has different signs, zero is in-between
-            failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
-            shiftindices = shiftindices[failure]
-
-        # Start the actual root search
-
-        # Prepare iteration counter
-        itr_counter = 0
-
-        # Start optimization loop
-        while np.sum(indices) > 0 and itr_counter < max_iterations:
-            itr_counter += 1
-
-            # Propose bisection
-            mid_pt = np.mean(bsct_pts[indices, :], axis=1)
-
-            # Calculate the bisection point output
-            X[indices, self.skip_dimensions + k] = mid_pt
-            mid_out = self.s(x=X[indices, :], k=k) - Yk[indices]
-
-            # Set the Lower or upper boundary depending on the sign of mid_out
-            below = np.where(mid_out < 0)[0]
-            above = np.where(mid_out > 0)[0]
-
-            bsct_pts[indices[below], 0] = copy.copy(mid_pt[below])
-
-            bsct_pts[indices[above], 1] = copy.copy(mid_pt[above])
-
-            not_converged = np.where(np.abs(mid_out) > threshold)
-            indices = indices[not_converged]
-
-        if itr_counter == max_iterations and self.verbose:
-            logger.warning(
-                f"Root search for particles {indices} stopped at maximum iterations."
-            )
+        # # Extract number of particles
+        # N = X.shape[0]
+        #
+        # # Check whether samples have been marked for removal
+        # indices = np.arange(N)  # Indices of all particles
+        # failure = np.isnan(
+        #     X[:, self.skip_dimensions + k]
+        # )  # Particles marked for removal
+        # indices = indices[~failure]  # Kill the associated indices
+        #
+        # # Initialize the start bisection points
+        # bsct_pts = np.zeros((N, 2))
+        # bsct_pts[:, 0] = -np.ones(N) * start_distance
+        # bsct_pts[:, 1] = +np.ones(N) * start_distance
+        #
+        # bsct_out = np.zeros((N, 2))
+        #
+        # # Calculate the initial bracket
+        # X[indices, self.skip_dimensions + k] = bsct_pts[indices, 0]
+        # bsct_out[indices, 0] = self.s(x=X[indices, :], k=k) - Yk[indices]
+        # X[indices, self.skip_dimensions + k] = bsct_pts[indices, 1]
+        # bsct_out[indices, 1] = self.s(x=X[indices, :], k=k) - Yk[indices]
+        #
+        # # Sort the bsct_pts so that bsct_out is increasing
+        # for n in indices:
+        #     if bsct_out[n, 0] > bsct_out[n, 1]:
+        #         dummy = bsct_out[n, 0]
+        #         bsct_out[n, 0] = bsct_out[n, 1]
+        #         bsct_out[n, 1] = dummy
+        #
+        #         dummy = bsct_pts[n, 0]
+        #         bsct_pts[n, 0] = bsct_pts[n, 1]
+        #         bsct_pts[n, 1] = dummy
+        #
+        # # Shift windows
+        #
+        # # An initial proposal for the windows has been made. If zero is not
+        # # between the two bsct_pts, we must shift the window
+        #
+        # # Create a copy of indices
+        # shiftindices = copy.copy(indices)
+        #
+        # # Where the product has different signs, zero is in-between
+        # failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
+        # shiftindices = shiftindices[failure]
+        #
+        # while len(shiftindices) > 0:
+        #
+        #     # Re-sort the windows if necessary
+        #     for n in shiftindices:
+        #         if bsct_out[n, 0] > bsct_out[n, 1]:
+        #             dummy = bsct_out[n, 0]
+        #             bsct_out[n, 0] = bsct_out[n, 1]
+        #             bsct_out[n, 1] = dummy
+        #
+        #             dummy = bsct_pts[n, 0]
+        #             bsct_pts[n, 0] = bsct_pts[n, 1]
+        #             bsct_pts[n, 1] = dummy
+        #
+        #     # Find out the sign of the points which were NOT successful
+        #     sign_failure = np.sign(bsct_out[shiftindices, 0])
+        #
+        #     # This difference tells us how much we must shift X to move RIGHT
+        #     difference = np.diff(bsct_pts[shiftindices, :], axis=1)[:, 0]
+        #
+        #     # For positive signs, shift the window to the LEFT bound
+        #     failure_pos = np.where(sign_failure > 0)[0]
+        #     bsct_pts[shiftindices[failure_pos], 1] = copy.copy(
+        #         bsct_pts[shiftindices[failure_pos], 0]
+        #     )
+        #     bsct_pts[shiftindices[failure_pos], 0] -= difference[failure_pos] * 2
+        #
+        #     # Re-simulate that
+        #     bsct_out[shiftindices[failure_pos], 1] = copy.copy(
+        #         bsct_out[shiftindices[failure_pos], 0]
+        #     )
+        #     X[shiftindices[failure_pos], self.skip_dimensions + k] = copy.copy(
+        #         bsct_pts[shiftindices[failure_pos], 0]
+        #     )
+        #     bsct_out[shiftindices[failure_pos], 0] = copy.copy(
+        #         self.s(x=X[shiftindices[failure_pos], :], k=k)
+        #         - Yk[shiftindices[failure_pos]]
+        #     )
+        #
+        #     # For negative signs, shift the window to the RIGHT bound
+        #     failure_neg = np.where(sign_failure < 0)[0]
+        #     bsct_pts[shiftindices[failure_neg], 0] = copy.copy(
+        #         bsct_pts[shiftindices[failure_neg], 1]
+        #     )
+        #     bsct_pts[shiftindices[failure_neg], 1] += difference[failure_neg] * 2
+        #
+        #     # Re-simulate that
+        #     bsct_out[shiftindices[failure_neg], 0] = copy.copy(
+        #         bsct_out[shiftindices[failure_neg], 1]
+        #     )
+        #     X[shiftindices[failure_neg], self.skip_dimensions + k] = copy.copy(
+        #         bsct_pts[shiftindices[failure_neg], 1]
+        #     )
+        #     bsct_out[shiftindices[failure_neg], 1] = copy.copy(
+        #         self.s(x=X[shiftindices[failure_neg], :], k=k)
+        #         - Yk[shiftindices[failure_neg]]
+        #     )
+        #
+        #     # Where the product has different signs, zero is in-between
+        #     failure = np.where(np.prod(bsct_out[shiftindices, :], axis=1) > 0)[0]
+        #     shiftindices = shiftindices[failure]
+        #
+        # # Start the actual root search
+        #
+        # # Prepare iteration counter
+        # itr_counter = 0
+        #
+        # # Start optimization loop
+        # while np.sum(indices) > 0 and itr_counter < max_iterations:
+        #     itr_counter += 1
+        #
+        #     # Propose bisection
+        #     mid_pt = np.mean(bsct_pts[indices, :], axis=1)
+        #
+        #     # Calculate the bisection point output
+        #     X[indices, self.skip_dimensions + k] = mid_pt
+        #     mid_out = self.s(x=X[indices, :], k=k) - Yk[indices]
+        #
+        #     # Set the Lower or upper boundary depending on the sign of mid_out
+        #     below = np.where(mid_out < 0)[0]
+        #     above = np.where(mid_out > 0)[0]
+        #
+        #     bsct_pts[indices[below], 0] = copy.copy(mid_pt[below])
+        #
+        #     bsct_pts[indices[above], 1] = copy.copy(mid_pt[above])
+        #
+        #     not_converged = np.where(np.abs(mid_out) > threshold)
+        #     indices = indices[not_converged]
+        #
+        # if itr_counter == max_iterations and self.verbose:
+        #     logger.warning(
+        #         f"Root search for particles {indices} stopped at maximum iterations."
+        #     )
 
         return X
 
