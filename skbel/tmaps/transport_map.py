@@ -2991,8 +2991,9 @@ class TransportMap:
 
         """
 
+        # Function to optimize
         def f(x):
-            # y is a multivariate vector
+            # x is a multivariate vector
             return self.s(x=np.array(list(zip(X[:, 0], x))), k=0) - Yk
 
         sol = root(f, X[:, 0])
