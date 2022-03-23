@@ -389,9 +389,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         functions = [sample_fun] * n_obs
                     else:  # If the relation is not perfectly linear
                         # Compute KDE
-                        dens, support, bw = kde_params(
-                            x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
-                        )
+                        dens, support, bw = kde_params(x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n])
                         # Rule of thumb:
                         dens[dens < 1e-8] = 0  # Remove the small values
                         functions = []

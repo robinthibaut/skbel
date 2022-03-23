@@ -36,7 +36,7 @@ def tupleset(t, i, value):
 
 
 def romb(y: np.array, dx: float = 1.0) -> np.array:
-    """Romberg integration using samples of a function.
+    """Romberg's integration using samples of a function.
 
     :param y: A vector of ``2**k + 1`` equally-spaced samples of a function.
     :param dx: The sample spacing. Default is 1.
@@ -78,7 +78,7 @@ def romb(y: np.array, dx: float = 1.0) -> np.array:
 
 
 class KDE:
-    """Bivariate kernel density estimator.
+    """Uni/Bi-variate kernel density estimator.
 
     This class is adapted from the class of the same name in the package Seaborn 0.11.1
     https://seaborn.pydata.org/generated/seaborn.kdeplot.html
@@ -206,7 +206,7 @@ class KDE:
     def _fit(self, fit_data: np.array):
         """Fit the scikit-learn KDE.
 
-        :param fit_data: Data to fit the KDE to
+        :param fit_data: Data to fit the KDE to.
         :return: fitted KDE object
         """
         bw = 1 if self.bw is None else self.bw  # bandwidth
@@ -352,20 +352,15 @@ def _bivariate_density(
     return density, support, estimator.bw
 
 
-def kde_params(
-    x: np.array = None,
-    y: np.array = None,
-    bw: float = None,
-    gridsize: int = 200,
-    cut: float = 1,
-    clip=None,
-):
+def kde_params(x: np.array = None, y: np.array = None, bw: float = None, bandwidth_space=None, gridsize: int = 200,
+               cut: float = 1, clip=None):
     """Computes the kernel density estimate (KDE) of one or two data sets.
 
     :param x: The x-coordinates of the input data.
     :param y: The y-coordinates of the input data.
     :param gridsize: Number of discrete points in the evaluation grid.
     :param bw: The bandwidth of the kernel.
+    :param bandwidth_space: The space to search for the bandwidth.
     :param cut: Draw the estimate to cut * bw from the extreme data points.
     :param clip: Lower and upper bounds for datapoints used to fit KDE. Can provide
      a pair of (low, high) bounds for bivariate plots.
@@ -376,6 +371,7 @@ def kde_params(
     # Pack the kwargs for KDE
     estimate_kws = dict(
         bandwidth=bw,
+        bandwidth_space=bandwidth_space,
         gridsize=gridsize,
         cut=cut,
         clip=clip,
@@ -496,7 +492,7 @@ def posterior_conditional(
     k: int = None,
 ) -> (np.array, np.array):
     """Computes the posterior distribution p(y|x_obs) or p(x|y_obs) by doing a
-    cross section of the KDE of (d, h).
+    cross-section of the KDE of (d, h).
 
     :param X_obs: Observation (predictor, x-axis)
     :param Y_obs: Observation (target, y-axis)

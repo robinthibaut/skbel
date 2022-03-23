@@ -707,11 +707,8 @@ def _cca_plot(
         if cca_coefficient[comp_n] < 0.999:
             # Plot h posterior given d
             if bel.mode == "kde":
-                density, support, bw = kde_params(
-                    x=bel.X_f.T[comp_n],
-                    y=bel.Y_f.T[comp_n],
-                    gridsize=200,
-                )  # Get KDE parameters
+                density, support, bw = kde_params(x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n],
+                                                  gridsize=200)  # Get KDE parameters
                 xx, yy = support
 
                 # Conditional:
