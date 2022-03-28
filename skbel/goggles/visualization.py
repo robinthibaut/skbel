@@ -178,7 +178,19 @@ def explained_variance(
     """
     plt.grid(alpha=0.1)
     if not n_comp:
-        n_comp = bel_pca.n_components_
+        try:
+            n_comp = bel_pca.n_components_
+        except AttributeError:
+            # save an empty transparent figure
+            plt.plot([], [], color="w")
+            plt.xlabel("")
+            plt.ylabel("")
+            plt.title("")
+            plt.xticks([])
+            plt.yticks([])
+            plt.savefig(fig_file, bbox_inches="tight", dpi=10, transparent=True)
+            plt.close()
+            return
 
     # Index where explained variance is below threshold:
     ny = len(np.where(np.cumsum(bel_pca.explained_variance_ratio_) < thr)[0])
