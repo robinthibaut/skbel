@@ -3,9 +3,7 @@
 import os
 from os.path import join as jp
 
-import joblib
 import pandas as pd
-from loguru import logger
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
@@ -15,12 +13,13 @@ import demo_visualization as myvis
 from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
-from skbel.learning.bel import BEL
+from skbel import BEL
 
 
 def init_bel():
-    """
-    Set all BEL pipelines. This is the blueprint of the framework.
+    """Set all BEL pipelines.
+
+    This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -95,10 +94,10 @@ if __name__ == "__main__":
     model = init_bel()
 
     # %% Set model parameters
-    model.mode = "mvn"  # How to compute the posterior conditional distribution
+    model.mode = "tm"  # How to compute the posterior conditional distribution
     # Save original dimensions of both predictor and target
     model.X_shape = (6, 200)  # Six curves with 200 time steps each
-    model.Y_shape = (1, 100, 87)  # One matrix with 100 rows and 87 columns
+    model.Y_shape = (100, 87)  # 100 rows and 87 columns
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 
@@ -109,22 +108,23 @@ if __name__ == "__main__":
     # Sample for the observation
     # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
-    model.predict(X_test)
-
-    # Save the fitted BEL model
-    joblib.dump(model, jp(obj_dir, "bel.pkl"))
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
+    y_predicted = model.predict(X_test)
 
     # %% Visualization
 
     # Plot raw data
     myvis.plot_results(
-        model, X=X_train, X_obs=X_test, Y=y_train, Y_obs=y_test, base_dir=sub_dir
+        model,
+        y_predicted=y_predicted,
+        X=X_train,
+        X_obs=X_test,
+        Y=y_train,
+        Y_obs=y_test,
+        base_dir=sub_dir,
     )
 
     # Plot PCA
     pca_vision(model, Y_obs=y_test, fig_dir=fig_pca_dir)
 
     # Plot CCA
-    cca_vision(bel=model, X_obs=, Y_obs=y_test, fig_dir=fig_cca_dir)
+    cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)

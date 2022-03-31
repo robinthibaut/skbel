@@ -21,7 +21,7 @@ class Machine(object):
 class Setup:
     @dataclass
     class Directories:
-        """Define main directories and file names"""
+        """Define main directories and file names."""
 
         # Content directory
         main_dir: str = dirname(os.path.abspath(__file__))
@@ -36,7 +36,7 @@ class Setup:
 
     @dataclass
     class Files:
-        """Class to keep track of important file names"""
+        """Class to keep track of important file names."""
 
         # Output file names
         project_name: str = "whpa"
@@ -66,7 +66,7 @@ class Setup:
 
     @dataclass
     class GridDimensions:
-        """Class for keeping track of grid dimensions"""
+        """Class for keeping track of grid dimensions."""
 
         x_lim: float = 1500.0
         y_lim: float = 1000.0
@@ -104,7 +104,8 @@ class Setup:
 
     @dataclass
     class Focus:
-        """Geometry of the focused area on the main grid, enclosing all wells, as to reduce computation time"""
+        """Geometry of the focused area on the main grid, enclosing all wells,
+        as to reduce computation time."""
 
         x_range = [800, 1150]
         y_range = [300, 700]
@@ -113,7 +114,7 @@ class Setup:
 
     @dataclass
     class Wells:
-        """Wells coordinates"""
+        """Wells coordinates."""
 
         wells_data = {
             "pumping0": {
@@ -159,7 +160,7 @@ class Setup:
 
     @dataclass
     class HyperParameters:
-        """Learning hyper parameters"""
+        """Learning hyper parameters."""
 
         # Predictor
         n_pc_predictor: int = 50
@@ -180,7 +181,7 @@ class Setup:
 
     @dataclass
     class ModelParameters:
-        """Model hyper parameters"""
+        """Model hyper parameters."""
 
         # Prior K
         k_min: float = 1.4
@@ -189,13 +190,13 @@ class Setup:
 
     @dataclass
     class ED:
-        """Experimental Design"""
+        """Experimental Design."""
 
         metric = None
 
     @dataclass
     class DataSet:
-        """Experimental Design"""
+        """Experimental Design."""
 
         X_shape = (6, 200)
         Y_shape = (1, 100, 87)

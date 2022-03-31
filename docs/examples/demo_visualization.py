@@ -33,10 +33,9 @@ def binary_polygon(
     outside: float = -1,
     inside: float = 1,
 ) -> np.array:
-    """
-    Given a polygon whose vertices are given by the array pzs, and a matrix of
-    centroids coordinates of the surface discretization, assigns to the matrix a certain value
-    whether the cell is inside or outside said polygon.
+    """Given a polygon whose vertices are given by the array pzs, and a matrix
+    of centroids coordinates of the surface discretization, assigns to the
+    matrix a certain value whether the cell is inside or outside said polygon.
 
     To compute the signed distance function, we need a negative/positive value.
 
@@ -45,8 +44,8 @@ def binary_polygon(
     :param ncol: Number of columns
     :param pzs: Array of ordered vertices coordinates of a polygon.
     :param pzs: Polygon vertices (v, 2)
-    :param outside: Value to assign to the matrix outside of the polygon
-    :param inside: Value to assign to the matrix inside of the polygon
+    :param outside: Value to assign to the matrix outside the polygon
+    :param inside: Value to assign to the matrix inside the polygon
     :return: phi = the binary matrix
     """
 
@@ -63,9 +62,8 @@ def binary_polygon(
 
 
 def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.array:
-    """
-    Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside WHPA).
-    """
+    """Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside
+    WHPA)."""
     # Create binary images of WHPA stored in bin_whpa
     bin_whpa = [
         binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices
@@ -117,18 +115,18 @@ def whpa_plot(
     highlight: bool = False,
     show: bool = False,
 ):
-    """
-    Produces the WHPA plot, i.e. the zero-contour of the signed distance array.
+    """Produces the WHPA plot, i.e. the zero-contour of the signed distance
+    array.
 
-    :param grid:
+    :param grid: Whether to plot the grid
     :param grf: Grid cell size
     :param well_comb: List of well combination
     :param highlight: Boolean to display lines on top of filling between contours or not.
     :param annotation: List of annotations (str)
-    :param xlabel:
-    :param ylabel:
-    :param cb_title:
-    :param well_ids:
+    :param xlabel: X axis label
+    :param ylabel: Y axis label
+    :param cb_title: Colorbar title
+    :param well_ids: List of well ids
     :param labelsize: Label size
     :param title: str: plot title
     :param show_wells: bool: whether to plot well coordinates or not
@@ -141,8 +139,8 @@ def whpa_plot(
     :param halpha: Alpha value for line plots if highlight is True
     :param lw: float: Line width
     :param color: str: Line color
-    :param fig_file: str:
-    :param show: bool:
+    :param fig_file: str: File name to save the figure
+    :param show: bool: Whether to show the figure or not
     :param x_lim: [x_min, x_max] For the figure
     :param y_lim: [y_min, y_max] For the figure
     """
@@ -308,11 +306,12 @@ def post_examination(
 
 
 def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation
+    """Plot used to compare the reproduction of the original physical space
+    after PCA transformation.
+
     :param bel: BEL model
-    :param fig_dir: str:
-    :param show: bool:
+    :param fig_dir: str: directory where to save the figure
+    :param show: bool: if True, show the figure
     :return:
     """
 
@@ -382,7 +381,6 @@ def plot_predictor(
     root: str = None,
     base_dir: str = None,
     folder: str = None,
-    annotation: list = None,
     show: bool = False,
 ):
     if base_dir is None:
@@ -530,8 +528,12 @@ def plot_posterior(
     well_ids = [0, 1, 2, 3, 4, 5, 6]
     labels = ["Training", "Samples", "True test"]
     colors = ["darkblue", "darkred", "k"]
-    Y_obs = Y_obs.to_numpy().reshape((Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
-    Y = Y.to_numpy().reshape((-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    Y_obs = Y_obs.to_numpy().reshape(
+        (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2])
+    )
+    Y = Y.to_numpy().reshape(
+        (-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2])
+    )
     # Training
     _, well_legend = whpa_plot(
         whpa=Y,
@@ -587,6 +589,7 @@ def plot_posterior(
 
 def plot_results(
     bel,
+    y_predicted: np.array = None,
     X: np.array = None,
     X_obs: np.array = None,
     Y: np.array = None,
@@ -597,17 +600,23 @@ def plot_results(
     annotation: list = None,
     show: bool = False,
 ):
-    """
-    Plots forecasts results in the 'uq' folder
+    """Plots forecasts results in the 'uq' folder.
+
     :param bel: BEL model
+    :param y_predicted: Predicted values
+    :param X: Training set
+    :param X_obs: Observed training set
+    :param Y: Test set
+    :param Y_obs: Observed test set
     :param annotation: List of annotations
     :param X: Predictor array
     :param X_obs: "Observed" predictor array
     :param Y: Target array
     :param Y_obs: "True" target array
     :param root: str: Forward ID
-    :param base_dir:
+    :param base_dir: str: Base directory
     :param folder: str: Well combination. '123456', '1'...
+    :param show: bool: Show or not
     :return:
     """
     if root is None:
@@ -692,8 +701,8 @@ def plot_results(
             Y_obs = check_array(Y_obs, allow_nd=True)
         except ValueError:
             Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
-        h_test = Y_obs.reshape((bel.Y_shape[1], bel.Y_shape[2]))
-        h_training = Y.reshape((-1,) + (bel.Y_shape[1], bel.Y_shape[2]))
+        h_test = Y_obs.reshape((bel.Y_shape[0], bel.Y_shape[1]))
+        h_training = Y.reshape((-1,) + (bel.Y_shape[0], bel.Y_shape[1]))
         # Plots target training + prediction
         whpa_plot(whpa=h_training, color="blue", alpha=0.5)
         whpa_plot(
@@ -715,10 +724,8 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
-        forecast_posterior = bel.random_sample(n_posts=Setup.HyperParameters.n_posts)
-        forecast_posterior = bel.inverse_transform(forecast_posterior)
-        forecast_posterior = forecast_posterior.reshape(
-            (-1,) + (bel.Y_shape[1], bel.Y_shape[2])
+        forecast_posterior = y_predicted.reshape(
+            (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
         )
 
         # I display here the prior h behind the forecasts sampled from the posterior.
@@ -773,6 +780,7 @@ def plot_results(
         )
         if show:
             plt.show()
+        plt.close()
 
 
 def mode_histo(
@@ -785,12 +793,12 @@ def mode_histo(
 ):
     """
 
-    :param directory:
-    :param title:
-    :param colors:
+    :param directory: Path to the directory where the figure will be saved.
+    :param title: Title of the figure.
+    :param colors: List of colors to use for the histogram.
     :param an_i: Figure annotation
     :param wm: Arrays of metric
-    :param fig_name:
+    :param fig_name: Name of the figure.
     :return:
     """
     if directory is None:
@@ -905,8 +913,8 @@ def curves(
     title: str = "curves",
     show: bool = False,
 ):
-    """
-    Shows every breakthrough curve stacked on a plot.
+    """Shows every breakthrough curve stacked on a plot.
+
     :param cols: List of colors
     :param ylabel:
     :param xlabel:
@@ -946,6 +954,7 @@ def curves(
     elif show:
         plt.show()
         plt.close()
+    plt.close()
 
 
 def curves_i(
@@ -959,9 +968,9 @@ def curves_i(
     sdir: str = None,
     show: bool = False,
 ):
-    """
-    Shows every breakthrough individually for each observation point.
-    Will produce n_well figures of n_sim curves each.
+    """Shows every breakthrough individually for each observation point. Will
+    produce n_well figures of n_sim curves each.
+
     :param cols: List of colors
     :param labelsize:
     :param factor:
@@ -971,7 +980,6 @@ def curves_i(
     :param highlight: list: List of indices of curves to highlight in the plot
     :param sdir: Directory in which to save figure
     :param show: Whether to show or not
-
     """
     if highlight is None:
         highlight = []
@@ -1005,6 +1013,7 @@ def curves_i(
         elif show:
             plt.show()
             plt.close()
+        plt.close()
 
 
 def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.0):
@@ -1044,8 +1053,9 @@ def plot_pc_ba(
     data: bool = False,
     target: bool = False,
 ):
-    """
-    Comparison between original variables and the same variables back-transformed with n PCA components.
+    """Comparison between original variables and the same variables back-
+    transformed with n PCA components.
+
     :param w:
     :param base_dir:
     :param bel:
@@ -1129,8 +1139,8 @@ def pca_vision(
     before_after: bool = True,
     labels: bool = True,
 ):
-    """
-    Loads PCA pickles and plot scores for all folders
+    """Loads PCA pickles and plot scores for all folders.
+
     :param before_after:
     :param base_dir:
     :param bel: BEL model
@@ -1204,8 +1214,9 @@ def d_pca_inverse_plot(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
-    Plot used to compare the reproduction of the original physical space after PCA transformation.
+    """Plot used to compare the reproduction of the original physical space
+    after PCA transformation.
+
     :param bel: BEL model
     :param xlabel:
     :param ylabel:
