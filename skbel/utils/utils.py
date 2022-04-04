@@ -112,15 +112,14 @@ def dirmaker(dird: str, erase: bool = False):
 
 
 def combinator(combi):
-    """Given an n-sized 1D array, generates all possible configurations, from
-    size 1 to n-1. 'None' will indicate to use the original combination.
-
+    """Given an n-sized 1D array, generates all possible configurations.
     :param combi: List of size n.
     :return: List of combinations.
     """
+
     cb = [
-        list(itertools.combinations(combi, i)) for i in range(1, combi[-1] + 1)
-    ]  # Get all possible wel combinations
+        list(itertools.combinations(combi, i)) for i in range(1, len(combi) + 1)
+    ]  # Get all possible combinations
     # Flatten
     cb = [item for sublist in cb for item in sublist]
     return cb
