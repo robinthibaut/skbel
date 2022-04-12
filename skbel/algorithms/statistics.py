@@ -725,3 +725,19 @@ def it_sampling(
             simple_samples = np.zeros(num_samples)  # Samples
 
         return simple_samples
+
+
+def remove_outliers(data):
+    """
+    Removes outliers from the data.
+    :param data: array-like
+    :return:
+    """
+    q25 = np.quantile(data, 0.25, axis=0)
+    q75 = np.quantile(data, 0.75, axis=0)
+    iqr = q75 - q25
+    lower_bound = q25 - 1.5 * iqr
+    upper_bound = q75 + 1.5 * iqr
+    # if one element is out of bounds, delete its row
+    data = data[(data > lower_bound).all(axis=1) & (data < upper_bound).all(axis=1)]
+    return data
