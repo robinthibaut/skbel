@@ -37,19 +37,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """
 
     def __init__(
-            self,
-            mode: str = "tm",
-            copy: bool = True,
-            *,
-            X_pre_processing=None,
-            Y_pre_processing=None,
-            X_post_processing=None,
-            Y_post_processing=None,
-            cca=None,
-            n_comp_cca=None,
-            x_dim=None,
-            y_dim=None,
-            random_state=None,
+        self,
+        mode: str = "tm",
+        copy: bool = True,
+        *,
+        X_pre_processing=None,
+        Y_pre_processing=None,
+        X_post_processing=None,
+        Y_post_processing=None,
+        cca=None,
+        n_comp_cca=None,
+        x_dim=None,
+        y_dim=None,
+        random_state=None,
     ):
         """Initialize the BEL class.
 
@@ -252,15 +252,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X, y)
 
     def predict(
-            self,
-            X_obs: np.array = None,
-            n_posts: int = None,
-            mode: str = None,
-            noise: float = None,
-            return_samples: bool = True,
-            inverse_transform: bool = True,
-            precomputed_kde: np.array = None,
-            dtype: str = "float64",
+        self,
+        X_obs: np.array = None,
+        n_posts: int = None,
+        mode: str = None,
+        noise: float = None,
+        return_samples: bool = True,
+        inverse_transform: bool = True,
+        precomputed_kde: np.array = None,
+        dtype: str = "float64",
     ) -> np.array:
         """Predict the posterior distribution of the target variable.
 
@@ -341,7 +341,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 ].n_components  # Number of PCA components
                 # I matrix. (n_comp_PCA, n_comp_PCA)
                 x_cov = (
-                        np.eye(x_dim) * self.noise
+                    np.eye(x_dim) * self.noise
                 )  # Noise level. We assume that the data is noisy with a given level of noise.
                 # (n_comp_CCA, n_comp_CCA)
                 # Get the rotation matrices
@@ -389,7 +389,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         functions = [sample_fun] * n_obs
                     else:  # If the relation is not perfectly linear
                         # Compute KDE
-                        dens, support, bw = kde_params(x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n])
+                        dens, support, bw = kde_params(
+                            x=self.X_f.T[comp_n], y=self.Y_f.T[comp_n]
+                        )
                         # Rule of thumb:
                         dens[dens < 1e-8] = 0  # Remove the small values
                         functions = []
@@ -481,12 +483,12 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 return samples  # Return samples
 
     def random_sample(
-            self,
-            X_obs_f: np.array,
-            obs_n: int = None,
-            n_posts: int = None,
-            mode: str = None,
-            init_kde: np.array = None,
+        self,
+        X_obs_f: np.array,
+        obs_n: int = None,
+        n_posts: int = None,
+        mode: str = None,
+        init_kde: np.array = None,
     ) -> np.array:
         """Random sample the inferred posterior distribution. It can be used to
         generate samples from the posterior.
@@ -557,7 +559,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 k=2 ** 7 + 1,
                             )
                         elif (
-                                fun["kind"] == "linear"
+                            fun["kind"] == "linear"
                         ):  # If the function is a linear interpolation
                             rel1d = fun["function"]
                             uniform_samples = np.ones(self.n_posts) * rel1d.predict(
@@ -656,7 +658,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         lower_bd=pdf.x.min(),
                         upper_bd=pdf.x.max(),
                         k=2 ** 7
-                          + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
+                        + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                         return_cdf=True,
                     )
                 elif fun["kind"] == "linear":
@@ -668,7 +670,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 init_samples[i, j] = pv  # noqa
         return init_samples
 
-    def inverse_transform(self, Y_pred: np.array, dtype: str = "float64", get_PC=False) -> np.array:
+    def inverse_transform(
+        self, Y_pred: np.array, dtype: str = "float64", get_PC=False
+    ) -> np.array:
         """Back-transforms the posterior samples Y_pred to their physical
         space.
 
@@ -695,11 +699,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             n_comp = self.cca.n_components  # Number of components
 
             if (
-                    y_post.shape[1] > n_comp
+                y_post.shape[1] > n_comp
             ):  # If the number of components is smaller than the number of observations
                 y_post = y_post[
-                         :, :n_comp
-                         ]  # Truncate the posterior samples, because the number of components is smaller than the number of
+                    :, :n_comp
+                ]  # Truncate the posterior samples, because the number of components is smaller than the number of
                 # observations
 
             # x_dummy to be used in the inverse_transform of CCA:
@@ -710,8 +714,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )  # Inverse transform the posterior samples
             except TypeError:
                 y_post = (
-                        np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-                        + self.cca._y_mean  # noqa
+                    np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
+                    + self.cca._y_mean  # noqa
                 )  # Posterior PC scores
 
             if get_PC:  # return the CV
@@ -724,7 +728,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )  # Inverse transform
 
                 if (
-                        type(y_post_raw) == list
+                    type(y_post_raw) == list
                 ):  # If the target contains more than one variable
                     y_post_raw = np.concatenate(
                         [y_raw.reshape(-1) for y_raw in y_post_raw], axis=0

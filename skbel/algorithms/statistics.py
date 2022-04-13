@@ -20,6 +20,7 @@ __all__ = [
     "mvn_inference",
     "it_sampling",
     "normalize",
+    "remove_outliers",
 ]
 
 
@@ -352,8 +353,15 @@ def _bivariate_density(
     return density, support, estimator.bw
 
 
-def kde_params(x: np.array = None, y: np.array = None, bw: float = None, bandwidth_space=None, gridsize: int = 200,
-               cut: float = 1, clip=None):
+def kde_params(
+    x: np.array = None,
+    y: np.array = None,
+    bw: float = None,
+    bandwidth_space=None,
+    gridsize: int = 200,
+    cut: float = 1,
+    clip=None,
+):
     """Computes the kernel density estimate (KDE) of one or two data sets.
 
     :param x: The x-coordinates of the input data.
