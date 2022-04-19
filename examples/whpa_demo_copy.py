@@ -5,7 +5,6 @@ from os.path import join as jp
 
 import joblib
 import pandas as pd
-from loguru import logger
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
@@ -113,9 +112,6 @@ if __name__ == "__main__":
 
     # Save the fitted BEL model
     joblib.dump(model, jp(obj_dir, "bel.pkl"))
-
-    msg = f"model trained and saved in {obj_dir}"
-    logger.info(msg)
 
     # %% Visualization
 
