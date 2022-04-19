@@ -645,20 +645,13 @@ def _get_defaults_kde_plot():
     return ax_joint, ax_marg_x, ax_marg_y, ax_cb
 
 
-def _cca_plot(
-    bel,
-    obs_n: int = 0,
-    X_obs: np.array = None,
-    Y_obs: np.array = None,
-    samples=None,
-    sdir: str = None,
-    show: bool = False,
-    annotation_callback=None,
-):
+def _cca_plot(X_scores, Y_scores, X_obs: np.array = None, Y_obs: np.array = None, samples=None, sdir: str = None,
+              show: bool = False, annotation_callback=None, mode=None):
     """Plot the Canonical Variate Pairs.
 
-    :param bel: The BEL object.
-    :param obs_n: The index of the observation to plot.
+    :param mode:
+    :param X_scores:
+    :param Y_scores: 
     :param X_obs: The X observations.
     :param Y_obs: The Y observations.
     :param samples: The samples to plot.
@@ -666,45 +659,12 @@ def _cca_plot(
     :param show: Whether to show the plot.
     :param annotation_callback: A callback function to annotate the plot.
     """
-    cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
-        offset=bel.cca.n_components
+    n_components = X_scores.shape[1]
+    cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(
+        offset=n_components
     )  # Gets correlation coefficient
     vmax = 1
-    if type(X_obs) == list:
-        pass
-    else:
-        try:
-            X_obs = check_array(X_obs, allow_nd=True)
-        except ValueError:
-            try:
-                X_obs = check_array(X_obs.to_numpy().reshape(1, -1))
-            except AttributeError:
-                X_obs = check_array(X_obs.reshape(1, -1))
-    if type(Y_obs) == list:
-        pass
-    elif Y_obs is None:
-        pass
-    else:
-        try:
-            Y_obs = check_array(Y_obs, allow_nd=True)
-        except ValueError:
-            try:
-                Y_obs = check_array(Y_obs.reshape(1, -1))
-            except AttributeError:
-                Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
-
-    # Transform X obs, Y obs
-    try:
-        X_obs_f, Y_obs_f = bel.transform(X=X_obs, Y=Y_obs)  # Transform X obs, Y obs
-    except ValueError:
-        X_obs_f = bel.transform(X=X_obs)
-
-    if samples is None:
-        samples = bel.random_sample(
-            X_obs_f=X_obs_f, obs_n=obs_n, n_posts=bel.n_posts
-        )  # Get 100 samples
-
-    for comp_n in range(bel.cca.n_components):
+    for comp_n in range(n_components):
         # Get figure default parameters
         ax_joint, ax_marg_x, ax_marg_y, ax_cb = _get_defaults_kde_plot()
 
@@ -713,21 +673,16 @@ def _cca_plot(
         marginal_eval_samples = KDE()  # KDE for the marginal samples
 
         # support is cached
-        kde_x, sup_x = marginal_eval_x(bel.X_f.T[comp_n].reshape(1, -1))
-        kde_y, sup_y = marginal_eval_y(bel.Y_f.T[comp_n].reshape(1, -1))
+        kde_x, sup_x = marginal_eval_x(X_scores.T[comp_n].reshape(1, -1))
+        kde_y, sup_y = marginal_eval_y(Y_scores.T[comp_n].reshape(1, -1))
 
         if cca_coefficient[comp_n] < 0.999:
             # Plot h posterior given d
-            if bel.mode == "kde":
+            if mode == "kde":
                 density, support, bw = kde_params(
-                    x=bel.X_f.T[comp_n], y=bel.Y_f.T[comp_n], gridsize=200
+                    x=X_scores.T[comp_n], y=Y_scores.T[comp_n], gridsize=200
                 )  # Get KDE parameters
                 xx, yy = support
-
-                # Conditional:
-                hp, sup = posterior_conditional(
-                    X_obs=X_obs_f.T[comp_n], dens=density, support=support, k=200
-                )  # Get posterior
 
                 # Filled contour plot
                 # Mask values under threshold
@@ -742,20 +697,20 @@ def _cca_plot(
                 cb = plt.colorbar(cf, ax=[ax_cb], location="left")  # Colorbar
                 cb.ax.set_title("$KDE$", fontsize=10)  # Colorbar title
 
-                try:
-                    reg = bel.kde_functions[obs_n][comp_n][
-                        "function"
-                    ]  # Get the regressor
-                    check_is_fitted(reg)
-                    reg_pts = reg.predict(bel.X_f.T[comp_n].reshape(-1, 1))
-                    ax_joint.plot(
-                        bel.X_f.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7
-                    )
-                except Exception:  # If no regressor
-                    pass
+                # try:
+                #     reg = kde_functions[obs_n][comp_n][
+                #         "function"
+                #     ]  # Get the regressor
+                #     check_is_fitted(reg)
+                #     reg_pts = reg.predict(X_scores.T[comp_n].reshape(-1, 1))
+                #     ax_joint.plot(
+                #         X_scores.T[comp_n], reg_pts, "r", linewidth=2, alpha=0.7
+                #     )
+                # except Exception:  # If no regressor
+                #     pass
         # Vertical line
         ax_joint.axvline(
-            x=X_obs_f.T[comp_n],
+            x=X_obs.T[comp_n],
             color="red",
             linewidth=1,
             alpha=0.5,
@@ -774,8 +729,8 @@ def _cca_plot(
             pass
         # Scatter plot
         ax_joint.plot(
-            bel.X_f.T[comp_n],
-            bel.Y_f.T[comp_n],
+            X_scores.T[comp_n],
+            Y_scores.T[comp_n],
             "ko",
             markersize=2.5,
             markeredgecolor="w",
@@ -783,7 +738,7 @@ def _cca_plot(
             alpha=0.8,
         )
         ax_joint.plot(
-            np.ones(samples.shape[1]) * X_obs_f.T[comp_n],
+            np.ones(samples.shape[1]) * X_obs.T[comp_n],
             samples.T[comp_n],
             marker="o",
             markerfacecolor="lightgreen",
@@ -795,8 +750,8 @@ def _cca_plot(
         # Point
         try:
             ax_joint.plot(
-                X_obs_f.T[comp_n],
-                Y_obs_f.T[comp_n],
+                X_obs.T[comp_n],
+                Y_obs.T[comp_n],
                 "wo",
                 markersize=5,
                 markeredgecolor="k",
@@ -813,7 +768,7 @@ def _cca_plot(
         )
         #  - Notch indicating true value
         ax_marg_x.axvline(
-            x=X_obs_f.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+            x=X_obs.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
         )
         ax_marg_x.legend(loc=2, fontsize=10)
 
@@ -827,7 +782,7 @@ def _cca_plot(
         #  - Notch indicating true value
         try:
             ax_marg_y.axhline(
-                y=Y_obs_f.T[comp_n],
+                y=Y_obs.T[comp_n],
                 xmax=0.25,
                 color="deepskyblue",
                 linewidth=1,
@@ -835,34 +790,20 @@ def _cca_plot(
             )
         except UnboundLocalError:
             pass
-        if bel.mode == "kde":
-            if cca_coefficient[comp_n] < 0.999:
-                # Conditional distribution
-                #  - Line plot
-                ax_marg_y.plot(hp, sup, color="red", alpha=0)  # noqa
-                #  - Fill to axis
-                ax_marg_y.fill_betweenx(
-                    sup,
-                    0,
-                    hp,
-                    color="mediumorchid",
-                    alpha=0.5,
-                    label="$p(h^{c}|d^{c}_{*})_{KDE}$",
-                )
-        else:
-            kde_samples, sup_samples = marginal_eval_samples(
-                samples[:, :, comp_n].reshape(1, -1)
-            )  # noqa
-            ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
-            #  - Fill to axis
-            ax_marg_y.fill_betweenx(
-                sup_samples,
-                0,
-                kde_samples,
-                color="mediumorchid",
-                alpha=0.5,
-                label="$p(h^{c}|d^{c}_{*})$",
-            )
+
+        kde_samples, sup_samples = marginal_eval_samples(
+            samples[:, :, comp_n].reshape(1, -1)
+        )  # noqa
+        ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
+        #  - Fill to axis
+        ax_marg_y.fill_betweenx(
+            sup_samples,
+            0,
+            kde_samples,
+            color="mediumorchid",
+            alpha=0.5,
+            label="$p(h^{c}|d^{c}_{*})$",
+        )
 
         ax_marg_y.legend(fontsize=10)
         # Labels
@@ -917,44 +858,30 @@ def _cca_plot(
     return annotation_callback  # Return the iterator so that it can be used again
 
 
-def cca_vision(
-    bel,
-    X_obs: np.array,
-    Y_obs: np.array,
-    samples=None,
-    obs_n: int = 0,
-    fig_dir: str = None,
-    show: bool = False,
-):
-    """Loads CCA pickles and plots components for all folders.
-
-    :param bel: BEL model
-    :param X_obs: Observed X (n_obs, n_comp)
-    :param Y_obs: True target array (n_obs, n_comp)
-    :param samples: Samples array
-    :param obs_n: Observation number
+def cca_vision(X_scores=None, Y_scores=None, X_obs: np.array = None, Y_obs: np.array = None, samples=None,
+               fig_dir: str = None, show: bool = False):
+    """
+    :param X_scores: 
+    :param Y_scores: 
+    :param X_obs: 
+    :param Y_obs: 
+    :param samples:
     :param fig_dir: Base directory path
     :param show: Show figure
     """
     if fig_dir is None:
         fig_dir = ""
 
+    n_components = X_scores.shape[1]
+
     annotation_call = _yield_alphabet()
     # KDE plots which consume a lot of time.
-    ac = _cca_plot(
-        bel,
-        obs_n=obs_n,
-        X_obs=X_obs,
-        Y_obs=Y_obs,
-        samples=samples,
-        sdir=fig_dir,
-        show=show,
-        annotation_callback=annotation_call,
-    )
+    ac = _cca_plot(X_scores, Y_scores, X_obs=X_obs, Y_obs=Y_obs, samples=samples, sdir=fig_dir, show=show,
+                   annotation_callback=annotation_call)
 
     # CCA coefficient plot
-    cca_coefficient = np.corrcoef(bel.X_f.T, bel.Y_f.T).diagonal(
-        offset=bel.cca.n_components
+    cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(
+        offset=n_components
     )  # Gets correlation coefficient
     plt.plot(cca_coefficient, "lightblue", zorder=1)
     plt.scatter(
