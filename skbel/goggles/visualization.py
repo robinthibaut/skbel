@@ -237,7 +237,7 @@ def pca_scores(
     training: np.array,
     prediction: np.array = None,
     pc_post: np.array = None,
-    n_comp: int = None,
+    n_comp: int = 0,
     annotation: list = None,
     fig_file: str = None,
     show: bool = False,
@@ -254,7 +254,8 @@ def pca_scores(
     :param fig_file: Path to figure file
     :param show: Show figure
     """
-
+    if not n_comp:
+        n_comp = training.shape[1]
     # Scores plot
     if annotation is None:
         annotation = []
