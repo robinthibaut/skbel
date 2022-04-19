@@ -12,11 +12,9 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import legend, locator_params
 from numpy import ma
 from scipy.interpolate import BSpline, make_interp_spline
-from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
 
 import skbel.utils
-from skbel.algorithms import KDE, kde_params, posterior_conditional
+from skbel.algorithms import KDE, kde_params
 
 __all__ = [
     "_my_alphabet",
@@ -24,7 +22,6 @@ __all__ = [
     "_proxy_annotate",
     "explained_variance",
     "pca_scores",
-    "pca_vision",
     "cca_vision",
     "_despine",
     "_cca_plot",
@@ -159,48 +156,31 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
     return legend_a
 
 
-def explained_variance(
-    bel_pca,
-    n_comp: int = 0,
-    thr: float = 1.0,
-    annotation: list = None,
-    fig_file: str = None,
-    show: bool = False,
-):
+def explained_variance(n_components, evr, n_cut: int = 0, thr: float = 1.0, annotation: list = None,
+                       fig_file: str = None, show: bool = False):
     """PCA explained variance plot.
 
-    :param bel_pca: PCA object
-    :param n_comp: Number of components to display
+    :param n_components: Number of components
+    :param evr: Explained variance ratio
+    :param n_cut: Number of components to display
     :param thr: float: Threshold
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
     """
-    plt.grid(alpha=0.1)
-    if not n_comp:
-        try:
-            n_comp = bel_pca.n_components_
-        except AttributeError:
-            # save an empty transparent figure
-            plt.plot([], [], color="w")
-            plt.xlabel("")
-            plt.ylabel("")
-            plt.title("")
-            plt.xticks([])
-            plt.yticks([])
-            plt.savefig(fig_file, bbox_inches="tight", dpi=10, transparent=True)
-            plt.close()
-            return
+    if not n_cut:
+        n_cut = n_components
 
+    plt.grid(alpha=0.1)
     # Index where explained variance is below threshold:
-    ny = len(np.where(np.cumsum(bel_pca.explained_variance_ratio_) < thr)[0])
+    ny = len(np.where(np.cumsum(evr) < thr)[0])
     # Explained variance vector:
-    cum = np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100
+    cum = np.cumsum(evr[:n_cut]) * 100
     # x-ticks
     try:
         plt.xticks(
-            np.concatenate([np.array([0]), np.arange(4, n_comp, 5)]),
-            np.concatenate([np.array([1]), np.arange(5, n_comp + 5, 5)]),
+            np.concatenate([np.array([0]), np.arange(4, n_cut, 5)]),
+            np.concatenate([np.array([1]), np.arange(5, n_cut + 5, 5)]),
             fontsize=11,
         )
     except ValueError:
@@ -215,15 +195,15 @@ def explained_variance(
     plt.ylim(0, 100)
     # bars for aesthetics
     plt.bar(
-        np.arange(n_comp),
-        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100,
+        np.arange(n_cut),
+        np.cumsum(evr[:n_cut]) * 100,
         color="m",
         alpha=0.1,
     )
     # line for aesthetics
     plt.plot(
-        np.arange(n_comp),
-        np.cumsum(bel_pca.explained_variance_ratio_[:n_comp]) * 100,
+        np.arange(n_cut),
+        np.cumsum(evr[:n_cut]) * 100,
         "-o",
         linewidth=0.5,
         markersize=1.5,
@@ -260,14 +240,12 @@ def pca_scores(
     n_comp: int = None,
     annotation: list = None,
     fig_file: str = None,
-    labels: bool = True,
     show: bool = False,
 ):
     """PCA scores plot, displays scores of observations above those of
     training.
 
-    :param pc_post:
-    :param labels: labels for the plot
+    :param pc_post: PCA scores of the posterior
     :param training: Training scores
     :param prediction: Test scores
     :param pc_post: PCA scores of the posterior (Y)
@@ -361,132 +339,6 @@ def pca_scores(
     if show:
         plt.show()
         plt.close()
-
-
-def pca_vision(
-    bel,
-    d: np.array = None,
-    h: np.array = None,
-    obs_n: int = 0,
-    X_obs: np.array = None,
-    Y_obs: np.array = None,
-    pc_post: np.array = None,
-    scores: bool = True,
-    exvar: bool = True,
-    thrx: float = 0.8,
-    thry: float = 0.8,
-    labels: bool = True,
-    fig_dir: str = None,
-    show: bool = False,
-):
-    """Loads PCA pickles and plot scores for all folders.
-
-    :param pc_post:
-    :param bel: BEL object
-    :param d: bool: Plot d scores
-    :param h: bool: Plot h scores
-    :param obs_n: Observation number
-    :param X_obs: X_obs
-    :param Y_obs: np.array: "True" target array
-    :param pc_post: np.array: PC scores of the posterior (Y)
-    :param scores: bool: Plot scores
-    :param exvar: bool: Plot explained variance
-    :param thrx: float: Threshold for X (explained variance plot)
-    :param thry: float: Threshold for Y (explained variance plot)
-    :param labels: Show labels
-    :param fig_dir: Path to save directory
-    :param show: Show figure
-    """
-
-    if fig_dir is None:
-        fig_dir = ""
-
-    if d is None:
-        d = np.array([])
-
-    if h is None:
-        h = np.array([])
-
-    annotation = _yield_alphabet()
-
-    try:
-        X_pc = bel.X_pre_processing.transform(d)  # PCA scores
-        if X_obs is not None:
-            X_obs_pc = bel.X_pre_processing.transform(
-                X_obs[obs_n]
-            )  # PCA scores of the observed point
-        else:
-            X_obs_pc = None
-        fig_file = os.path.join(fig_dir, "d_scores.png")
-        if scores:
-            pca_scores(
-                training=X_pc,
-                prediction=X_obs_pc,
-                n_comp=X_pc.shape[1],
-                annotation=[next(annotation)],
-                fig_file=fig_file,
-                labels=labels,
-                show=show,
-            )
-        # Explained variance plots
-        if exvar:
-            fig_file = os.path.join(fig_dir, "d_exvar.png")
-            try:
-                explained_variance(
-                    bel.X_pre_processing["pca"],
-                    n_comp=X_pc.shape[1],
-                    thr=thrx,
-                    annotation=[next(annotation)],
-                    fig_file=fig_file,
-                    show=show,
-                )
-            except (AttributeError, KeyError):
-                pass
-    except Exception:
-        pass
-
-    try:
-        h_pc_training = bel.Y_pre_processing.transform(h)
-        # Transform and split
-        if Y_obs is not None:
-            if type(Y_obs) is list:
-                pass
-            else:
-                try:
-                    Y_obs = check_array(Y_obs, allow_nd=True)
-                except ValueError:
-                    Y_obs = check_array(Y_obs.to_numpy().reshape(1, -1))
-            h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
-        else:
-            h_pc_prediction = None
-        # Plot
-        fig_file = os.path.join(fig_dir, "h_pca_scores.png")
-        if scores:
-            pca_scores(
-                training=h_pc_training,
-                prediction=h_pc_prediction,
-                n_comp=h_pc_training.shape[1],
-                annotation=[next(annotation)],
-                fig_file=fig_file,
-                labels=labels,
-                show=show,
-            )
-        # Explained variance plots
-        if exvar:
-            fig_file = os.path.join(fig_dir, "h_pca_exvar.png")
-            try:
-                explained_variance(
-                    bel.Y_pre_processing["pca"],
-                    n_comp=h_pc_training.shape[1],
-                    thr=thry,
-                    annotation=[next(annotation)],
-                    fig_file=fig_file,
-                    show=show,
-                )
-            except AttributeError:
-                pass
-    except Exception:
-        pass
 
 
 def _despine(

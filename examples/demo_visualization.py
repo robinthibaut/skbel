@@ -1168,13 +1168,7 @@ def pca_vision(
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(subdir, "d_exvar.png")
-            explained_variance(
-                bel,
-                n_comp=bel.X_n_pc,
-                thr=0.8,
-                # annotation=["E"],
-                fig_file=fig_file,
-            )
+            explained_variance(n_components, evr, n_cut=bel.X_n_pc, thr=0.8, fig_file=fig_file)
         if before_after:
             plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=True, target=False)
     if h:
@@ -1193,13 +1187,7 @@ def pca_vision(
         # Explained variance plots
         if exvar:
             fig_file = os.path.join(subdir, "h_pca_exvar.png")
-            explained_variance(
-                bel,
-                n_comp=bel.Y_n_pc,
-                thr=0.8,
-                # annotation=["F"],
-                fig_file=fig_file,
-            )
+            explained_variance(n_components, evr, n_cut=bel.Y_n_pc, thr=0.8, fig_file=fig_file)
         if before_after:
             plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=False, target=True)
 

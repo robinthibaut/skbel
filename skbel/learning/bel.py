@@ -737,3 +737,24 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 Y_post.append(y_post_raw)
 
         return np.array(Y_post, dtype=dtype)
+
+    def cca_pc_transform(self, X=None, Y=None) -> (np.array, np.array):
+        """Transform PCs to CVs
+        :param X: Predictor array.
+        :param Y: Target array.
+        :return: CVs
+        """
+        if X is not None and Y is None:  # If only X is provided
+            _xc = self.cca.transform(X=X)  # CCA
+            return _xc
+
+        elif Y is not None and X is None:  # If only Y is provided
+            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy used for CCA
+            _, _yc = self.cca.transform(
+                X=dummy, Y=Y
+            )  # CCA. We only need the Y-loadings, so we pass dummy X
+            return _yc
+        else:
+            _xc, _yc = self.cca.transform(X=X, Y=Y)  # CCA
+            return _xc, _yc
+
