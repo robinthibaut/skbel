@@ -10,7 +10,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 import demo_visualization as myvis
-from skbel.goggles import pca_vision, cca_vision
 
 from skbel import utils
 from skbel import BEL
@@ -122,9 +121,3 @@ if __name__ == "__main__":
         Y_obs=y_test,
         base_dir=sub_dir,
     )
-
-    # Plot PCA
-    pca_vision(model, Y_obs=y_test, fig_dir=fig_pca_dir)
-
-    # Plot CCA
-    cca_vision(bel=model, X_obs=X_test, Y_obs=y_test, fig_dir=fig_cca_dir)
