@@ -156,14 +156,19 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
     return legend_a
 
 
-def explained_variance(n_components, evr, n_cut: int = 0, thr: float = 1.0, annotation: list = None,
-                       fig_file: str = None, show: bool = False):
+def explained_variance(
+    n_components,
+    evr,
+    n_cut: int = 0,
+    annotation: list = None,
+    fig_file: str = None,
+    show: bool = False,
+):
     """PCA explained variance plot.
 
     :param n_components: Number of components
     :param evr: Explained variance ratio
     :param n_cut: Number of components to display
-    :param thr: float: Threshold
     :param annotation: List of annotation(s)
     :param fig_file: Path to figure file
     :param show: Show figure
@@ -172,10 +177,7 @@ def explained_variance(n_components, evr, n_cut: int = 0, thr: float = 1.0, anno
         n_cut = n_components
 
     plt.grid(alpha=0.1)
-    # Index where explained variance is below threshold:
-    ny = len(np.where(np.cumsum(evr) < thr)[0])
-    # Explained variance vector:
-    cum = np.cumsum(evr[:n_cut]) * 100
+
     # x-ticks
     try:
         plt.xticks(
@@ -187,9 +189,6 @@ def explained_variance(n_components, evr, n_cut: int = 0, thr: float = 1.0, anno
         plt.xticks(
             fontsize=11,
         )
-    # Tricky y-ticks
-    yticks = np.append(cum[:ny], cum[-1])
-    plt.yticks(yticks, fontsize=8.5)
 
     # Set y-axis limits
     plt.ylim(0, 100)
@@ -498,13 +497,22 @@ def _get_defaults_kde_plot():
     return ax_joint, ax_marg_x, ax_marg_y, ax_cb
 
 
-def _cca_plot(X_scores, Y_scores, X_obs: np.array = None, Y_obs: np.array = None, samples=None, sdir: str = None,
-              show: bool = False, annotation_callback=None, mode=None):
+def _cca_plot(
+    X_scores,
+    Y_scores,
+    X_obs: np.array = None,
+    Y_obs: np.array = None,
+    samples=None,
+    sdir: str = None,
+    show: bool = False,
+    annotation_callback=None,
+    mode=None,
+):
     """Plot the Canonical Variate Pairs.
 
     :param mode:
     :param X_scores:
-    :param Y_scores: 
+    :param Y_scores:
     :param X_obs: The X observations.
     :param Y_obs: The Y observations.
     :param samples: The samples to plot.
@@ -572,7 +580,7 @@ def _cca_plot(X_scores, Y_scores, X_obs: np.array = None, Y_obs: np.array = None
         # Horizontal line
         try:
             ax_joint.axhline(
-                y=Y_obs_f.T[comp_n],  # noqa
+                y=Y_obs.T[comp_n],  # noqa
                 color="deepskyblue",
                 linewidth=1,
                 alpha=0.5,
@@ -711,13 +719,20 @@ def _cca_plot(X_scores, Y_scores, X_obs: np.array = None, Y_obs: np.array = None
     return annotation_callback  # Return the iterator so that it can be used again
 
 
-def cca_vision(X_scores=None, Y_scores=None, X_obs: np.array = None, Y_obs: np.array = None, samples=None,
-               fig_dir: str = None, show: bool = False):
+def cca_vision(
+    X_scores=None,
+    Y_scores=None,
+    X_obs: np.array = None,
+    Y_obs: np.array = None,
+    samples=None,
+    fig_dir: str = None,
+    show: bool = False,
+):
     """
-    :param X_scores: 
-    :param Y_scores: 
-    :param X_obs: 
-    :param Y_obs: 
+    :param X_scores:
+    :param Y_scores:
+    :param X_obs:
+    :param Y_obs:
     :param samples:
     :param fig_dir: Base directory path
     :param show: Show figure
@@ -729,8 +744,16 @@ def cca_vision(X_scores=None, Y_scores=None, X_obs: np.array = None, Y_obs: np.a
 
     annotation_call = _yield_alphabet()
     # KDE plots which consume a lot of time.
-    ac = _cca_plot(X_scores, Y_scores, X_obs=X_obs, Y_obs=Y_obs, samples=samples, sdir=fig_dir, show=show,
-                   annotation_callback=annotation_call)
+    ac = _cca_plot(
+        X_scores,
+        Y_scores,
+        X_obs=X_obs,
+        Y_obs=Y_obs,
+        samples=samples,
+        sdir=fig_dir,
+        show=show,
+        annotation_callback=annotation_call,
+    )
 
     # CCA coefficient plot
     cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(

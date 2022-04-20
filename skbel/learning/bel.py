@@ -757,4 +757,3 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             _xc, _yc = self.cca.transform(X=X, Y=Y)  # CCA
             return _xc, _yc
-
