@@ -178,20 +178,6 @@ def explained_variance(
 
     plt.grid(alpha=0.1)
 
-    # x-ticks
-    try:
-        plt.xticks(
-            np.concatenate([np.array([0]), np.arange(4, n_cut, 5)]),
-            np.concatenate([np.array([1]), np.arange(5, n_cut + 5, 5)]),
-            fontsize=11,
-        )
-    except ValueError:
-        plt.xticks(
-            fontsize=11,
-        )
-
-    # Set y-axis limits
-    plt.ylim(0, 100)
     # bars for aesthetics
     plt.bar(
         np.arange(n_cut),
