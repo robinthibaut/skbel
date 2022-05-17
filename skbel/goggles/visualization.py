@@ -163,6 +163,7 @@ def explained_variance(
     annotation: list = None,
     fig_file: str = None,
     show: bool = False,
+    **kwargs,
 ):
     """PCA explained variance plot.
 
@@ -175,20 +176,30 @@ def explained_variance(
     """
     if not n_cut:
         n_cut = n_components
+    # parse kwargs
+    if "cs" in kwargs:
+        cs = kwargs["cs"]
+    else:
+        cs = None
+
+    if cs:
+        mcs = evr
+    else:
+        mcs = np.cumsum(evr[:n_cut])
 
     plt.grid(alpha=0.1)
 
     # bars for aesthetics
     plt.bar(
         np.arange(n_cut),
-        np.cumsum(evr[:n_cut]) * 100,
+        mcs * 100,
         color="m",
         alpha=0.1,
     )
     # line for aesthetics
     plt.plot(
         np.arange(n_cut),
-        np.cumsum(evr[:n_cut]) * 100,
+        mcs * 100,
         "-o",
         linewidth=0.5,
         markersize=1.5,
@@ -200,6 +211,10 @@ def explained_variance(
     # Legend
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
     plt.gca().add_artist(legend_a)
+    plt.tick_params(labelsize=11)
+    # set x ticks as integers from 1 to n_components
+    plt.xticks(np.arange(n_cut), np.arange(1, n_cut + 1))
+    # locator_params(axis="x", nbins=10, integer=True)
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
@@ -296,8 +311,12 @@ def pca_scores(
         plt.title("Principal Components")
         plt.xlabel("PC number")
         plt.ylabel("PC value")
-    plt.tick_params(labelsize=11)
-    locator_params(axis="x", nbins=10, integer=True)
+    # make ticks bold
+    plt.tick_params(labelsize=7, which="major", direction="in")
+    plt.xticks(np.arange(n_comp), np.arange(1, n_comp + 1))
+
+    # locator_params(axis="x", nbins=10, integer=True)
+
 
     # Add legend
     # Add title inside the box

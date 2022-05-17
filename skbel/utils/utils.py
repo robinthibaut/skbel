@@ -93,7 +93,6 @@ def folder_reset(folder: str, exceptions: list = None):
 
 def dirmaker(dird: str, erase: bool = False):
     """Given a folder path, check if it exists, and if not, creates it.
-
     :param dird: Directory path.
     :param erase: Whether to delete existing folder or not.
     """
