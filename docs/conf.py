@@ -17,7 +17,9 @@ import sys
 # sys.path.insert(1, os.path.abspath('../examples'))
 from datetime import datetime
 
+sys.path.insert(0, os.path.abspath('./'))
 sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
