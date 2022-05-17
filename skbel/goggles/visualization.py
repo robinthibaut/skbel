@@ -317,7 +317,6 @@ def pca_scores(
 
     # locator_params(axis="x", nbins=10, integer=True)
 
-
     # Add legend
     # Add title inside the box
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
