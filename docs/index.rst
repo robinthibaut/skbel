@@ -23,7 +23,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   source/modules.rst
+   source/skbel.rst
    source/examples.rst
 
 Bayesian Evidential Learning
