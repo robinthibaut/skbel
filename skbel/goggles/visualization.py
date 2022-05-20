@@ -193,16 +193,16 @@ def explained_variance(
     plt.bar(
         np.arange(n_cut),
         mcs * 100,
-        color="m",
-        alpha=0.1,
+        color="lightblue",
+        alpha=0.5,
     )
     # line for aesthetics
     plt.plot(
         np.arange(n_cut),
         mcs * 100,
         "-o",
-        linewidth=0.5,
-        markersize=1.5,
+        linewidth=1,
+        markersize=2,
         alpha=0.8,
     )
     # Axes labels
@@ -211,7 +211,7 @@ def explained_variance(
     # Legend
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
     plt.gca().add_artist(legend_a)
-    plt.tick_params(labelsize=11)
+    plt.tick_params(labelsize=8)
     # set x ticks as integers from 1 to n_components
     plt.xticks(np.arange(n_cut), np.arange(1, n_cut + 1))
     # locator_params(axis="x", nbins=10, integer=True)
@@ -223,7 +223,7 @@ def explained_variance(
             dpi=300,
             pad_inches=0.01,
             bbox_inches="tight",
-            transparent=True,
+            transparent=False,
         )
         if show:
             plt.show()
@@ -237,9 +237,13 @@ def pca_scores(
     training: np.array,
     prediction: np.array = None,
     pc_post: np.array = None,
+    random_pcs: np.array = None,
     n_comp: int = 0,
     annotation: list = None,
+    title: str = None,
+    xlabel: str = None,
     fig_file: str = None,
+    add_legend: bool = True,
     show: bool = False,
 ):
     """PCA scores plot, displays scores of observations above those of
@@ -251,7 +255,10 @@ def pca_scores(
     :param pc_post: PCA scores of the posterior (Y)
     :param n_comp: How many components to show
     :param annotation: List of annotation(s)
+    :param title: Title of the plot
+    :param xlabel: Label of the x axis
     :param fig_file: Path to figure file
+    :param add_legend: Add legend
     :param show: Show figure
     """
     if not n_comp:
@@ -260,13 +267,13 @@ def pca_scores(
     if annotation is None:
         annotation = []
     # Grid
-    plt.grid(alpha=0.2)
+    # plt.grid(alpha=0.2)
 
     # Plot all training scores
     # We assume that we have a training set
     colors = ["blue"]
     labels = ["Training"]
-    plt.plot(training.T[:n_comp], "ob", markersize=3.5, alpha=0.1)
+    plt.plot(training.T[:n_comp], "ob", markersize=8, alpha=0.12, markeredgecolor=None, markeredgewidth=0.0)
 
     if pc_post is not None:
         colors += ["lightgreen"]
@@ -275,10 +282,26 @@ def pca_scores(
             pc_post.T[:n_comp],
             "o",
             markerfacecolor="lightgreen",
-            markersize=2,
+            markersize=5,
             markeredgecolor="k",
-            markeredgewidth=0.1,
-            alpha=1,
+            markeredgewidth=0.05,
+            alpha=0.15,
+        )
+
+    if random_pcs is not None:
+        colors += ["gray"]
+        labels += ["Random"]
+        # they have to start at ncomp + 1
+        cuit = pc_post.shape[1]
+        plt.plot(
+            np.arange(cuit, cuit + random_pcs.shape[1]),
+            random_pcs.T,
+            "o",
+            markerfacecolor="gray",
+            markersize=5,
+            markeredgecolor=None,
+            markeredgewidth=0.0,
+            alpha=0.1,
         )
 
     if prediction is not None:
@@ -288,45 +311,49 @@ def pca_scores(
         # Select observation
         pc_obs = prediction.reshape(1, -1)
         # Create beautiful spline to follow prediction scores
-        xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        try:
-            spl = make_interp_spline(
-                np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-            )  # type: BSpline
-            power_smooth = spl(xnew)
-            # I forgot why I had to put '-1'
-            plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.4)
-        except ValueError:
-            pass
+        # xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
+        # try:
+        #     spl = make_interp_spline(
+        #         np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
+        #     )  # type: BSpline
+        #     power_smooth = spl(xnew)
+        #     # I forgot why I had to put '-1'
+        #     plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.4)
+        # except ValueError:
+        #     pass
 
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
             "ro",
-            markersize=3.5,
+            markersize=5,
             markeredgecolor="k",
             markeredgewidth=0.4,
             alpha=0.7,
         )
+
     if labels:
-        plt.title("Principal Components")
-        plt.xlabel("PC number")
-        plt.ylabel("PC value")
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel("Value")
     # make ticks bold
     plt.tick_params(labelsize=7, which="major", direction="in")
     plt.xticks(np.arange(n_comp), np.arange(1, n_comp + 1))
+
+    plt.ylim(np.min(training.T[:n_comp])*1.5, np.max(training.T[:n_comp]))
 
     # locator_params(axis="x", nbins=10, integer=True)
 
     # Add legend
     # Add title inside the box
-    legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
+    if add_legend:
+        legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
 
-    _proxy_legend(
-        legend1=legend_a,
-        colors=colors,
-        labels=labels,
-        marker=["o"] * len(colors),
-    )
+        _proxy_legend(
+            legend1=legend_a,
+            colors=colors,
+            labels=labels,
+            marker=["o"] * len(colors),
+        )
 
     if fig_file:
         skbel.utils.dirmaker(os.path.dirname(fig_file))
@@ -335,7 +362,7 @@ def pca_scores(
             dpi=300,
             pad_inches=0,
             bbox_inches="tight",
-            transparent=True,
+            transparent=False,
         )
         if show:
             plt.show()
@@ -712,7 +739,7 @@ def _cca_plot(
                 dpi=300,
                 pad_inches=0.01,
                 bbox_inches="tight",
-                transparent=True,
+                transparent=False,
             )
             if show:
                 plt.show()
@@ -792,7 +819,7 @@ def cca_vision(
         dpi=300,
         bbox_inches="tight",
         pad_inches=0,
-        transparent=True,
+        transparent=False,
     )
     if show:
         plt.show()
