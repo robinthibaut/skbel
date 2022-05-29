@@ -242,6 +242,7 @@ def pca_scores(
     annotation: list = None,
     title: str = None,
     xlabel: str = None,
+    ylabel: str = None,
     fig_file: str = None,
     add_legend: bool = True,
     show: bool = False,
@@ -334,7 +335,7 @@ def pca_scores(
     if labels:
         plt.title(title)
         plt.xlabel(xlabel)
-        plt.ylabel("Value")
+        plt.ylabel(ylabel)
     # make ticks bold
     plt.tick_params(labelsize=7, which="major", direction="in")
     plt.xticks(np.arange(n_comp), np.arange(1, n_comp + 1))
@@ -345,14 +346,16 @@ def pca_scores(
 
     # Add legend
     # Add title inside the box
+    legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
+
     if add_legend:
-        legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
 
         _proxy_legend(
             legend1=legend_a,
             colors=colors,
             labels=labels,
             marker=["o"] * len(colors),
+            loc=3
         )
 
     if fig_file:
@@ -603,7 +606,7 @@ def _cca_plot(
         # Vertical line
         ax_joint.axvline(
             x=X_obs.T[comp_n],
-            color="red",
+            color="blue",
             linewidth=1,
             alpha=0.5,
             label="$d^{c}_{True}$",
@@ -612,7 +615,7 @@ def _cca_plot(
         try:
             ax_joint.axhline(
                 y=Y_obs.T[comp_n],  # noqa
-                color="deepskyblue",
+                color="red",
                 linewidth=1,
                 alpha=0.5,
                 label="$h^{c}_{True}$",
@@ -623,29 +626,29 @@ def _cca_plot(
         ax_joint.plot(
             X_scores.T[comp_n],
             Y_scores.T[comp_n],
-            "ko",
-            markersize=2.5,
+            "bo",
+            markersize=7,
             markeredgecolor="w",
             markeredgewidth=0.2,
-            alpha=0.8,
+            alpha=0.4,
         )
         ax_joint.plot(
             np.ones(samples.shape[1]) * X_obs.T[comp_n],
             samples.T[comp_n],
             marker="o",
             markerfacecolor="lightgreen",
-            markersize=2.5,
-            markeredgecolor="k",
-            markeredgewidth=0.2,
-            alpha=0.7,
+            markersize=7,
+            markeredgecolor=None,
+            markeredgewidth=0,
+            alpha=0.2,
         )  # Samples
         # Point
         try:
             ax_joint.plot(
                 X_obs.T[comp_n],
                 Y_obs.T[comp_n],
-                "wo",
-                markersize=5,
+                "ro",
+                markersize=7,
                 markeredgecolor="k",
                 alpha=1,
             )
@@ -660,23 +663,26 @@ def _cca_plot(
         )
         #  - Notch indicating true value
         ax_marg_x.axvline(
-            x=X_obs.T[comp_n], ymax=0.25, color="red", linewidth=1, alpha=0.5
+            x=X_obs.T[comp_n], ymax=0.25, color="blue", linewidth=1, alpha=0.5
         )
         ax_marg_x.legend(loc=2, fontsize=10)
 
         # Marginal y plot
         #  - Line plot
-        ax_marg_y.plot(kde_y, sup_y, color="black", linewidth=0.5, alpha=1)
+        ax_marg_y.plot(kde_y, sup_y, color="black", linewidth=0.8, alpha=1)
         #  - Fill to axis
+        # ax_marg_y.fill_betweenx(
+        #     sup_y, 0, kde_y, alpha=0.5, color="darkred", label="$p(h^{c})$"
+        # )
         ax_marg_y.fill_betweenx(
-            sup_y, 0, kde_y, alpha=0.5, color="darkred", label="$p(h^{c})$"
+            sup_y, 0, kde_y, alpha=0.5, color="blue", label="$p(h^{c})$"
         )
         #  - Notch indicating true value
         try:
             ax_marg_y.axhline(
                 y=Y_obs.T[comp_n],
                 xmax=0.25,
-                color="deepskyblue",
+                color="red",
                 linewidth=1,
                 alpha=0.5,
             )
@@ -686,14 +692,15 @@ def _cca_plot(
         kde_samples, sup_samples = marginal_eval_samples(
             samples[:, :, comp_n].reshape(1, -1)
         )  # noqa
-        ax_marg_y.plot(kde_samples, sup_samples, color="red", alpha=0)  # noqa
+        ax_marg_y.plot(kde_samples, sup_samples, color="k", linewidth=0.5, alpha=1)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(
             sup_samples,
             0,
             kde_samples,
-            color="mediumorchid",
-            alpha=0.5,
+            # color="mediumorchid",
+            color="lightgreen",
+            alpha=1,
             label="$p(h^{c}|d^{c}_{*})$",
         )
 
@@ -708,11 +715,7 @@ def _cca_plot(
         subtitle = next(annotation_callback)
         # Add title inside the box
         an = [
-            f"{subtitle}. Pair {comp_n + 1} - "
-            + r"$\it{"
-            + "r"
-            + "}$"
-            + f" = {round(cca_coefficient[comp_n], 3)}"
+            f"{subtitle}. Pair {comp_n + 1} - "+r"$\rho$"+f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #
@@ -756,24 +759,37 @@ def cca_vision(
     X_obs: np.array = None,
     Y_obs: np.array = None,
     samples=None,
+    n_cut = None,
+    annotation_call=None,
     fig_dir: str = None,
     show: bool = False,
 ):
     """
-    :param X_scores:
-    :param Y_scores:
-    :param X_obs:
-    :param Y_obs:
-    :param samples:
+    :param X_scores: CCA scores for X
+    :param Y_scores: CCA scores for Y
+    :param X_obs: X observations
+    :param Y_obs: Y observations
+    :param samples: Samples from the model
+    :param n_cut: Only show the first n_cut components
+    :param annotation_call: Annotation callback
     :param fig_dir: Base directory path
     :param show: Show figure
     """
     if fig_dir is None:
         fig_dir = ""
 
+    if annotation_call is None:
+        annotation_call = _yield_alphabet()
+
     n_components = X_scores.shape[1]
 
-    annotation_call = _yield_alphabet()
+    if n_cut:
+        X_scores = X_scores[:, :n_cut]
+        Y_scores = Y_scores[:, :n_cut]
+        samples = samples[:, :, :n_cut]
+        X_obs = X_obs[:, :n_cut]
+        Y_obs = Y_obs[:, :n_cut]
+
     # KDE plots which consume a lot of time.
     ac = _cca_plot(
         X_scores,
@@ -787,40 +803,41 @@ def cca_vision(
     )
 
     # CCA coefficient plot
-    cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(
-        offset=n_components
-    )  # Gets correlation coefficient
-    plt.plot(cca_coefficient, "lightblue", zorder=1)
-    plt.scatter(
-        x=np.arange(len(cca_coefficient)),
-        y=cca_coefficient,
-        c=cca_coefficient,
-        alpha=1,
-        s=50,
-        cmap="coolwarm",
-        zorder=2,
-    )
-    cb = plt.colorbar()
-    cb.ax.set_title(r"$\it{" + "r" + "}$")
-    plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-    plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
-    plt.tick_params(labelsize=5)
-    plt.yticks([])
-    # plt.title('Decrease of CCA correlation coefficient with component number')
-    plt.ylabel("Correlation coefficient")
-    plt.xlabel("Component number")
+    if not n_cut:
+        cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(
+            offset=n_components
+        )  # Gets correlation coefficient
+        plt.plot(cca_coefficient, "lightblue", zorder=1)
+        plt.scatter(
+            x=np.arange(len(cca_coefficient)),
+            y=cca_coefficient,
+            c=cca_coefficient,
+            alpha=1,
+            s=50,
+            cmap="coolwarm",
+            zorder=2,
+        )
+        cb = plt.colorbar()
+        cb.ax.set_title(r"$\it{" + "r" + "}$")
+        plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
+        plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
+        plt.tick_params(labelsize=5)
+        plt.yticks([])
+        # plt.title('Decrease of CCA correlation coefficient with component number')
+        plt.ylabel("Correlation coefficient")
+        plt.xlabel("Component number")
 
-    # Add annotation
-    legendary = _proxy_annotate(annotation=next(ac), fz=14, loc=1)
-    plt.gca().add_artist(legendary)
+        # Add annotation
+        legendary = _proxy_annotate(annotation=next(ac), fz=14, loc=1)
+        plt.gca().add_artist(legendary)
 
-    plt.savefig(
-        os.path.join(fig_dir, "coefs.png"),
-        dpi=300,
-        bbox_inches="tight",
-        pad_inches=0,
-        transparent=False,
-    )
+        plt.savefig(
+            os.path.join(fig_dir, "coefs.png"),
+            dpi=300,
+            bbox_inches="tight",
+            pad_inches=0,
+            transparent=False,
+        )
     if show:
         plt.show()
     plt.close()

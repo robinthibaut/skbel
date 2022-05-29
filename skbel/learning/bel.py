@@ -135,7 +135,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @seed.setter
     def seed(self, s):
         self._seed = s
+        self.random_state = s
         np.random.seed(self._seed)
+
+    @property
+    def random_state(self):
+        """Seed a.k.a. random state to reproduce the same samples"""
+        return self._seed
+
+    @random_state.setter
+    def random_state(self, value):
+        self.random_state = value
 
     @property
     def x_pre_processed(self):
@@ -757,3 +767,4 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             _xc, _yc = self.cca.transform(X=X, Y=Y)  # CCA
             return _xc, _yc
+
