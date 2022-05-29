@@ -100,6 +100,8 @@ if __name__ == "__main__":
     # Number of samples to be extracted from the posterior distribution
     model.n_posts = 400
 
+    model.seed = 42  # Set seed for reproducibility
+
     # %% Train the model
     # Fit BEL model
     model.fit(X=X_train, Y=y_train)

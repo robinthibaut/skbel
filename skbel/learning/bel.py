@@ -135,7 +135,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     @seed.setter
     def seed(self, s):
         self._seed = s
-        self.random_state = s
         np.random.seed(self._seed)
 
     @property
@@ -144,8 +143,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self._seed
 
     @random_state.setter
-    def random_state(self, value):
-        self.random_state = value
+    def random_state(self, s):
+        self._seed = s
 
     @property
     def x_pre_processed(self):
