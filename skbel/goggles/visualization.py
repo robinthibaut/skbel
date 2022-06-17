@@ -714,15 +714,24 @@ def _cca_plot(
         # Add custom artists
         subtitle = next(annotation_callback)
         # Add title inside the box
+        # rule to name the pair by 1st, 2nd, 3rd, ...
+        if comp_n == 0:
+            extn = "st"
+        elif comp_n == 1:
+            extn = "nd"
+        elif comp_n == 2:
+            extn = "rd"
+        else:
+            extn = "th"
         an = [
-            f"{subtitle}. Pair {comp_n + 1} - "+r"$\rho$"+f" = {round(cca_coefficient[comp_n], 3)}"
+            f"{subtitle}. {comp_n + 1}{extn} pair  - "+r"$\rho$"+f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
-            colors=["black", "white", "lightgreen", "red", "deepskyblue"],
+            colors=["blue", "red", "lightgreen", "red", "deepskyblue"],
             labels=[
                 "$Training$",
                 "$Test$",

@@ -297,32 +297,33 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Project observed data into canonical space.
         if self._x_obs_pre_processed is None:
-            if type(X_obs) is list:  # If X_obs is a list
-                try:
-                    X_obs = [
-                        check_array(x, allow_nd=True) for x in X_obs
-                    ]  # Check if it is a list of arrays
-                except ValueError:  # If it is not a list of arrays
-                    try:
-                        X_obs = [
-                            check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
-                        ]  # Check if it is a list of pd.Series
-                    except AttributeError:  # If it is not a list of pd.Series
-                        X_obs = [
-                            check_array(x.reshape(1, -1)) for x in X_obs
-                        ]  # Check if it is a list of arrays
-            else:  # If it is not a list
-                try:
-                    X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
-                except ValueError:
-                    try:
-                        X_obs = check_array(
-                            X_obs.to_numpy().reshape(1, -1)
-                        )  # Check if it is a pd.Series
-                    except AttributeError:
-                        X_obs = check_array(
-                            X_obs.reshape(1, -1)
-                        )  # Check if it is an array
+            pass
+            # if type(X_obs) is list:  # If X_obs is a list
+            #     try:
+            #         X_obs = [
+            #             check_array(x, allow_nd=True) for x in X_obs
+            #         ]  # Check if it is a list of arrays
+            #     except ValueError:  # If it is not a list of arrays
+            #         try:
+            #             X_obs = [
+            #                 check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
+            #             ]  # Check if it is a list of pd.Series
+            #         except AttributeError:  # If it is not a list of pd.Series
+            #             X_obs = [
+            #                 check_array(x.reshape(1, -1)) for x in X_obs
+            #             ]  # Check if it is a list of arrays
+            # else:  # If it is not a list
+            #     try:
+            #         X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
+            #     except ValueError:
+            #         try:
+            #             X_obs = check_array(
+            #                 X_obs.to_numpy().reshape(1, -1)
+            #             )  # Check if it is a pd.Series
+            #         except AttributeError:
+            #             X_obs = check_array(
+            #                 X_obs.reshape(1, -1)
+            #             )  # Check if it is an array
             # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
             # consistent.
             X_obs_pc = self.X_pre_processing.transform(X_obs)

@@ -119,7 +119,7 @@ class KDE:
         self.bw = bandwidth
         self.grid_search = grid_search
         if bandwidth_space is None:
-            self.bandwidth_space = np.logspace(-2, 1, 50)  # default bandwidths
+            self.bandwidth_space = np.logspace(-2, 2, 50)  # default bandwidths
         else:
             self.bandwidth_space = bandwidth_space
         self.gridsize = gridsize
