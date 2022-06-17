@@ -114,4 +114,4 @@ Communication
 How to cite
 ----------------
 
-Thibaut, R., 2021. SKBEL – Bayesian Evidential Learning framework built on top of Scikit-learn. Zenodo. https://doi.org/10.5281/zenodo.5526609
+Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.6205242
