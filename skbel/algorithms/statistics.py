@@ -544,6 +544,7 @@ def mvn_inference(
 
     .. [1] A. Tarantola. Inverse Problem Theory and Methods for Model Parameter Estimation.
            SIAM, 2005. Pages: 70-71
+
     :param X: Canonical Variate of the training data
     :param Y: Canonical Variate of the training target, gaussian-distributed
     :param X_obs: Canonical Variate of the observation (n_samples, n_features).

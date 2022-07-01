@@ -47,40 +47,42 @@ Workflow
 Forward modeling
 ++++++++++++++++
 - Examples of both `d` and `h` are generated through forward modeling from the same model `m`. Target and predictor are real, multi-dimensional random variables.
+
 Pre-processing
 ++++++++++++++++
 
 - Specific pre-processing is applied to the data if necessary (such as scaling).
+
 Dimensionality reduction
-++++++++++++++++
++++++++++++++++++++++++++
 
 - Principal Component Analysis (PCA) is applied to both target and predictor to aggregate the correlated variables into a few independent Principal Components (PC’s).
+
 Learning
 ++++++++++++++++
 
 - Canonical Correlation Analysis (CCA) transforms the two sets into pairs of Canonical Variates (CV’s) independent of each other.
+
 Post-processing
 ++++++++++++++++
 
 - Specific post-processing is applied to the CV's if necessary (such as CV normalization).
+
 Posterior distribution inference
-++++++++++++++++
++++++++++++++++++++++++++++++++++++
 
 - The mean `μ` and covariance `Σ` of the posterior distribution of an unknown target given an observed `d*` can be directly estimated from the CV's distribution.
 - Alternatively, the posterior conditional distribution can be inferred through KDE.
 
 Sampling and back-transformation to the original space
-++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 - The posterior distribution is sampled to obtain realizations of `h` in canonical space, successively back-transformed to the original space.
-
 
 .. image:: /img/flow-01.png
    :width: 800
 
-
 Figure 2: Typical BEL workflow.
-
 
 Contributing
 =============

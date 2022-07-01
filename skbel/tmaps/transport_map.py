@@ -2959,9 +2959,9 @@ class TransportMap:
         X: np.array,
         Yk: np.array,
         k: int,
-        max_iterations: int = 100,
-        threshold: float = 1e-9,
-        start_distance: int = 2,
+        # max_iterations: int = 100,
+        # threshold: float = 1e-9,
+        # start_distance: int = 2,
     ):
 
         """
@@ -2969,28 +2969,26 @@ class TransportMap:
         bisection. It is called in the inverse_map function.
 
         :param X: N-by-k array of samples inverted so far, where the k-th
-        column still contains the reference samples used as a residual in
-        the root finding process
+         column still contains the reference samples used as a residual in
+         the root finding process
 
         :param Yk: a vector containing the target values in the k-th
-        dimension, for which the root finding algorithm must solve.
+         dimension, for which the root finding algorithm must solve.
 
         :param k: an integer variable defining what map component is being
-        evaluated. Corresponds to a dimension of sample space.
-
-        :param max_iterations: number of function calls before the algorithm
-        stops continuing the root search to avoid becoming stuck in an
-        endless loop.
-
-        :param threshold: threshold value below which the algorithm assumes
-        the root finding problem to be solved.
-
-        :param start_distance: starting distance from the origin for the
-        interval edges used for bisection. This window can be moved by the
-        algorithm should the root not lie within.
+         evaluated. Corresponds to a dimension of sample space.
 
         """
-
+        # :param max_iterations: number of function calls before the algorithm
+        #  stops continuing the root search to avoid becoming stuck in an
+        #  endless loop.
+        #
+        # :param threshold: threshold value below which the algorithm assumes
+        #  the root finding problem to be solved.
+        #
+        # :param start_distance: starting distance from the origin for the
+        #  interval edges used for bisection. This window can be moved by the
+        #  algorithm should the root not lie within.
         # Function to optimize
         def f(x):
             # x is a multivariate vector
