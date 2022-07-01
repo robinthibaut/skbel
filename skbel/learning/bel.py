@@ -51,6 +51,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         random_state=None,
     ):
         """ Initialize the BEL class.
+
         :param mode: How to infer the posterior distribution. "kde", "mvn" or "tm".
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
@@ -749,6 +750,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def cca_pc_transform(self, X=None, Y=None) -> (np.array, np.array):
         """Transform PCs to CVs
+
         :param X: Predictor array.
         :param Y: Target array.
         :return: CVs

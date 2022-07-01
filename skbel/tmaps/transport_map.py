@@ -38,74 +38,56 @@ class TransportMap:
         """
         This toolbox contains functions required to construct, optimize, and
         evaluate transport methods.
-
         Maximilian Ramgraber, January 2022
 
         :param monotone: list specifying the structure of the monotone part of
             the transport map component functions.
-
         :param nonmonotone: list specifying the structure of the non-monotone
             part of the transport map component functions.
-
         :param X: N-by-D array of the training samples used to optimize the
             transport map, where N is the number of samples and D is the
             number of dimensions
-
         :param polynomial_type: keyword which specifies what kinds of
             polynomials are used for the transport map component functions.
-
         :param monotonicity: keyword which specifies through what method the
             transport map ensures monotonicity in the last dimensions.
             Must be 'integrated rectifier' or 'separable monotonicity'.
-
         :param standardize_samples: a True/False flag determining whether the
             transport map should standardize the training samples before
             optimization
-
         :param workers: number of workers for parallel optimization. If set
             to 1, parallelized optimization is inactive.
-
         :param ST_scale_factor: a float which scales the width of special
             terms used in the map components, such as 'RBF 0', 'iRBF 0',
             'LET 0', or 'RET 0'.
-
         :param ST_scale_mode: keyword which defines whether the width of
             special term scale factors is determined based on neighbouring
             special terms ('dynamic') or fixed as ST_scale_factor ('static').
-
         :param coeffs_init: value used to initialize the coefficients at the
             start of the map optimization.
-
         :param linearization: float which specifies boundary values used
             to linearize the map components in the tails. Its role is
             specifies by linearization_specified_as_quantiles.
-
         :param linearization_specified_as_quantiles: flag which specifies
             whether the linearization thresholds are specifies as quantiles
             (True) or absolute values (False). If True, boundaries are
             placed at linearization and 1-linearization, if False, at
             linearization and -linearization. Only used if linearization is
             not None.
-
         :param linearization_increment: increment used for the linearization
             of the map component functions. Only used if linearization is
             not None.
-
         :param regularization: keyword which specifies if regularization is
             used, and if so, what kind of regularization ('L1' or 'L2').
-
         :param regularization_lambda: float which specifies the weight for
             the map coefficient regularization. Only used if regularization
             is not None.
-
         :param quadrature_input: dictionary for optional keywords to overwrite
             the default variables in the function Gauss_quadrature. Only
             used if monotonicity = 'integrated rectifier'.
-
         :param rectifier_type: keyword which specifies which function is
             used to rectify the monotone map components. Only used if
             monotonicity = 'integrated rectifier'.
-
         :param delta: small increment added to the rectifier to prevent
             numerical underflow. Only used if monotonicity = 'integrated
             rectifier'.
@@ -372,11 +354,9 @@ class TransportMap:
             Empty lists correspond to a constant, lists specify polynomials
             or Hermite functions, and strings denote special terms such as
             radial basis functions.
-
         :param mode: a keyword which defines whether the term's string
             returned should be conventional ('standard') or its derivative
             ('derivative').
-
         :param k: an integer specifying what dimension of the samples the
             'term' corresponds to. Used to clarify with respect to what
             variable we take the derivative.
@@ -1957,15 +1937,12 @@ class TransportMap:
             transport map, where N is the number of samples and D is the
             number of dimensions. Can be None, at which point it is
             replaced with X from storage.
-
         :param k: an integer variable defining what map component is being
             evaluated. Corresponds to a dimension of sample space.
-
         :param coeffs_nonmon: a vector specifying the coefficients of the
             non-monotone part of the map component's terms, i.e., those
             entries which do not depend on x_k. This vector is replaced from
             storage if it is not overwritten.
-
         :param coeffs_mon: a vector specifying the coefficients of the
             monotone part of the map component's terms, i.e., those entries
             which do not depend on x_k. This vector is replaced from
@@ -2202,7 +2179,6 @@ class TransportMap:
 
         :param k: an integer variable defining what map component
             is being evaluated. Corresponds to a dimension of sample space.
-
         :param task_supervisor: a shared list which informs the main process
             how many optimization tasks have already been computed. This
             list should not be specified by the user, it only serves to
@@ -2431,7 +2407,6 @@ class TransportMap:
 
         :param k: an integer variable defining what map component is being
             evaluated. Corresponds to a dimension of sample space.
-
         :param task_supervisor: a shared list which informs the main process
             how many optimization tasks have already been computed. This list
             should not be specified by the user, it only serves to provide
@@ -2541,9 +2516,7 @@ class TransportMap:
         :param coeffs: a vector containing the coefficients for both the
             non-monotone and monotone terms of the k-th map component
             function. Is replaced for storage is specified as None.
-
         :param k: an integer variable defining what map component
-
         :param div: an integer specifying where the cutoff between the
             non-monotone and monotone coefficients in 'coeffs' is.
         """
@@ -2674,10 +2647,8 @@ class TransportMap:
         :param coeffs: a vector containing the coefficients for both the
             non-monotone and monotone terms of the k-th map component
             function. Is replaced for storage is specified as None.
-
         :param k: an integer variable defining what map component
             is being evaluated. Corresponds to a dimension of sample space.
-
         :param div: an integer specifying where the cutoff between the
             non-monotone and monotone coefficients in 'coeffs' is.
         """
@@ -2856,7 +2827,6 @@ class TransportMap:
             number of samples, D is the number of target distribution
             dimensions, and E the number of pre-specified dimensions (if
             X_precalc is specified).
-
         :param X_precalc: N-by-E array of samples in the space of the
             target distribution, used to condition the lower D-E dimensions
             during the inversion process.
@@ -2971,10 +2941,8 @@ class TransportMap:
         :param X: N-by-k array of samples inverted so far, where the k-th
          column still contains the reference samples used as a residual in
          the root finding process
-
         :param Yk: a vector containing the target values in the k-th
          dimension, for which the root finding algorithm must solve.
-
         :param k: an integer variable defining what map component is being
          evaluated. Corresponds to a dimension of sample space.
 
@@ -3161,42 +3129,31 @@ class TransportMap:
         function obtained from a rectifier.
 
         :param f: function to be integrated element-wise.
-
         :param a: lower bound for integration, defined as either a scalar
             or a vector.
-
         :param b: upper bound for integration, defined as either a scalar
             or a vector.
-
         :param order: order of the Legendre polynomial used for the
             integration scheme.
-
         :param args: a dictionary with supporting keyword arguments to be
             passed to the function.
-
         :param Ws: weights of the integration points, can be calculated in
             advance to speed up the computation. Is calculated by the integration
             scheme, if not specified.
-
         :param xis: positions of the integration points, can be calculated
             in advance to speed up the computation. Is calculated by the
             integration scheme, if not specified.
-
         :param full_output: Flag for whether the positions and weights of
             the integration points should be returned along with the integration
             results. If True, returns a tuple with (results,order,xis,Ws). If
             False, only returns results.
-
         :param adaptive: flag which determines whether the numerical scheme
             should adjust the order of the Legendre polynomial adaptively
             (True) or use the integer provided by 'order' (False).
-
         :param threshold: threshold for the difference in the adaptive
             integration, adaptation stops after difference in integration
-
         :param increment: increment by which the order is increased in each
             adaptation cycle. Higher values correspond to larger steps.
-
         :param verbose: flag which determines whether information about the
             integration process should be printed to console (True) or not
             (False).
@@ -3398,7 +3355,6 @@ class TransportMap:
 
             :param mode: keyword string defining which function is used
                 to rectify the map component functions.
-
             :param delta: a small offset value to prevent arithmetic under-
                 flow in some rectifier functions.
             """
@@ -3535,7 +3491,7 @@ class TransportMap:
             components if monotonicity = 'separable monotonicity'.
 
             :param f: an array of function evaluates to be rectified.
-            :param dfdc:
+            :param dfdc: an array of function evaluates to be rectified.
             """
 
             if self.mode == "squared":
