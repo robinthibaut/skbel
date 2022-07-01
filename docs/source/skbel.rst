@@ -1,4 +1,4 @@
-skbel package
+SKBEL package
 =============
 
 Subpackages
@@ -15,11 +15,3 @@ Subpackages
    skbel.spatial
    skbel.testing
    skbel.utils
-
-Module contents
----------------
-
-.. automodule:: skbel
-   :members:
-   :undoc-members:
-   :show-inheritance:

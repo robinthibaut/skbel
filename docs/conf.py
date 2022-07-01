@@ -36,7 +36,6 @@ author = 'Robin Thibaut'
 # extensions = ["sphinx.ext.autodoc",
 #               "sphinx_rtd_theme",
 #               ]
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",
@@ -51,7 +50,9 @@ extensions = [
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     "sphinx.ext.inheritance_diagram",
+    'sphinxcontrib.bibtex',
 ]
+bibtex_bibfiles = ['export.bib']
 
 
 autodoc_default_options = {'members': True,
