@@ -9,9 +9,8 @@ from os.path import join as jp
 
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.pyplot import legend, locator_params
+from matplotlib.pyplot import legend
 from numpy import ma
-from scipy.interpolate import BSpline, make_interp_spline
 
 import skbel.utils
 from skbel.algorithms import KDE, kde_params

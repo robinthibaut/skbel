@@ -72,7 +72,7 @@ Posterior distribution inference
 +++++++++++++++++++++++++++++++++++
 
 - The mean `μ` and covariance `Σ` of the posterior distribution of an unknown target given an observed `d*` can be directly estimated from the CV's distribution.
-- Alternatively, the posterior conditional distribution can be inferred through KDE.
+- Alternatively, the posterior conditional distribution can be inferred through KDE or other methods.
 
 Sampling and back-transformation to the original space
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++

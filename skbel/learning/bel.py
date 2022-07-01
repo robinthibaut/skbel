@@ -8,7 +8,7 @@ It would be interesting to try other techniques and implement it in the framewor
 Alternative blueprints could be written in the same style as the BEL class implementing the classic scheme.
 """
 
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
+#  Copyright (c) 2022. Robin Thibaut, Ghent University
 import numpy as np
 from scipy import interpolate, stats
 from sklearn.base import (
