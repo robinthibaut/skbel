@@ -30,10 +30,9 @@ __all__ = ["BEL"]
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    """Heart of the framework.
-
-    Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian
-    Evidential Learning.
+    """ Heart of the framework.
+        Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian
+        Evidential Learning.
     """
 
     def __init__(
@@ -51,8 +50,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         y_dim=None,
         random_state=None,
     ):
-        """Initialize the BEL class.
-
+        """ Initialize the BEL class.
         :param mode: How to infer the posterior distribution. "kde", "mvn" or "tm".
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
