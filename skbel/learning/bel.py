@@ -340,9 +340,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         n_cca = self.cca.n_components  # Number of canonical variables
 
         if self.mode == "mvn":  # If mode is mvn
-            self.posterior_mean, self.posterior_covariance = np.zeros(
-                (n_obs, n_cca)
-            ), np.zeros((n_obs, n_cca, n_cca))
+            self.posterior_mean, self.posterior_covariance = (
+                np.zeros((n_obs, n_cca)),
+                np.zeros((n_obs, n_cca, n_cca)),
+            )
             for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
                 # Number of PCA components for the curves
@@ -767,4 +768,3 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             _xc, _yc = self.cca.transform(X=X, Y=Y)  # CCA
             return _xc, _yc
-

@@ -274,7 +274,14 @@ def pca_scores(
     # We assume that we have a training set
     colors = ["blue"]
     labels = ["Training"]
-    plt.plot(training.T[:n_comp], "ob", markersize=8, alpha=0.12, markeredgecolor=None, markeredgewidth=0.0)
+    plt.plot(
+        training.T[:n_comp],
+        "ob",
+        markersize=8,
+        alpha=0.12,
+        markeredgecolor=None,
+        markeredgewidth=0.0,
+    )
 
     if pc_post is not None:
         colors += ["lightgreen"]
@@ -340,7 +347,7 @@ def pca_scores(
     plt.tick_params(labelsize=7, which="major", direction="in")
     plt.xticks(np.arange(n_comp), np.arange(1, n_comp + 1))
 
-    plt.ylim(np.min(training.T[:n_comp])*1.5, np.max(training.T[:n_comp]))
+    plt.ylim(np.min(training.T[:n_comp]) * 1.5, np.max(training.T[:n_comp]))
 
     # locator_params(axis="x", nbins=10, integer=True)
 
@@ -355,7 +362,7 @@ def pca_scores(
             colors=colors,
             labels=labels,
             marker=["o"] * len(colors),
-            loc=3
+            loc=3,
         )
 
     if fig_file:
@@ -724,7 +731,9 @@ def _cca_plot(
         else:
             extn = "th"
         an = [
-            f"{subtitle}. {comp_n + 1}{extn} pair  - "+r"$\rho$"+f" = {round(cca_coefficient[comp_n], 3)}"
+            f"{subtitle}. {comp_n + 1}{extn} pair  - "
+            + r"$\rho$"
+            + f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
         #
@@ -768,7 +777,7 @@ def cca_vision(
     X_obs: np.array = None,
     Y_obs: np.array = None,
     samples=None,
-    n_cut = None,
+    n_cut=None,
     annotation_call=None,
     fig_dir: str = None,
     show: bool = False,
@@ -829,7 +838,9 @@ def cca_vision(
         cb = plt.colorbar()
         cb.ax.set_title(r"$\it{" + "r" + "}$")
         plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-        plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
+        plt.xticks(
+            np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
+        )
         plt.tick_params(labelsize=5)
         plt.yticks([])
         # plt.title('Decrease of CCA correlation coefficient with component number')

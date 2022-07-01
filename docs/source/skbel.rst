@@ -7,13 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   skbel.algorithms
-   skbel.goggles
    skbel.learning
+   skbel.algorithms
    skbel.preprocessing
+   skbel.tmaps
+   skbel.goggles
    skbel.spatial
    skbel.testing
-   skbel.tmaps
    skbel.utils
 
 Module contents
