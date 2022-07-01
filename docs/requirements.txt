@@ -12,3 +12,4 @@ pandas
 seaborn
 dataclasses
 pytest
+sphinxcontrib_bibtex

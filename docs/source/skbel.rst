@@ -1,17 +1,10 @@
-SKBEL package
+skbel package
 =============
 
-Subpackages
------------
+Module contents
+---------------
 
-.. toctree::
-   :maxdepth: 4
-
-   skbel.learning
-   skbel.algorithms
-   skbel.preprocessing
-   skbel.tmaps
-   skbel.goggles
-   skbel.spatial
-   skbel.testing
-   skbel.utils
+.. automodule:: skbel
+   :members:
+   :undoc-members:
+   :show-inheritance:

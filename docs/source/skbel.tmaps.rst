@@ -1,7 +1,6 @@
 skbel.tmaps package
 ===================
 
-
 Module contents
 ---------------
 

@@ -53,7 +53,7 @@ extensions = [
     'sphinxcontrib.bibtex',
 ]
 bibtex_bibfiles = ['export.bib']
-
+bibtex_default_style = 'unsrt'
 
 autodoc_default_options = {'members': True,
                            'undoc-members': True,
