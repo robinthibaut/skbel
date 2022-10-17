@@ -121,8 +121,7 @@ Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL (v2.0.0). Zenodo. https://
 BibTeX::
 
     @software{thibaut_skbel_2021,
-    author       = {Thibaut, Robin and
-    Maximilian Ramgraber},
+    author       = {Thibaut, Robin and Maximilian Ramgraber},
     title        = {{SKBEL} - Bayesian Evidential Learning framework built on top of scikit-learn},
     month        = {9},
     year         = 2021,
