@@ -134,7 +134,7 @@ BibTeX::
 Peer-reviewed publications using SKBEL
 --------------------------------------
 
-Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). “A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area”. In: Journal of Hydrology 603, p.126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537
+Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). "A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area". In: Journal of Hydrology 603, p.126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537
 
 Notebooks and tutorials
 ----------------------
