@@ -22,13 +22,12 @@ __all__ = [
 ]
 
 
-def grid_parameters(
-    x_lim: list = None, y_lim: list = None, grf: float = 1
-) -> (np.array, int, int):
+def grid_parameters(x_lim: list = None, y_lim: list = None, z_lim=None, grf: float = 1) -> (np.array, int, int):
     """Generates grid parameters given dimensions.
 
     :param x_lim: X limits
     :param y_lim: Y limits
+    :param z_lim: Z limits
     :param grf: Cell dimension
     :return: (cell centers, number of rows, number of columns)
     """
@@ -40,41 +39,65 @@ def grid_parameters(
         x_lim = [0, 1500]
     else:
         x_lim = x_lim
+    if z_lim is None:
+        z_lim = [0, 10]
+    else:
+        z_lim = z_lim
 
     grf = grf  # Cell dimension
     nrow = int(np.diff(y_lim) / grf)  # Number of rows
     ncol = int(np.diff(x_lim) / grf)  # Number of columns
-    array = np.ones((nrow, ncol))  # Dummy array
-    # Centroids of dummy array
-    xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)
+    nlay = int(np.diff(z_lim) / grf)  # Number of layers
 
-    return xys, nrow, ncol
+    if nlay == 1:
+        array = np.ones((nrow, ncol))  # Dummy array
+        # Centroids of dummy array
+        xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)
+    else:
+        array = np.ones((nlay, nrow, ncol))
+        xys = get_centroids(array, grf) + np.min([x_lim, y_lim, z_lim], axis=1)
+
+    return xys, nrow, ncol, nlay
 
 
-def block_shaped(arr: np.array, nrows: int, ncols: int) -> np.array:
-    """Return an array of shape (n, nrows, ncols) where
-    n * nrows * ncols = arr.size
-    If arr is a 2D array, the returned array should look like n sub-blocks with
-    each sub-block preserving the "physical" layout of arr.
-
+def block_shaped(arr: np.array, nrows: int, ncols: int, nlay: int = 1) -> np.array:
+    """Return an array of shape (nlayers, nrows, ncols)
     :param arr: Array
     :param nrows: Number of rows
     :param ncols: Number of columns
-    :return: Array of shape (n, nrows, ncols)
+    :param nlay: Number of layers
+
+    :return: Array of shape (nlayers, nrows, ncols)
     """
-    h, w = arr.shape
+
+    # get the shape of the array
+    if nlay == 1:
+        h, w = arr.shape
+        l = 1
+    else:
+        h, w, l = arr.shape
+
     assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
     assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(w, ncols)
+    if nlay != 1:
+        assert l % nlay == 0, "{} cols is not evenly divisible by {}".format(l, nlay)
 
-    return (
-        arr.reshape(h // nrows, nrows, -1, ncols)
-        .swapaxes(1, 2)
-        .reshape(-1, nrows, ncols)
-    )
+    if nlay == 1:
+        return (
+            arr.reshape(h // nrows, nrows, -1, ncols)
+            .swapaxes(1, 2)
+            .reshape(-1, nrows, ncols)
+        )
+    else:
+        return (
+            arr.reshape(h // nrows, nrows, -1, ncols, -1, nlay)
+            .swapaxes(1, 2)
+            .reshape(-1, nrows, ncols, nlay)
+        )
 
 
 def refine_axis(
-    widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
+        widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
 ) -> np.array:
     """Refines one 1D axis around a point belonging to it.
 
@@ -136,7 +159,7 @@ def refine_axis(
 
         if lwl > lwr:  # If the left is longer than the right
             rl = (
-                lwl / lwr
+                    lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
@@ -144,7 +167,7 @@ def refine_axis(
             dar = difx - dal
         elif lwr > lwl:  # If the right is longer than the left
             rl = (
-                lwr / lwl
+                    lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
@@ -161,44 +184,55 @@ def refine_axis(
     return x0
 
 
-def rc_from_blocks(blocks: np.array) -> (np.array, np.array):
-    """Computes the x and y dimensions of each block.
+def rc_from_blocks(blocks: np.array) -> (np.array, np.array, np.array):
+    """Computes the x, y and z coordinates of the cell centers from the blocks.
 
     :param blocks: Array of blocks
-    :return: (dx, dy) dimensions of each block
+    :return: (dx, dy, dz) dimensions of the cells
     """
+    # get the shape of the blocks
+    shape = blocks.shape
     dc = np.array([np.diff(b[:, 0]).max for b in blocks])  # x-dimensions
     dr = np.array([np.diff(b[:, 1]).max for b in blocks])  # y-dimensions
+    if len(shape) == 2:
+        dz = np.ones(shape[0])
+    else:
+        dz = np.array([np.diff(b[:, 2]).max for b in blocks])  # z-dimensions
 
-    return dc, dr
+    return dc, dr, dz
 
 
-def blocks_from_rc_3d(rows: np.array, columns: np.array) -> np.array:
+def blocks_from_rc_3d(rows: np.array, columns: np.array, layers: np.array) -> np.array:
     """Returns the blocks forming a 2D grid whose rows and columns widths are
     defined by the two arrays rows, columns.
 
     :param rows: Array of row widths
     :param columns: Array of column widths
+    :param layers: Array of layer widths
     :return: Array of blocks
     """
 
     nrow = len(rows)  # Number of rows
     ncol = len(columns)  # Number of columns
+    nlayers = len(layers)  # Number of layers
     delr = rows  # Row widths
     delc = columns  # Column widths
+    delz = layers  # Layer widths
     r_sum = np.cumsum(delr)  # Cumulative sum of row widths
     c_sum = np.cumsum(delc)  # Cumulative sum of column widths
+    z_sum = np.cumsum(delz)  # Cumulative sum of layer widths
 
     blocks = []  # List of blocks
-    for c in range(nrow):
-        for n in range(ncol):
-            b = [
-                [c_sum[n] - delc[n], r_sum[c] - delr[c], 0.0],
-                [c_sum[n] - delc[n], r_sum[c], 0.0],
-                [c_sum[n], r_sum[c], 0.0],
-                [c_sum[n], r_sum[c] - delr[c], 0.0],
-            ]  # Block
-            blocks.append(b)
+    for la in range(nlayers):
+        for c in range(nrow):
+            for n in range(ncol):
+                b = [
+                    [c_sum[n] - delc[n], r_sum[c] - delr[c], z_sum[la] - delz[la]],
+                    [c_sum[n] - delc[n], r_sum[c], z_sum[la] - delz[la]],
+                    [c_sum[n], r_sum[c], z_sum[la] - delz[la]],
+                    [c_sum[n], r_sum[c] - delr[c], z_sum[la] - delz[la]],
+                ]  # Block
+                blocks.append(b)
     blocks = np.array(blocks)
 
     return blocks
@@ -235,6 +269,63 @@ def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
     return blocks
 
 
+def node_from_lrc(
+        rows: np.array,
+        columns: np.array,
+        layers: np.array,
+        xo: float = 0,
+        yo: float = 0,
+        zo: float = 0,
+):
+    """
+    Yields blocks defining grid cells
+
+    :param rows: array of x-widths along a row
+    :param columns: array of y-widths along a column
+    :param layers: array of z-widths along a column
+    :param xo: x origin
+    :param yo: y origin
+    :param zo: z origin
+    :return: generator of (cell node number, block vertices coordinates, block center)
+    """
+    nrow = len(rows)
+    ncol = len(columns)
+    nlay = len(layers)
+    delr = rows
+    delc = columns
+    dell = layers
+    r_sum = np.cumsum(delr) + yo
+    c_sum = np.cumsum(delc) + xo
+    l_sum = np.cumsum(dell) + zo
+
+    def get_node(r: int, c: int, h: int) -> int:
+        """
+        Get node index to fix hard data
+
+        :param r: row number
+        :param c: column number
+        :param h: layer number
+        :return: node number
+        """
+        nrc = nrow * ncol
+        return int((h * nrc) + (r * ncol) + c)
+
+    for k in range(nlay):
+        for i in range(nrow):
+            for j in range(ncol):
+                b = [
+                    [c_sum[j] - delc[j], r_sum[i] - delr[i], l_sum[k] - dell[k]],
+                    [c_sum[j], r_sum[i] - delr[i], l_sum[k] - dell[k]],
+                    [c_sum[j] - delc[j], r_sum[i], l_sum[k] - dell[k]],
+                    [c_sum[j], r_sum[i], l_sum[k] - dell[k]],
+                    [c_sum[j] - delc[j], r_sum[i] - delr[i], l_sum[k]],
+                    [c_sum[j], r_sum[i] - delr[i], l_sum[k]],
+                    [c_sum[j] - delc[j], r_sum[i], l_sum[k]],
+                    [c_sum[j], r_sum[i], l_sum[k]],
+                ]
+                yield get_node(i, j, k), np.array(b), np.mean(b, axis=0)
+
+
 def get_centroids(array: np.array, grf: float) -> np.array:
     """Given a (m, n) matrix of cells dimensions in the x-y axes, returns the
     (m, n, 2) matrix of the coordinates of centroids.
@@ -267,7 +358,7 @@ def contour_extract(x_lim, y_lim, grf, Z):
 
 
 def contours_vertices(
-    x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
+        x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
 ) -> np.array:
     """Extracts contour vertices from a list of matrices.
 
@@ -300,7 +391,7 @@ def contours_vertices(
 
 
 def refine_machine(
-    xlim: list, ylim: list, new_grf: int or float
+        xlim: list, ylim: list, new_grf: int or float
 ) -> (int, int, np.array, np.array):
     """Refines the grid to a new resolution.
 

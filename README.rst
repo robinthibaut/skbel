@@ -38,6 +38,8 @@
 **skbel** is a Python module for implementing the Bayesian Evidential Learning framework built on top of
 scikit-learn and is distributed under the 3-Clause BSD license.
 
+See the `documentation <https://skbel.readthedocs.io/en/latest/>`_ for more information.
+
 Installation
 ------------
 
@@ -115,3 +117,29 @@ How to cite
 ----------------
 
 Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.6205242
+
+BibTeX::
+
+    @software{thibaut_skbel_2021,
+    author       = {Thibaut, Robin and
+    Maximilian Ramgraber},
+    title        = {{SKBEL} - Bayesian Evidential Learning framework built on top of scikit-learn},
+    month        = {9},
+    year         = 2021,
+    publisher    = {Zenodo},
+    version      = {v2.0.0},
+    doi          = {10.5281/zenodo.6205242},
+    url          = {https://doi.org/10.5281/zenodo.6205242},
+    }
+
+Peer-reviewed publications using SKBEL
+--------------------------------------
+
+Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). “A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area”. In: Journal of Hydrology 603, p.126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537
+
+Notebooks and tutorials
+----------------------
+
+Thibaut, Robin (2021). WHPA Prediction. [Dataset]. doi:10.34740/kaggle/dsv/2648718. url: https://www.kaggle.com/dsv/2648718
+
+

@@ -101,10 +101,17 @@ def _proxy_legend(
         marker = ["-" for _ in range(len(colors))]
 
     # Proxy figures (empty plots)
-    proxys = [
-        plt.plot([], marker[i], color=c, markeredgecolor=pec[i])
-        for i, c in enumerate(colors)
-    ]
+    try:
+        proxys = [
+            plt.plot([], marker[i], color=c, markeredgecolor=pec[i])
+            for i, c in enumerate(colors)
+        ]
+    except ValueError:
+        # in case of 3D plot
+        proxys = [
+            plt.plot([], [], marker[i], color=c, markeredgecolor=pec[i])
+            for i, c in enumerate(colors)
+        ]
 
     leg = obj.legend([p[0] for p in proxys], labels, loc=loc, fontsize=fz)
     for text in leg.get_texts():
@@ -139,15 +146,26 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
         obj = plt
     if annotation is None:
         annotation = []
-    legend_a = obj.legend(
-        plt.plot([], linestyle=None, color="w", alpha=0, markeredgecolor=None),
-        annotation,
-        handlelength=0,
-        handletextpad=0,
-        fancybox=True,
-        loc=loc,
-        fontsize=fz,
-    )
+    try:
+        legend_a = obj.legend(
+            plt.plot([], linestyle=None, color="w", alpha=0, markeredgecolor=None),
+            annotation,
+            handlelength=0,
+            handletextpad=0,
+            fancybox=True,
+            loc=loc,
+            fontsize=fz,
+        )
+    except TypeError:
+        legend_a = obj.legend(
+            plt.plot(0, 0, linestyle=None, color="w", alpha=0, markeredgecolor=None),
+            annotation,
+            handlelength=0,
+            handletextpad=0,
+            fancybox=True,
+            loc=loc,
+            fontsize=fz,
+        )
 
     for text in legend_a.get_texts():
         text.set_color("k")
@@ -299,17 +317,26 @@ def pca_scores(
         colors += ["gray"]
         labels += ["Random"]
         # they have to start at ncomp + 1
-        cuit = pc_post.shape[1]
-        plt.plot(
-            np.arange(cuit, cuit + random_pcs.shape[1]),
-            random_pcs.T,
-            "o",
-            markerfacecolor="gray",
-            markersize=5,
-            markeredgecolor=None,
-            markeredgewidth=0.0,
-            alpha=0.1,
-        )
+        try:
+            cuit = pc_post.shape[1]
+            plt.plot(
+                np.arange(cuit, cuit + random_pcs.shape[1]),
+                random_pcs.T,
+                "o",
+                markerfacecolor="gray",
+                markersize=5,
+                markeredgecolor=None,
+                markeredgewidth=0.0,
+                alpha=0.1,
+            )
+        except:
+            pass
+
+    # if pc_post AND random_pcs, draw a vertical line at the end of pc_post
+    if pc_post is not None and random_pcs is not None:
+        plt.axvline(x=pc_post.shape[1]-.5, color="k", linestyle="--", linewidth=0.5)
+
+
 
     if prediction is not None:
         colors += ["red"]
@@ -332,8 +359,8 @@ def pca_scores(
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
             "ro",
-            markersize=5,
-            markeredgecolor="k",
+            markersize=7,
+            markeredgecolor="w",
             markeredgewidth=0.4,
             alpha=0.7,
         )
@@ -343,8 +370,10 @@ def pca_scores(
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
     # make ticks bold
-    plt.tick_params(labelsize=7, which="major", direction="in")
+    plt.tick_params(labelsize=8, width=2)
+    # plt.tick_params(labelsize=7, which="major", direction="in")
     plt.xticks(np.arange(n_comp), np.arange(1, n_comp + 1))
+    # make them bold
 
     plt.ylim(np.min(training.T[:n_comp]) * 1.5, np.max(training.T[:n_comp]))
 
@@ -355,7 +384,6 @@ def pca_scores(
     legend_a = _proxy_annotate(annotation=annotation, loc=2, fz=14)
 
     if add_legend:
-
         _proxy_legend(
             legend1=legend_a,
             colors=colors,
@@ -369,7 +397,7 @@ def pca_scores(
         plt.savefig(
             fig_file,
             dpi=300,
-            pad_inches=0,
+            pad_inches=0.01,
             bbox_inches="tight",
             transparent=False,
         )
@@ -639,7 +667,7 @@ def _cca_plot(
             alpha=0.4,
         )
         ax_joint.plot(
-            np.ones(samples.shape[1]) * X_obs.T[comp_n],
+            np.ones(samples.shape[1]) * X_obs.T[comp_n],  #####
             samples.T[comp_n],
             marker="o",
             markerfacecolor="lightgreen",
@@ -739,7 +767,7 @@ def _cca_plot(
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
-            colors=["blue", "red", "lightgreen", "red", "deepskyblue"],
+            colors=["blue", "red", "lightgreen", "blue", "red"],
             labels=[
                 "$Training$",
                 "$Test$",
@@ -767,7 +795,7 @@ def _cca_plot(
             plt.show()
         plt.close()
 
-    return annotation_callback  # Return the iterator so that it can be used again
+    # return annotation_callback  # Return the iterator so that it can be used again
 
 
 def cca_vision(
@@ -777,6 +805,7 @@ def cca_vision(
     Y_obs: np.array = None,
     samples=None,
     n_cut=None,
+    cplot=True,
     annotation_call=None,
     fig_dir: str = None,
     show: bool = False,
@@ -788,6 +817,7 @@ def cca_vision(
     :param Y_obs: Y observations
     :param samples: Samples from the model
     :param n_cut: Only show the first n_cut components
+    :param cplot: Plot the CCA correlation coefficients
     :param annotation_call: Annotation callback
     :param fig_dir: Base directory path
     :param show: Show figure
@@ -808,7 +838,7 @@ def cca_vision(
         Y_obs = Y_obs[:, :n_cut]
 
     # KDE plots which consume a lot of time.
-    ac = _cca_plot(
+    _cca_plot(
         X_scores,
         Y_scores,
         X_obs=X_obs,
@@ -820,7 +850,7 @@ def cca_vision(
     )
 
     # CCA coefficient plot
-    if not n_cut:
+    if cplot:
         cca_coefficient = np.corrcoef(X_scores.T, Y_scores.T).diagonal(
             offset=n_components
         )  # Gets correlation coefficient
@@ -847,7 +877,7 @@ def cca_vision(
         plt.xlabel("Component number")
 
         # Add annotation
-        legendary = _proxy_annotate(annotation=next(ac), fz=14, loc=1)
+        legendary = _proxy_annotate(annotation=next(annotation_call), fz=14, loc=1)
         plt.gca().add_artist(legendary)
 
         plt.savefig(
@@ -861,4 +891,4 @@ def cca_vision(
         plt.show()
     plt.close()
 
-    return ac  # Return the iterator so that it can be used again
+    # return ac  # Return the iterator so that it can be used again
