@@ -334,9 +334,7 @@ def pca_scores(
 
     # if pc_post AND random_pcs, draw a vertical line at the end of pc_post
     if pc_post is not None and random_pcs is not None:
-        plt.axvline(x=pc_post.shape[1]-.5, color="k", linestyle="--", linewidth=0.5)
-
-
+        plt.axvline(x=pc_post.shape[1] - 0.5, color="k", linestyle="--", linewidth=0.5)
 
     if prediction is not None:
         colors += ["red"]

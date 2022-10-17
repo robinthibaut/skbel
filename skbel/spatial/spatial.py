@@ -22,7 +22,9 @@ __all__ = [
 ]
 
 
-def grid_parameters(x_lim: list = None, y_lim: list = None, z_lim=None, grf: float = 1) -> (np.array, int, int):
+def grid_parameters(
+    x_lim: list = None, y_lim: list = None, z_lim=None, grf: float = 1
+) -> (np.array, int, int):
     """Generates grid parameters given dimensions.
 
     :param x_lim: X limits
@@ -97,7 +99,7 @@ def block_shaped(arr: np.array, nrows: int, ncols: int, nlay: int = 1) -> np.arr
 
 
 def refine_axis(
-        widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
+    widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
 ) -> np.array:
     """Refines one 1D axis around a point belonging to it.
 
@@ -159,7 +161,7 @@ def refine_axis(
 
         if lwl > lwr:  # If the left is longer than the right
             rl = (
-                    lwl / lwr
+                lwl / lwr
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
@@ -167,7 +169,7 @@ def refine_axis(
             dar = difx - dal
         elif lwr > lwl:  # If the right is longer than the left
             rl = (
-                    lwr / lwl
+                lwr / lwl
             )  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
@@ -270,12 +272,12 @@ def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
 
 
 def node_from_lrc(
-        rows: np.array,
-        columns: np.array,
-        layers: np.array,
-        xo: float = 0,
-        yo: float = 0,
-        zo: float = 0,
+    rows: np.array,
+    columns: np.array,
+    layers: np.array,
+    xo: float = 0,
+    yo: float = 0,
+    zo: float = 0,
 ):
     """
     Yields blocks defining grid cells
@@ -358,7 +360,7 @@ def contour_extract(x_lim, y_lim, grf, Z):
 
 
 def contours_vertices(
-        x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
+    x: list, y: list, arrays: np.array, c: float = 0, ignore: bool = True
 ) -> np.array:
     """Extracts contour vertices from a list of matrices.
 
@@ -391,7 +393,7 @@ def contours_vertices(
 
 
 def refine_machine(
-        xlim: list, ylim: list, new_grf: int or float
+    xlim: list, ylim: list, new_grf: int or float
 ) -> (int, int, np.array, np.array):
     """Refines the grid to a new resolution.
 
