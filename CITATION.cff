@@ -4,6 +4,9 @@ authors:
   - family-names: Thibaut
     given-names: Robin
     orcid: https://orcid.org/0000-0001-7556-2700
+  - family-names: Ramgraber
+    given-names: Maximilian
+    orcid: https://orcid.org/0000-0003-3508-6214
 title: SKBEL
-version: v2.1.6
+version: v2.0.0
 date-released: 2022-17-05
