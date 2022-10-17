@@ -42,7 +42,7 @@ def grid_parameters(
     else:
         x_lim = x_lim
     if z_lim is None:
-        z_lim = [0, 10]
+        z_lim = [0, grf]
     else:
         z_lim = z_lim
 
