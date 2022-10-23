@@ -38,7 +38,7 @@
 **skbel** is a Python module for implementing the Bayesian Evidential Learning framework built on top of
 scikit-learn and is distributed under the 3-Clause BSD license.
 
-See the `documentation <https://skbel.readthedocs.io/en/latest/>`_ for more information.
+For more information, read the `documentation <https://skbel.readthedocs.io/en/latest/>`_ and run the example `notebook <https://www.kaggle.com/dsv/2648718>`_.
 
 Installation
 ------------
