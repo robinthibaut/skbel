@@ -76,9 +76,9 @@ class Kernel(TransformerMixin, BaseEstimator):
         return self
 
     def transform(self, X, y=None):
-        """Transform X.
+        """Transforms X.
 
-        :param X  {array-like, sparse matrix} of shape (n_samples, n_features)
+        :param X: {array-like, sparse matrix} of shape (n_samples, n_features)
 
         :return: X_new: ndarray of shape (n_samples, n_components)
         """
@@ -94,8 +94,7 @@ class Kernel(TransformerMixin, BaseEstimator):
         """Fit the model from data in X and transform X.
 
         :param X: {array-like, sparse matrix} of shape (n_samples, n_features)
-            Training vector, where n_samples in the number of samples
-            and n_features is the number of features.
+            Training vector, where n_samples in the number of samples  and n_features is the number of features.
         :return: X_new: ndarray of shape (n_samples, n_components)
         """
         return self.fit(X, y).transform(X, y)
