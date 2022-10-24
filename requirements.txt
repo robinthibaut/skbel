@@ -4,8 +4,5 @@ scipy
 numpy
 joblib
 pandas
-seaborn
-dataclasses
 pytest
 scikit-image
-setuptools
