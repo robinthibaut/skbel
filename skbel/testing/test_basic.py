@@ -13,7 +13,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
 from skbel import BEL
-from skbel.tmaps import TransportMap  # My transport map toolbox
+from skbel.tmaps import TransportMap
 
 # Get file path
 my_path = os.path.dirname(os.path.abspath(__file__))
