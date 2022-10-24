@@ -20,8 +20,7 @@ my_path = os.path.dirname(os.path.abspath(__file__))
 
 
 def init_bel():
-    """Set all BEL pipelines.
-     This is the blueprint of the framework.
+    """Set all BEL pipelines. This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(

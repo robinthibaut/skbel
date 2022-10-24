@@ -35,42 +35,43 @@ class TransportMap:
         delta: float = 0.0,
     ):
         """This toolbox contains functions required to construct, optimize, and evaluate transport methods.
+
          Maximilian Ramgraber, January 2022
 
         :param monotone: list specifying the structure of the monotone part of the transport map component functions.
         :param nonmonotone: list specifying the structure of the non-monotone part of the transport map component
-         functions.
+            functions.
         :param X: N-by-D array of the training samples used to optimize the transport map, where N is the number of
-         samples and D is the number of dimensions
+            samples and D is the number of dimensions
         :param polynomial_type: keyword which specifies what kinds of polynomials are used for the transport map
-         component functions.
+            component functions.
         :param monotonicity: keyword which specifies through what method the transport map ensures monotonicity in the
-         last dimensions. Must be 'integrated rectifier' or 'separable monotonicity'.
+            last dimensions. Must be 'integrated rectifier' or 'separable monotonicity'.
         :param standardize_samples: a True/False flag determining whether the transport map should standardize the
-         training samples before optimization
+            training samples before optimization
         :param workers: number of workers for parallel optimization. If set to 1, parallelized optimization is inactive.
         :param ST_scale_factor: a float which scales the width of special terms used in the map components, such as
-         'RBF 0', 'iRBF 0', 'LET 0', or 'RET 0'.
+            'RBF 0', 'iRBF 0', 'LET 0', or 'RET 0'.
         :param ST_scale_mode: keyword which defines whether the width of special term scale factors is determined based
-         on neighbouring special terms ('dynamic') or fixed as ST_scale_factor ('static').
+            on neighbouring special terms ('dynamic') or fixed as ST_scale_factor ('static').
         :param coeffs_init: value used to initialize the coefficients at the start of the map optimization.
         :param linearization: float which specifies boundary values used to linearize the map components in the tails.
-         Its role is specified by linearization_specified_as_quantiles.
+             Its role is specified by linearization_specified_as_quantiles.
         :param linearization_specified_as_quantiles: flag which specifies whether the linearization thresholds are
-         specified as quantiles (True) or absolute values (False). If True, boundaries are placed at linearization and
-          1-linearization, if False, at linearization and -linearization. Only used if linearization is not None.
+            specified as quantiles (True) or absolute values (False). If True, boundaries are placed at linearization and
+            1-linearization, if False, at linearization and -linearization. Only used if linearization is not None.
         :param linearization_increment: increment used for the linearization of the map component functions.
-         Only used if linearization is not None.
+            Only used if linearization is not None.
         :param regularization: keyword which specifies if regularization is used, and if so, what kind of regularization
-         ('L1' or 'L2').
+            ('L1' or 'L2').
         :param regularization_lambda: float which specifies the weight for the map coefficient regularization.
-         Only used if regularization is not None.
+            Only used if regularization is not None.
         :param quadrature_input: dictionary for optional keywords to overwrite the default variables in the function
-         Gauss_quadrature. Only used if monotonicity = 'integrated rectifier'.
+            Gauss_quadrature. Only used if monotonicity = 'integrated rectifier'.
         :param rectifier_type: keyword which specifies which function is used to rectify the monotone map components.
-         Only used if monotonicity = 'integrated rectifier'.
+            Only used if monotonicity = 'integrated rectifier'.
         :param delta: small increment added to the rectifier to prevent numerical underflow.
-         Only used if monotonicity = 'integrated rectifier'.
+            Only used if monotonicity = 'integrated rectifier'.
         """
 
         if quadrature_input is None:
@@ -210,8 +211,8 @@ class TransportMap:
 
     def check_inputs(self):
 
-        """This function runs some preliminary checks on the input provided,
-        alerting the user to any possible input errors.
+        """This function runs some preliminary checks on the input provided, alerting the user to any possible input
+         errors.
         """
 
         if self.monotonicity.lower() not in [
@@ -265,10 +266,10 @@ class TransportMap:
     def reset(self, X: np.array):
 
         """This function is used if the transport map has been initiated with a different set of samples.
-         It resets the standardization variables and the map's coefficients, requiring new optimization.
+        It resets the standardization variables and the map's coefficients, requiring new optimization.
 
         :param X: N-by-D array of the training samples used to optimize the transport map, where N is the number of
-         samples and D is the number of dimensions
+            samples and D is the number of dimensions
         """
 
         if len(X.shape) != 2:
@@ -298,7 +299,7 @@ class TransportMap:
     def precalculate(self):
 
         """This function pre-calculates matrices of basis function evaluations for the samples provided.
-         These matrices can be used to optimize the maps more quickly.
+        These matrices can be used to optimize the maps more quickly.
         """
 
         # Prepare precalculation matrices
@@ -319,15 +320,15 @@ class TransportMap:
     ):
 
         """This function assembles a string for a specific term of the map component functions. This can be a
-         polynomial, a Hermite function, a radial basis function, or similar.
+        polynomial, a Hermite function, a radial basis function, or similar.
 
         :param term: either an empty list, a list, or a string, which specifies what function type this term is supposed
-         to be. Empty lists correspond to a constant, lists specify polynomials or Hermite functions, and strings
-         denote special terms such as radial basis functions.
+            to be. Empty lists correspond to a constant, lists specify polynomials or Hermite functions, and strings
+            denote special terms such as radial basis functions.
         :param mode: a keyword which defines whether the term's string returned should be conventional ('standard')
-         or its derivative ('derivative').
+            or its derivative ('derivative').
         :param k: an integer specifying what dimension of the samples the 'term' corresponds to. Used to clarify with
-         respect to what variable we take the derivative.
+            respect to what variable we take the derivative.
         """
 
         # First, check for input errors
@@ -757,7 +758,7 @@ class TransportMap:
     def function_constructor_alternative(self):
 
         """This function assembles the string for the monotone and non-monotone map components, then converts these
-         strings into functions.
+        strings into functions.
         """
 
         self.fun_mon = []  # Initialize the list of monotone functions
@@ -1306,7 +1307,7 @@ class TransportMap:
     def function_derivative_constructor_alternative(self):
 
         """This function is the complement to 'function_constructor_alternative', but instead constructs the derivative
-         of the map's component functions. It constructs the functions' strings, then converts them into functions.
+        of the map's component functions. It constructs the functions' strings, then converts them into functions.
         """
 
         self.der_fun_mon = []
@@ -1557,8 +1558,8 @@ class TransportMap:
     def check_for_special_terms(self):
 
         """This function scans through the user-provided map specifications and seeks if there are any special terms
-         ('RBF', 'iRBF', 'LET', 'RET') among the terms of the map components. If there are, it determines how many there
-          are, and informs the rest of the function where these special terms should be located.
+        ('RBF', 'iRBF', 'LET', 'RET') among the terms of the map components. If there are, it determines how many there
+        are, and informs the rest of the function where these special terms should be located.
         """
 
         # Number of RBFs
@@ -1608,9 +1609,9 @@ class TransportMap:
     def calculate_special_term_locations(self):
 
         """This function calculates the location and scale parameters for special terms in the transport map definition,
-         specifically RBF (Radial Basis Functions), iRBF (Integrated Radial Basis Functions), and LET/RET (Edge Terms).
-         Position and scale parameters are assigned in the order they have been defined, so make sure to define a left
-         edge term first if you want it to be on the left side.
+        specifically RBF (Radial Basis Functions), iRBF (Integrated Radial Basis Functions), and LET/RET (Edge Terms).
+        Position and scale parameters are assigned in the order they have been defined, so make sure to define a left
+        edge term first if you want it to be on the left side.
         """
 
         self.ST_centers_m = []  # Centers of RBFs in monotone terms
@@ -1851,10 +1852,11 @@ class TransportMap:
     def map(self, X: np.array = None):
 
         """This function maps the samples X from the target distribution to the standard multivariate Gaussian reference
-          distribution. If X has not been provided, the samples in storage will be used instead
+        distribution. If X has not been provided, the samples in storage will be used instead
 
         :param X: N-by-D array of the training samples used to optimize the transport map, where N is the number of
-         samples and D is the number of dimensions.
+            samples and D is the number of dimensions.
+        :return: N-by-D array of the mapped samples
         """
 
         if X is not None and self.standardize_samples:
@@ -1886,14 +1888,15 @@ class TransportMap:
         """This function evaluates the k-th map component.
 
         :param x: N-by-D array of the training samples used to optimize the transport map, where N is the number of
-         samples and D is the number of dimensions. Can be None, at which point it is replaced with X from storage.
+            samples and D is the number of dimensions. Can be None, at which point it is replaced with X from storage.
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
-         sample space.
+            sample space.
         :param coeffs_nonmon: a vector specifying the coefficients of the non-monotone part of the map component's
-         terms, i.e., those entries which do not depend on x_k. This vector is replaced from storage if it is not
-         overwritten.
+            terms, i.e., those entries which do not depend on x_k. This vector is replaced from storage if it is not
+            overwritten.
         :param coeffs_mon: a vector specifying the coefficients of the monotone part of the map component's terms, i.e.,
-         those entries which do not depend on x_k. This vector is replaced from storage if it is not overwritten.
+            those entries which do not depend on x_k. This vector is replaced from storage if it is not overwritten.
+        :return: N-by-1 array of the k-th map component evaluated at the samples in x
         """
 
         # Load in values if required
@@ -1965,9 +1968,8 @@ class TransportMap:
 
     def optimize(self):
 
-        """This function optimizes the map's component functions, seeking the
-         coefficients which best map the samples to a standard multivariate
-         Gaussian distribution.
+        """This function optimizes the map's component functions, seeking the coefficients which best map the samples to
+        a standard multivariate Gaussian distribution.
         """
 
         if self.workers == 1:  # With only one worker, don't parallelize
@@ -2117,16 +2119,16 @@ class TransportMap:
 
     def worker_task_monotone(self, k: int, task_supervisor: list):
 
-        """This function provides the optimization task for the k-th map component
-         function to a worker (if parallelization is used), or applies it in
-         sequence (if no parallelization is used). This specific function only
-         becomes active if monotonicity = 'separable monotonicity'.
+        """This function provides the optimization task for the k-th map component function to a worker
+        (if parallelization is used), or applies it in sequence (if no parallelization is used).
+        This specific function only becomes active if monotonicity = 'separable monotonicity'.
 
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
-         sample space.
+            sample space.
         :param task_supervisor: a shared list which informs the main process how many optimization tasks have already
-         been computed. This list should not be specified by the user, it only serves to provide information about the
-         optimization progress.
+            been computed. This list should not be specified by the user, it only serves to provide information about
+            the optimization progress.
+        :return: a list containing the optimized coefficients for the k-th map component function.
         """
 
         # Prepare task
@@ -2344,14 +2346,14 @@ class TransportMap:
     def worker_task(self, k: int, task_supervisor: list):
 
         """This function provides the optimization task for the k-th map component function to a worker
-         (if parallelization is used), or applies it in sequence (if no parallelization is used).
-         This specific function only becomes active if monotonicity = 'integrated rectifier'.
+        (if parallelization is used), or applies it in sequence (if no parallelization is used).
+        This specific function only becomes active if monotonicity = 'integrated rectifier'.
 
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
-         sample space.
+            sample space.
         :param task_supervisor: a shared list which informs the main process how many optimization tasks have already
-         been computed. This list should not be specified by the user, it only serves to provide information about the
-         optimization progress.
+            been computed. This list should not be specified by the user, it only serves to provide information about the
+             optimization progress.
         """
 
         # Prepare task
@@ -2453,10 +2455,11 @@ class TransportMap:
         """This function evaluates the objective function used in the optimization of the map's component functions.
 
         :param coeffs: a vector containing the coefficients for both the non-monotone and monotone terms of the k-th map
-         component function. Is replaced for storage is specified as None.
+            component function. Is replaced for storage is specified as None.
         :param k: an integer variable defining what map component
         :param div: an integer specifying where the cutoff between the non-monotone and monotone coefficients in
-         'coeffs' is.
+            'coeffs' is.
+        :return: the value of the objective function
         """
 
         # Partition the coefficient vector, if necessary
@@ -2579,14 +2582,14 @@ class TransportMap:
     def objective_function_jacobian(self, coeffs: np.array, k: int, div: int = 0):
 
         """This function evaluates the derivative of the objective function used in the optimization of the map's
-         component functions.
+        component functions.
 
         :param coeffs: a vector containing the coefficients for both the non-monotone and monotone terms of the k-th map
-          component function. Is replaced for storage is specified as None.
+             component function. Is replaced for storage is specified as None.
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
-         sample space.
+            sample space.
         :param div: an integer specifying where the cutoff between the non-monotone and monotone coefficients in
-         'coeffs' is.
+            'coeffs' is.
         """
 
         # Partition the coefficient vector, if necessary
@@ -2750,16 +2753,17 @@ class TransportMap:
     def inverse_map(self, Y: np.array, X_precalc: np.array = None):
 
         """This function evaluates the inverse transport map, mapping samples from a multivariate standard Gaussian back
-         to the target distribution. If X_precalc is specified, the map instead evaluates a conditional of the target
-         distribution given X_precalc. The function assumes any precalculated output are the FIRST dimensions of the
-         total output. If X_precalc is specified, its dimensions and the input dimensions must sum to the full
-         dimensionality of sample space.
+        to the target distribution. If X_precalc is specified, the map instead evaluates a conditional of the target
+        distribution given X_precalc. The function assumes any precalculated output are the FIRST dimensions of the
+        total output. If X_precalc is specified, its dimensions and the input dimensions must sum to the full
+        dimensionality of sample space.
 
         :param Y: N-by-D or N-by-(D-E) array of reference distribution samples to be mapped to the target distribution,
-         where N is the number of samples, D is the number of target distribution dimensions, and E the number of
-         pre-specified dimensions (if X_precalc is specified).
+            where N is the number of samples, D is the number of target distribution dimensions, and E the number of
+            pre-specified dimensions (if X_precalc is specified).
         :param X_precalc: N-by-E array of samples in the space of the target distribution, used to condition the lower
-         D-E dimensions during the inversion process.
+             D-E dimensions during the inversion process.
+        :return: N-by-D array of samples in the space of the target distribution.
         """
 
         # # Check consistency with precalculated output, if applicable if X_precalc is not None: D1  = Y.shape[-1] D2
@@ -2862,14 +2866,14 @@ class TransportMap:
     ):
 
         """This function searches for the roots of the k-th map component through bisection.
-         It is called in the inverse_map function.
+        It is called in the inverse_map function.
 
         :param X: N-by-k array of samples inverted so far, where the k-th column still contains the reference samples
-         used as a residual in the root finding process
+            used as a residual in the root finding process
         :param Yk: a vector containing the target values in the k-th dimension, for which the root finding algorithm
-         must solve.
+            must solve.
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
-         sample space.
+            sample space.
         """
         # Function to optimize
         def f(x):
@@ -2898,9 +2902,9 @@ class TransportMap:
     ):
 
         """This function implements a Gaussian quadrature numerical integration
-         scheme. It is used if the monotonicity = 'integrated rectifier', for
-         which monotonicity is ensured by integrating a strictly positive
-         function obtained from a rectifier.
+        scheme. It is used if the monotonicity = 'integrated rectifier', for
+        which monotonicity is ensured by integrating a strictly positive
+        function obtained from a rectifier.
 
         :param f: function to be integrated element-wise.
         :param a: lower bound for integration, defined as either a scalar or a vector.
@@ -2908,20 +2912,21 @@ class TransportMap:
         :param order: order of the Legendre polynomial used for the integration scheme.
         :param args: a dictionary with supporting keyword arguments to be passed to the function.
         :param Ws: weights of the integration points, can be calculated in advance to speed up the computation.
-         Is calculated by the integration scheme, if not specified.
+            Is calculated by the integration scheme, if not specified.
         :param xis: positions of the integration points, can be calculated in advance to speed up the computation.
-         Is calculated by the integration scheme, if not specified.
+             Is calculated by the integration scheme, if not specified.
         :param full_output: Flag for whether the positions and weights of the integration points should be returned
-         along with the integration results. If True, returns a tuple with (results,order,xis,Ws). If False, only
-         returns results.
+             along with the integration results. If True, returns a tuple with (results,order,xis,Ws). If False, only
+            returns results.
         :param adaptive: flag which determines whether the numerical scheme should adjust the order of the Legendre
-         polynomial adaptively (True) or use the integer provided by 'order' (False).
+             polynomial adaptively (True) or use the integer provided by 'order' (False).
         :param threshold: threshold for the difference in the adaptive integration, adaptation stops after difference in
-          integration
+             integration
         :param increment: increment by which the order is increased in each adaptation cycle. Higher values correspond
-         to larger steps.
+            to larger steps.
         :param verbose: flag which determines whether information about the integration process should be printed to
-         console (True) or not (False).
+             console (True) or not (False).
+        :return: the result of the integration, either as a scalar or a vector.
         """
 
         # Here the actual magic starts
@@ -3112,12 +3117,13 @@ class TransportMap:
         def __init__(self, mode: str = "softplus", delta: float = 1e-8):
 
             """This object specifies what function is used to rectify the monotone
-             map component functions if monotonicity = 'integrated rectifier',
-             before the rectifier's output is integrated to yield a monotone
-             map component in x_k.
+            map component functions if monotonicity = 'integrated rectifier',
+            before the rectifier's output is integrated to yield a monotone
+            map component in x_k.
 
             :param mode: keyword string defining which function is used to rectify the map component functions.
             :param delta: a small offset value to prevent arithmetic underflow in some rectifier functions.
+            :return: result: the rectified function value.
             """
 
             self.mode = mode
@@ -3163,6 +3169,7 @@ class TransportMap:
             """This function evaluates the inverse of the specified rectifier.
 
             :param X: an array of function evaluates to be rectified.
+            :return: result: the inverse of the rectified function value.
             """
 
             if len(np.where(X < 0)[0] > 0):
@@ -3211,6 +3218,7 @@ class TransportMap:
             """This function evaluates the derivative of the specified rectifier.
 
             :param X: an array of function evaluates to be rectified.
+            :return: result: the derivative of the rectified function value.
             """
 
             if self.mode == "squared":
@@ -3249,6 +3257,7 @@ class TransportMap:
 
             :param f: an array of function evaluates to be rectified.
             :param dfdc: an array of function evaluates to be rectified.
+            :return: result: the derivative of the rectified function value.
             """
 
             if self.mode == "squared":
@@ -3289,6 +3298,7 @@ class TransportMap:
             """This function evaluates the logarithm of the specified rectifier.
 
             :param X: an array of function evaluates to be rectified.
+            :return: result: the logarithm of the rectified function value.
             """
 
             if self.mode == "squared":

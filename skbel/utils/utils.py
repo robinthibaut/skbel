@@ -42,9 +42,8 @@ def data_read(
     step: int = None,
     delimiter: str = None,
 ):
-    """Reads data from a file. It needs to be a text file and the data needs to
-    be separated by a space or tab (default) or by a delimiter specified by the
-    user.
+    """Reads data from a file. It needs to be a text file and the data needs to be separated by a space or tab (default)
+     or by a delimiter specified by the user.
 
     :param file: File path, such as 'data.txt'.
     :param start: Starting line, default is 0.

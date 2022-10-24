@@ -63,8 +63,7 @@ class Kernel(TransformerMixin, BaseEstimator):
             Training vector, where n_samples in the number of samples
             and n_features is the number of features.
 
-        :return self : object
-            Returns the instance itself.
+        :return self : object -- returns the instance itself.
         """
         X = self._validate_data(X, accept_sparse="csr", copy=self.copy_X)
         K = self._get_kernel(X)
@@ -109,10 +108,9 @@ class Kernel(TransformerMixin, BaseEstimator):
          regression of the original data on their low-dimensional representation
          vectors.
 
-         Reference: "Learning to Find Pre-Images", G BakIr et al, 2004.
+         .. [2] "Learning to Find Pre-Images", G BakIr et al, 2004.
 
         :param X: {array-like, sparse matrix} of shape (n_samples, n_components)
-
         :return X_new: ndarray of shape (n_samples, n_features)
         """
         if not self.fit_inverse_transform:

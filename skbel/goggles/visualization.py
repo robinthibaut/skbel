@@ -264,7 +264,7 @@ def pca_scores(
     show: bool = False,
 ):
     """PCA scores plot, displays scores of observations above those of
-     training.
+    training.
 
     :param pc_post: PCA scores of the posterior
     :param training: Training scores

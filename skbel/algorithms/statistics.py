@@ -371,9 +371,9 @@ def kde_params(
     :param bandwidth_space: The space to search for the bandwidth.
     :param cut: Draw the estimate to cut * bw from the extreme data points.
     :param clip: Lower and upper bounds for datapoints used to fit KDE. Can provide
-     a pair of (low, high) bounds for bivariate plots.
-    :return: density: The estimated probability density function evaluated at the support.
-              support: The support of the density function, the x-axis of the KDE.
+        a pair of (low, high) bounds for bivariate plots.
+    :return: (density: The estimated probability density function evaluated at the support,
+             support: The support of the density function, the x-axis of the KDE.)
     """
 
     # Pack the kwargs for KDE
@@ -738,8 +738,9 @@ def it_sampling(
 
 def remove_outliers(data):
     """Removes outliers from the data.
+
     :param data: array-like
-    :return:
+    :return: data without outliers
     """
     q25 = np.quantile(data, 0.25, axis=0)
     q75 = np.quantile(data, 0.75, axis=0)
