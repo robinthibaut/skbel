@@ -63,7 +63,7 @@ class Kernel(TransformerMixin, BaseEstimator):
             Training vector, where n_samples in the number of samples
             and n_features is the number of features.
 
-        :return self : object -- returns the instance itself.
+        :return: self : object -- returns the instance itself.
         """
         X = self._validate_data(X, accept_sparse="csr", copy=self.copy_X)
         K = self._get_kernel(X)
@@ -80,7 +80,7 @@ class Kernel(TransformerMixin, BaseEstimator):
 
         :param X  {array-like, sparse matrix} of shape (n_samples, n_features)
 
-        :return X_new: ndarray of shape (n_samples, n_components)
+        :return: X_new: ndarray of shape (n_samples, n_components)
         """
         check_is_fitted(self)
         X = self._validate_data(X, accept_sparse="csr", reset=False)
@@ -96,7 +96,7 @@ class Kernel(TransformerMixin, BaseEstimator):
         :param X: {array-like, sparse matrix} of shape (n_samples, n_features)
             Training vector, where n_samples in the number of samples
             and n_features is the number of features.
-        :return X_new: ndarray of shape (n_samples, n_components)
+        :return: X_new: ndarray of shape (n_samples, n_components)
         """
         return self.fit(X, y).transform(X, y)
 
@@ -111,7 +111,7 @@ class Kernel(TransformerMixin, BaseEstimator):
          .. [2] "Learning to Find Pre-Images", G BakIr et al, 2004.
 
         :param X: {array-like, sparse matrix} of shape (n_samples, n_components)
-        :return X_new: ndarray of shape (n_samples, n_features)
+        :return: X_new: ndarray of shape (n_samples, n_features)
         """
         if not self.fit_inverse_transform:
             raise NotFittedError(
