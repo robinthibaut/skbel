@@ -11,3 +11,4 @@ joblib
 pandas
 pytest
 sphinxcontrib_bibtex
+scikit-image
