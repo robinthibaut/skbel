@@ -9,7 +9,5 @@ scipy
 numpy
 joblib
 pandas
-seaborn
-dataclasses
 pytest
 sphinxcontrib_bibtex
