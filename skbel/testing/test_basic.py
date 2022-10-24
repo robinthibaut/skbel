@@ -21,7 +21,6 @@ my_path = os.path.dirname(os.path.abspath(__file__))
 
 def init_bel():
     """Set all BEL pipelines.
-
     This is the blueprint of the framework.
     """
     # Pipeline before CCA
@@ -96,6 +95,7 @@ def test_mvn():
 
 
 def test_kde():
+    """Compare posterior samples with reference default values."""
     # %% Initiate BEL model
     # Initiate BEL object
     model = init_bel()
@@ -128,6 +128,7 @@ def test_kde():
 
 
 def test_tm():
+    """Compare posterior samples with reference default values."""
     N = 1000
     X = scipy.stats.norm.rvs(size=(N, 2), random_state=123456)
     b = 1  # Twist factor

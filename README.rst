@@ -8,6 +8,9 @@
 .. |Doc| image:: https://readthedocs.org/projects/skbel/badge/?version=latest
 .. _Doc: https://skbel.readthedocs.io/en/latest/?badge=latest
 
+.. |CodeCov| image:: https://codecov.io/gh/robinthibaut/skbel/branch/main/graph/badge.svg?token=S0T9NW3VK6
+.. _CodeCov: https://codecov.io/gh/robinthibaut/skbel
+
 .. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/skbel
 .. _PythonVersion: https://img.shields.io/pypi/pyversions/skbel
 
