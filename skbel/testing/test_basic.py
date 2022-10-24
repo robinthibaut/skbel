@@ -1,4 +1,4 @@
-"""pytest unit tests for skbel"""
+"""pytest unit tests for skbel."""
 
 #  Copyright (c) 2022. Robin Thibaut, Ghent University
 
@@ -20,7 +20,10 @@ my_path = os.path.dirname(os.path.abspath(__file__))
 
 
 def init_bel():
-    """Set all BEL pipelines. This is the blueprint of the framework."""
+    """Set all BEL pipelines.
+
+    This is the blueprint of the framework.
+    """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
         [

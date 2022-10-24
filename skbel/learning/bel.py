@@ -30,7 +30,11 @@ __all__ = ["BEL"]
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    """Heart of the framework. Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian Evidential Learning."""
+    """Heart of the framework.
+
+    Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian
+    Evidential Learning.
+    """
 
     def __init__(
         self,
@@ -115,7 +119,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def n_posts(self):
-        """Number of sample to extract from the posterior multivariate distribution after post-processing."""
+        """Number of sample to extract from the posterior multivariate
+        distribution after post-processing."""
         return self._n_posts
 
     @n_posts.setter
@@ -124,7 +129,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a. random state to reproduce the same samples"""
+        """Seed a.k.a.
+
+        random state to reproduce the same samples
+        """
         return self._seed
 
     @seed.setter
@@ -134,7 +142,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def random_state(self):
-        """Seed a.k.a. random state to reproduce the same samples"""
+        """Seed a.k.a.
+
+        random state to reproduce the same samples
+        """
         return self._seed
 
     @random_state.setter
@@ -745,7 +756,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return np.array(Y_post, dtype=dtype)
 
     def cca_pc_transform(self, X=None, Y=None) -> (np.array, np.array):
-        """Transform PCs to CVs
+        """Transform PCs to CVs.
 
         :param X: Predictor array.
         :param Y: Target array.

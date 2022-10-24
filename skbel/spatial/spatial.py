@@ -205,7 +205,8 @@ def rc_from_blocks(blocks: np.array) -> (np.array, np.array, np.array):
 
 
 def blocks_from_rc_3d(rows: np.array, columns: np.array, layers: np.array) -> np.array:
-    """Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns.
+    """Returns the blocks forming a 2D grid whose rows and columns widths are
+    defined by the two arrays rows, columns.
 
     :param rows: Array of row widths
     :param columns: Array of column widths
@@ -240,7 +241,8 @@ def blocks_from_rc_3d(rows: np.array, columns: np.array, layers: np.array) -> np
 
 
 def blocks_from_rc(rows: np.array, columns: np.array) -> np.array:
-    """Returns the blocks forming a 2D grid whose rows and columns widths are defined by the two arrays rows, columns.
+    """Returns the blocks forming a 2D grid whose rows and columns widths are
+    defined by the two arrays rows, columns.
 
     :param rows: Array of row widths
     :param columns: Array of column widths
@@ -277,7 +279,7 @@ def node_from_lrc(
     yo: float = 0,
     zo: float = 0,
 ):
-    """Yields blocks defining grid cells
+    """Yields blocks defining grid cells.
 
     :param rows: array of x-widths along a row
     :param columns: array of y-widths along a column
@@ -298,7 +300,7 @@ def node_from_lrc(
     l_sum = np.cumsum(dell) + zo
 
     def get_node(r: int, c: int, h: int) -> int:
-        """Get node index to fix hard data
+        """Get node index to fix hard data.
 
         :param r: row number
         :param c: column number
@@ -325,8 +327,8 @@ def node_from_lrc(
 
 
 def get_centroids(array: np.array, grf: float) -> np.array:
-    """Given a (m, n) matrix of cells dimensions in the x-y axes, returns the (m, n, 2) matrix of the coordinates of
-    centroids.
+    """Given a (m, n) matrix of cells dimensions in the x-y axes, returns the
+    (m, n, 2) matrix of the coordinates of centroids.
 
     :param array: (m, n) array
     :param grf: float: Cell dimension
@@ -340,7 +342,8 @@ def get_centroids(array: np.array, grf: float) -> np.array:
 
 # extract 0 contours
 def contour_extract(x_lim, y_lim, grf, Z):
-    """Extract the 0 contour from the sampled posterior, corresponding to the field delineation.
+    """Extract the 0 contour from the sampled posterior, corresponding to the
+    field delineation.
 
     :param x_lim: x limits of the grid
     :param y_lim: y limits of the grid

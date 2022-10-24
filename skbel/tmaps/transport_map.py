@@ -34,7 +34,8 @@ class TransportMap:
         rectifier_type: str = "exponential",
         delta: float = 0.0,
     ):
-        """This toolbox contains functions required to construct, optimize, and evaluate transport methods.
+        """This toolbox contains functions required to construct, optimize, and
+        evaluate transport methods.
 
          Maximilian Ramgraber, January 2022
 
@@ -211,9 +212,8 @@ class TransportMap:
 
     def check_inputs(self):
 
-        """This function runs some preliminary checks on the input provided, alerting the user to any possible input
-        errors.
-        """
+        """This function runs some preliminary checks on the input provided,
+        alerting the user to any possible input errors."""
 
         if self.monotonicity.lower() not in [
             "integrated rectifier",
@@ -265,8 +265,9 @@ class TransportMap:
 
     def reset(self, X: np.array):
 
-        """This function is used if the transport map has been initiated with a different set of samples.
-        It resets the standardization variables and the map's coefficients, requiring new optimization.
+        """This function is used if the transport map has been initiated with a
+        different set of samples. It resets the standardization variables and
+        the map's coefficients, requiring new optimization.
 
         :param X: N-by-D array of the training samples used to optimize the transport map, where N is the number of
             samples and D is the number of dimensions
@@ -298,7 +299,9 @@ class TransportMap:
 
     def precalculate(self):
 
-        """This function pre-calculates matrices of basis function evaluations for the samples provided.
+        """This function pre-calculates matrices of basis function evaluations
+        for the samples provided.
+
         These matrices can be used to optimize the maps more quickly.
         """
 
@@ -319,8 +322,9 @@ class TransportMap:
         self, term: list or str, mode: str = "standard", k: int = None
     ):
 
-        """This function assembles a string for a specific term of the map component functions. This can be a
-        polynomial, a Hermite function, a radial basis function, or similar.
+        """This function assembles a string for a specific term of the map
+        component functions. This can be a polynomial, a Hermite function, a
+        radial basis function, or similar.
 
         :param term: either an empty list, a list, or a string, which specifies what function type this term is supposed
             to be. Empty lists correspond to a constant, lists specify polynomials or Hermite functions, and strings
@@ -757,9 +761,8 @@ class TransportMap:
 
     def function_constructor_alternative(self):
 
-        """This function assembles the string for the monotone and non-monotone map components, then converts these
-        strings into functions.
-        """
+        """This function assembles the string for the monotone and non-monotone
+        map components, then converts these strings into functions."""
 
         self.fun_mon = []  # Initialize the list of monotone functions
         self.fun_mon_strings = []  # Initialize the list of monotone function strings
@@ -1306,8 +1309,12 @@ class TransportMap:
 
     def function_derivative_constructor_alternative(self):
 
-        """This function is the complement to 'function_constructor_alternative', but instead constructs the derivative
-        of the map's component functions. It constructs the functions' strings, then converts them into functions.
+        """This function is the complement to
+        'function_constructor_alternative', but instead constructs the
+        derivative of the map's component functions.
+
+        It constructs the functions' strings, then converts them into
+        functions.
         """
 
         self.der_fun_mon = []
@@ -1557,9 +1564,13 @@ class TransportMap:
 
     def check_for_special_terms(self):
 
-        """This function scans through the user-provided map specifications and seeks if there are any special terms
-        ('RBF', 'iRBF', 'LET', 'RET') among the terms of the map components. If there are, it determines how many there
-        are, and informs the rest of the function where these special terms should be located.
+        """This function scans through the user-provided map specifications and
+        seeks if there are any special terms ('RBF', 'iRBF', 'LET', 'RET')
+        among the terms of the map components.
+
+        If there are, it determines how many there are, and informs the
+        rest of the function where these special terms should be
+        located.
         """
 
         # Number of RBFs
@@ -1608,10 +1619,14 @@ class TransportMap:
 
     def calculate_special_term_locations(self):
 
-        """This function calculates the location and scale parameters for special terms in the transport map definition,
-        specifically RBF (Radial Basis Functions), iRBF (Integrated Radial Basis Functions), and LET/RET (Edge Terms).
-        Position and scale parameters are assigned in the order they have been defined, so make sure to define a left
-        edge term first if you want it to be on the left side.
+        """This function calculates the location and scale parameters for
+        special terms in the transport map definition, specifically RBF (Radial
+        Basis Functions), iRBF (Integrated Radial Basis Functions), and LET/RET
+        (Edge Terms).
+
+        Position and scale parameters are assigned in the order they
+        have been defined, so make sure to define a left edge term first
+        if you want it to be on the left side.
         """
 
         self.ST_centers_m = []  # Centers of RBFs in monotone terms
@@ -1851,8 +1866,9 @@ class TransportMap:
 
     def map(self, X: np.array = None):
 
-        """This function maps the samples X from the target distribution to the standard multivariate Gaussian reference
-        distribution. If X has not been provided, the samples in storage will be used instead
+        """This function maps the samples X from the target distribution to the
+        standard multivariate Gaussian reference distribution. If X has not
+        been provided, the samples in storage will be used instead.
 
         :param X: N-by-D array of the training samples used to optimize the transport map, where N is the number of
             samples and D is the number of dimensions.
@@ -1968,9 +1984,9 @@ class TransportMap:
 
     def optimize(self):
 
-        """This function optimizes the map's component functions, seeking the coefficients which best map the samples to
-        a standard multivariate Gaussian distribution.
-        """
+        """This function optimizes the map's component functions, seeking the
+        coefficients which best map the samples to a standard multivariate
+        Gaussian distribution."""
 
         if self.workers == 1:  # With only one worker, don't parallelize
 
@@ -2452,7 +2468,8 @@ class TransportMap:
 
     def objective_function(self, coeffs: np.array, k: int, div: int = 0):
 
-        """This function evaluates the objective function used in the optimization of the map's component functions.
+        """This function evaluates the objective function used in the
+        optimization of the map's component functions.
 
         :param coeffs: a vector containing the coefficients for both the non-monotone and monotone terms of the k-th map
             component function. Is replaced for storage is specified as None.
@@ -2581,8 +2598,8 @@ class TransportMap:
 
     def objective_function_jacobian(self, coeffs: np.array, k: int, div: int = 0):
 
-        """This function evaluates the derivative of the objective function used in the optimization of the map's
-        component functions.
+        """This function evaluates the derivative of the objective function
+        used in the optimization of the map's component functions.
 
         :param coeffs: a vector containing the coefficients for both the non-monotone and monotone terms of the k-th map
              component function. Is replaced for storage is specified as None.
@@ -2752,11 +2769,13 @@ class TransportMap:
 
     def inverse_map(self, Y: np.array, X_precalc: np.array = None):
 
-        """This function evaluates the inverse transport map, mapping samples from a multivariate standard Gaussian back
-        to the target distribution. If X_precalc is specified, the map instead evaluates a conditional of the target
-        distribution given X_precalc. The function assumes any precalculated output are the FIRST dimensions of the
-        total output. If X_precalc is specified, its dimensions and the input dimensions must sum to the full
-        dimensionality of sample space.
+        """This function evaluates the inverse transport map, mapping samples
+        from a multivariate standard Gaussian back to the target distribution.
+        If X_precalc is specified, the map instead evaluates a conditional of
+        the target distribution given X_precalc. The function assumes any
+        precalculated output are the FIRST dimensions of the total output. If
+        X_precalc is specified, its dimensions and the input dimensions must
+        sum to the full dimensionality of sample space.
 
         :param Y: N-by-D or N-by-(D-E) array of reference distribution samples to be mapped to the target distribution,
             where N is the number of samples, D is the number of target distribution dimensions, and E the number of
@@ -2865,8 +2884,8 @@ class TransportMap:
         k: int,
     ):
 
-        """This function searches for the roots of the k-th map component through bisection.
-        It is called in the inverse_map function.
+        """This function searches for the roots of the k-th map component
+        through bisection. It is called in the inverse_map function.
 
         :param X: N-by-k array of samples inverted so far, where the k-th column still contains the reference samples
             used as a residual in the root finding process
@@ -3215,7 +3234,8 @@ class TransportMap:
 
         def evaluate_dx(self, X: np.array) -> np.array:
 
-            """This function evaluates the derivative of the specified rectifier.
+            """This function evaluates the derivative of the specified
+            rectifier.
 
             :param X: an array of function evaluates to be rectified.
             :return: result: the derivative of the rectified function value.
@@ -3252,8 +3272,8 @@ class TransportMap:
 
         def evaluate_dfdc(self, f, dfdc):
 
-            """This function evaluates terms used in the optimization of the map components if monotonicity =
-            'separable monotonicity'.
+            """This function evaluates terms used in the optimization of the
+            map components if monotonicity = 'separable monotonicity'.
 
             :param f: an array of function evaluates to be rectified.
             :param dfdc: an array of function evaluates to be rectified.
@@ -3295,7 +3315,8 @@ class TransportMap:
 
         def logevaluate(self, X: np.array) -> np.array:
 
-            """This function evaluates the logarithm of the specified rectifier.
+            """This function evaluates the logarithm of the specified
+            rectifier.
 
             :param X: an array of function evaluates to be rectified.
             :return: result: the logarithm of the rectified function value.
