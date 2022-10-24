@@ -72,7 +72,7 @@ def _proxy_legend(
     obj=None,
 ):
     """Add a second legend to a figure @ bottom right (loc=4)
-     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+    https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
 
     :param legend1: First legend instance from the figure
     :param colors: List of colors
@@ -263,8 +263,7 @@ def pca_scores(
     add_legend: bool = True,
     show: bool = False,
 ):
-    """PCA scores plot, displays scores of observations above those of
-    training.
+    """PCA scores plot, displays scores of observations above those of training.
 
     :param pc_post: PCA scores of the posterior
     :param training: Training scores
@@ -423,12 +422,9 @@ def _despine(
     :param fig: Figure to despine all axes of, defaults to the current figure.
     :param ax: Specific axes object to despine. Ignored if fig is provided.
     :param top, right, left, bottom: If True, remove that spine.
-    :param offset: Absolute distance, in points, spines should be moved away
-        from the axes (negative values move spines inward). A single value
-        applies to all spines; a dict can be used to set offset values per
-        side.
-    :param trim: If True, limit spines to the smallest and largest major tick
-        on each non-despined axis.
+    :param offset: Absolute distance, in points, spines should be moved away from the axes (negative values move spines
+        inward). A single value applies to all spines; a dict can be used to set offset values per side.
+    :param trim: If True, limit spines to the smallest and largest major tick on each non-despined axis.
     """
     # Get references to the axes we want
     if fig is None and ax is None:
@@ -577,9 +573,9 @@ def _cca_plot(
 ):
     """Plot the Canonical Variate Pairs.
 
-    :param mode:
-    :param X_scores:
-    :param Y_scores:
+    :param mode: mode of inference
+    :param X_scores: Canonical variates for X
+    :param Y_scores: Canonical variates for Y
     :param X_obs: The X observations.
     :param Y_obs: The Y observations.
     :param samples: The samples to plot.
