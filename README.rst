@@ -8,8 +8,8 @@
 .. |Doc| image:: https://readthedocs.org/projects/skbel/badge/?version=latest
 .. _Doc: https://skbel.readthedocs.io/en/latest/?badge=latest
 
-.. |PythonVersion| image:: https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue
-.. _PythonVersion: https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue
+.. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/skbel
+.. _PythonVersion: https://img.shields.io/pypi/pyversions/skbel
 
 .. |PyPi| image:: https://badge.fury.io/py/skbel.svg
 .. _PyPi: https://badge.fury.io/py/skbel
