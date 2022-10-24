@@ -11,6 +11,6 @@ before_install:
   - pip install pytest-cov
 install:
   - pip install ".[test]" . # install package + test dependencies
-script: python -m pytest --cov=skbel
+script: python -m pytest
 after_success:
   - codecov # submit coverage
