@@ -737,8 +737,7 @@ def it_sampling(
 
 
 def remove_outliers(data):
-    """
-    Removes outliers from the data.
+    """Removes outliers from the data.
     :param data: array-like
     :return:
     """
