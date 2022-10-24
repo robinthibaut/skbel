@@ -138,7 +138,7 @@ def _proxy_annotate(annotation: list = None, loc: int = 1, fz: float = 11, obj=N
     """Places annotation (or title) within the figure box.
 
     :param annotation: Must be a list of labels even of it only contains one label. Savvy ?
-    :param fz: Fontsize
+    :param fz: Font size
     :param loc: Location (default: 1 = upper right corner, 2 = upper left corner)
     """
     if obj is None:
