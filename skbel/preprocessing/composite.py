@@ -18,7 +18,7 @@ __all__ = ["CompositePCA", "CompositeTransformer", "Dummy"]
 class CompositePCA(TransformerMixin, BaseEstimator):
     def __init__(self, n_components: list, scale: bool = False):
         """Initiate the class by specifying a list of number of components to
-        keep for each different datasets.
+         keep for each different datasets.
 
         :param n_components: list of number of components to keep for each dataset
         :param scale: whether to scale the data before applying PCA
@@ -33,7 +33,7 @@ class CompositePCA(TransformerMixin, BaseEstimator):
 
     def fit(self, Xc: list, yc=None, **fit_params):
         """Fit all PCA objects for the different datasets with their specified
-        n_components.
+         n_components.
 
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API
@@ -97,7 +97,8 @@ class CompositePCA(TransformerMixin, BaseEstimator):
 
 class CompositeTransformer(TransformerMixin, BaseEstimator):
     def __init__(self, base_function, **fit_params):
-        """
+        """Initiate the class by specifying a base scikit-learn object and
+         the parameters to use for each dataset.
         :param base_function: function to apply to the data
         :param fit_params: parameters to pass to the base function
         """
@@ -107,7 +108,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
 
     def fit(self, Xc: list, yc=None, **fit_params):
         """Fit all transformations for the different datasets with their
-        specified parameters.
+         specified parameters.
 
         :param Xc: list of datasets
         :param yc: Only here to satisfy the scikit-learn API

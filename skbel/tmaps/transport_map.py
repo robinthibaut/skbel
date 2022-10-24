@@ -34,7 +34,6 @@ class TransportMap:
         rectifier_type: str = "exponential",
         delta: float = 0.0,
     ):
-
         """This toolbox contains functions required to construct, optimize, and evaluate transport methods.
          Maximilian Ramgraber, January 2022
 

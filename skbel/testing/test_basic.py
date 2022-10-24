@@ -21,8 +21,7 @@ my_path = os.path.dirname(os.path.abspath(__file__))
 
 def init_bel():
     """Set all BEL pipelines.
-
-    This is the blueprint of the framework.
+     This is the blueprint of the framework.
     """
     # Pipeline before CCA
     X_pre_processing = Pipeline(
@@ -172,7 +171,7 @@ def test_tm():
 
     tm.optimize()
 
-    norm_samples = scipy.stats.norm.rvs(size=(500, 1), random_state=42)
+    norm_samples = scipy.stats.norm.rvs(size=(500, 1), random_state=42)  # noqa
 
     x1_obs = 2.32
 

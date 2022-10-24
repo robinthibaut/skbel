@@ -501,7 +501,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         init_kde: np.array = None,
     ) -> np.array:
         """Random sample the inferred posterior distribution. It can be used to
-        generate samples from the posterior.
+         generate samples from the posterior.
 
         :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
         :param obs_n: If we want to generate samples from the posterior of a specific observation point, obs_n is the
@@ -641,7 +641,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """Initialize the KDEs, i.e. the functions that will be used to sample
-        from the posterior distribution.
+         from the posterior distribution.
 
         :param X_obs_f: Observed data points
         :param obs_n: Observation number
@@ -684,7 +684,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self, Y_pred: np.array, dtype: str = "float64", get_PC=False
     ) -> np.array:
         """Back-transforms the posterior samples Y_pred to their physical
-        space.
+         space.
 
         :param Y_pred: The posterior samples (shape = (n_obs, n_components, n_samples))
         :param get_PC: If True, returns the canonical variates

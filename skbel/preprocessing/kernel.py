@@ -104,16 +104,16 @@ class Kernel(TransformerMixin, BaseEstimator):
     def inverse_transform(self, X):
         """Transform X back to original space.
 
-        ``inverse_transform`` approximates the inverse transformation using
-        a learned pre-image. The pre-image is learned by kernel ridge
-        regression of the original data on their low-dimensional representation
-        vectors.
+         ``inverse_transform`` approximates the inverse transformation using
+         a learned pre-image. The pre-image is learned by kernel ridge
+         regression of the original data on their low-dimensional representation
+         vectors.
+
+         Reference: "Learning to Find Pre-Images", G BakIr et al, 2004.
 
         :param X: {array-like, sparse matrix} of shape (n_samples, n_components)
 
-        return X_new: ndarray of shape (n_samples, n_features)
-
-        Reference: "Learning to Find Pre-Images", G BakIr et al, 2004.
+        :return X_new: ndarray of shape (n_samples, n_features)
         """
         if not self.fit_inverse_transform:
             raise NotFittedError(

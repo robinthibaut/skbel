@@ -71,9 +71,8 @@ def _proxy_legend(
     extra: list = None,
     obj=None,
 ):
-    """
-    Add a second legend to a figure @ bottom right (loc=4)
-    https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
+    """Add a second legend to a figure @ bottom right (loc=4)
+     https://stackoverflow.com/questions/12761806/matplotlib-2-different-legends-on-same-graph
 
     :param legend1: First legend instance from the figure
     :param colors: List of colors
@@ -265,16 +264,18 @@ def pca_scores(
     show: bool = False,
 ):
     """PCA scores plot, displays scores of observations above those of
-    training.
+     training.
 
     :param pc_post: PCA scores of the posterior
     :param training: Training scores
     :param prediction: Test scores
     :param pc_post: PCA scores of the posterior (Y)
+    :param random_pcs: Random PCA scores
     :param n_comp: How many components to show
     :param annotation: List of annotation(s)
     :param title: Title of the plot
     :param xlabel: Label of the x axis
+    :param ylabel: Label of the y axis
     :param fig_file: Path to figure file
     :param add_legend: Add legend
     :param show: Show figure
@@ -808,7 +809,8 @@ def cca_vision(
     fig_dir: str = None,
     show: bool = False,
 ):
-    """
+    """Visualize the CCA results.
+
     :param X_scores: CCA scores for X
     :param Y_scores: CCA scores for Y
     :param X_obs: X observations
@@ -888,5 +890,3 @@ def cca_vision(
     if show:
         plt.show()
     plt.close()
-
-    # return ac  # Return the iterator so that it can be used again
