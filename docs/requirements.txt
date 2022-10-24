@@ -1,14 +1,126 @@
-sphinx
-sphinx_rtd_theme
-readthedocs-sphinx-search
-nbsphinx
-IPython
-scikit-learn
-matplotlib
-scipy
-numpy
-joblib
-pandas
-pytest
-sphinxcontrib_bibtex
-scikit-image
+# sphinx
+# sphinx_rtd_theme
+# readthedocs-sphinx-search
+# nbsphinx
+# IPython
+# scikit-learn
+# matplotlib
+# scipy
+# numpy
+# joblib
+# pandas
+# pytest
+# sphinxcontrib_bibtex
+# scikit-image
+
+alabaster==0.7.12
+appnope==0.1.3
+asttokens==2.0.5
+attrs==21.4.0
+Babel==2.10.3
+backcall==0.2.0
+beautifulsoup4==4.11.1
+bleach==5.0.0
+build==0.8.0
+certifi==2022.5.18.1
+charset-normalizer==2.0.12
+commonmark==0.9.1
+cycler==0.11.0
+dataclasses==0.6
+decorator==5.1.1
+defusedxml==0.7.1
+docformatter==1.5.0
+docutils==0.17.1
+entrypoints==0.4
+executing==0.8.3
+fastjsonschema==2.15.3
+fonttools==4.33.3
+idna==3.3
+imageio==2.19.2
+imagesize==1.4.0
+importlib-metadata==4.11.4
+iniconfig==1.1.1
+ipython==8.4.0
+jedi==0.18.1
+Jinja2==3.1.2
+joblib==1.1.0
+jsonschema==4.6.1
+jupyter-client==7.3.4
+jupyter-core==4.10.0
+jupyterlab-pygments==0.2.2
+keyring==23.5.1
+kiwisolver==1.4.2
+latexcodec==2.0.1
+loguru==0.6.0
+MarkupSafe==2.1.1
+matplotlib==3.5.2
+matplotlib-inline==0.1.3
+mistune==0.8.4
+nbclient==0.6.5
+nbconvert==6.5.0
+nbformat==5.4.0
+nbsphinx==0.8.9
+nest-asyncio==1.5.5
+networkx==2.8.2
+numpy==1.22.4
+packaging==21.3
+pandas==1.4.2
+pandocfilters==1.5.0
+parso==0.8.3
+pep517==0.12.0
+pexpect==4.8.0
+pickleshare==0.7.5
+Pillow==9.1.1
+pkginfo==1.8.2
+pluggy==1.0.0
+prompt-toolkit==3.0.30
+ptyprocess==0.7.0
+pure-eval==0.2.2
+py==1.11.0
+pybtex==0.24.0
+pybtex-docutils==1.0.2
+pydocstringformatter==0.7.2
+Pygments==2.12.0
+pyparsing==3.0.9
+pyrsistent==0.18.1
+pytest==7.1.2
+python-dateutil==2.8.2
+pytz==2022.1
+PyWavelets==1.3.0
+PyYAML==6.0
+pyzmq==23.2.0
+readme-renderer==35.0
+readthedocs-sphinx-search==0.1.2
+requests==2.27.1
+requests-toolbelt==0.9.1
+rfc3986==2.0.0
+rich==12.4.4
+scikit-image==0.19.2
+scikit-learn==1.1.1
+scipy==1.8.1
+seaborn==0.11.2
+six==1.16.0
+snowballstemmer==2.2.0
+soupsieve==2.3.2.post1
+Sphinx==5.0.2
+sphinx-rtd-theme==1.0.0
+sphinxcontrib-applehelp==1.0.2
+sphinxcontrib-bibtex==2.4.2
+sphinxcontrib-devhelp==1.0.2
+sphinxcontrib-htmlhelp==2.0.0
+sphinxcontrib-jsmath==1.0.1
+sphinxcontrib-qthelp==1.0.3
+sphinxcontrib-serializinghtml==1.1.5
+stack-data==0.3.0
+threadpoolctl==3.1.0
+tifffile==2022.5.4
+tinycss2==1.1.1
+tomli==2.0.1
+tornado==6.1
+traitlets==5.3.0
+twine==4.0.1
+untokenize==0.1.1
+urllib3==1.26.9
+wcwidth==0.2.5
+webencodings==0.5.1
+zipp==3.8.0
