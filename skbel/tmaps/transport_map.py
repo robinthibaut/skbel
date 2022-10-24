@@ -212,7 +212,7 @@ class TransportMap:
     def check_inputs(self):
 
         """This function runs some preliminary checks on the input provided, alerting the user to any possible input
-         errors.
+        errors.
         """
 
         if self.monotonicity.lower() not in [
