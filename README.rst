@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-|Travis|_  |Doc|_ |CodeCov|_ |Black|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
+|Travis|_  |Doc|_ |Black|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
 
 .. |Travis| image:: https://travis-ci.com/robinthibaut/skbel.svg?branch=master
 .. _Travis: https://travis-ci.com/robinthibaut/skbel
