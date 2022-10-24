@@ -758,7 +758,7 @@ def _cca_plot(
             + f" = {round(cca_coefficient[comp_n], 3)}"
         ]
         legend_a = _proxy_annotate(obj=ax_joint, annotation=an, loc=2, fz=12)
-        #
+
         _proxy_legend(
             obj=ax_joint,
             legend1=legend_a,
