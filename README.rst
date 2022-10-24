@@ -1,6 +1,6 @@
 .. -*- mode: rst -*-
 
-|Travis|_  |Doc|_ |Black|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
+|Travis|_  |Doc|_ |CodeCov|_ |Black|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
 
 .. |Travis| image:: https://travis-ci.com/robinthibaut/skbel.svg?branch=master
 .. _Travis: https://travis-ci.com/robinthibaut/skbel
@@ -8,7 +8,7 @@
 .. |Doc| image:: https://readthedocs.org/projects/skbel/badge/?version=latest
 .. _Doc: https://skbel.readthedocs.io/en/latest/?badge=latest
 
-.. |CodeCov| image:: https://codecov.io/gh/robinthibaut/skbel/branch/main/graph/badge.svg
+.. |CodeCov| image:: https://codecov.io/gh/robinthibaut/skbel/branch/main/graph/badge.svg?token=S0T9NW3VK6
 .. _CodeCov: https://codecov.io/gh/robinthibaut/skbel
 
 .. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/skbel
