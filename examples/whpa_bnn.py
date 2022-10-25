@@ -22,7 +22,7 @@ sub_dir = jp(os.getcwd(), "results")
 obj_dir = jp(sub_dir, "obj")  # Location to save the BEL model
 fig_data_dir = jp(sub_dir, "data")  # Location to save the raw data figures
 fig_pca_dir = jp(sub_dir, "pca")  # Location to save the PCA figures
-fig_cca_dir = jp(sub_dir, "cca")  # Location to save the CCA figures
+fig_cca_dir = jp(sub_dir, "regression_model")  # Location to save the CCA figures
 fig_pred_dir = jp(sub_dir, "uq")  # Location to save the prediction figures
 
 # Creates directories

@@ -58,7 +58,7 @@ class Setup:
         # Files that are stored after preprocessing
         predictor_pickle: str = "d_pca.pkl"
         target_pickle: str = "h_pca.pkl"
-        model_pickle: str = "cca.pkl"
+        model_pickle: str = "regression_model.pkl"
         target_post_bin: str = "post.npy"
         target_pc_bin: str = "target_pc.npy"
         predictor_training_bin: str = "training_curves.npy"

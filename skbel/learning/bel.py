@@ -1,14 +1,13 @@
+#  Copyright (c) 2022. Robin Thibaut, Ghent University
+
 """Bayesian Evidential Learning Framework.
 
 Currently, the common practice is to first transform predictor and target variables
 through PCA, and then apply CCA.
 
-It would be interesting to try other techniques and implement it in the framework.
-
 Alternative blueprints could be written in the same style as the BEL class implementing the classic scheme.
 """
 
-#  Copyright (c) 2022. Robin Thibaut, Ghent University
 import numpy as np
 from scipy import interpolate, stats
 from sklearn.base import (
@@ -45,7 +44,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         Y_pre_processing=None,
         X_post_processing=None,
         Y_post_processing=None,
-        cca=None,
+        regression_model=None,
         n_comp_cca=None,
         x_dim=None,
         y_dim=None,
@@ -53,13 +52,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     ):
         """Initialize the BEL class.
 
-        :param mode: How to infer the posterior distribution. "kde", "mvn" or "tm".
+        :param mode: How to infer the posterior distribution (if CCA is used). "kde", "mvn" or "tm".
         :param copy: Whether to copy arrays or not (default is True).
         :param X_pre_processing: sklearn pipeline for pre-processing the predictor.
         :param Y_pre_processing: sklearn pipeline for pre-processing the target.
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
-        :param cca: sklearn pipeline for CCA.
+        :param regression_model: The regression model to use. Default is Canonical Correlation Analysis.
         :param n_comp_cca: Number of components to keep in CCA.
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
@@ -78,14 +77,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             X_post_processing = Pipeline([("nothing", "passthrough")])
         if Y_post_processing is None:
             Y_post_processing = Pipeline([("nothing", "passthrough")])
-        if cca is None:
-            cca = Pipeline([("nothing", "passthrough")])
+        if regression_model is None:
+            regression_model = Pipeline([("nothing", "passthrough")])
 
         self.X_pre_processing = X_pre_processing
         self.Y_pre_processing = Y_pre_processing
         self.X_post_processing = X_post_processing
         self.Y_post_processing = Y_post_processing
-        self.cca = cca
+        self.cca = regression_model
         self.n_comp_cca = n_comp_cca
         # Parameters for sampling
         self._seed = random_state
@@ -203,7 +202,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 self.cca.n_components = min(_xt.shape[1], _yt.shape[1])
             else:
                 self.cca.n_components = self.n_comp_cca
-            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)  # CCA
+            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)  # Learning
         except ValueError:  # If no CCA
             _xc, _yc = _xt, _yt
 
@@ -303,35 +302,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Project observed data into canonical space.
         if self._x_obs_pre_processed is None:
-            pass
-            # if type(X_obs) is list:  # If X_obs is a list
-            #     try:
-            #         X_obs = [
-            #             check_array(x, allow_nd=True) for x in X_obs
-            #         ]  # Check if it is a list of arrays
-            #     except ValueError:  # If it is not a list of arrays
-            #         try:
-            #             X_obs = [
-            #                 check_array(x.to_numpy().reshape(1, -1)) for x in X_obs
-            #             ]  # Check if it is a list of pd.Series
-            #         except AttributeError:  # If it is not a list of pd.Series
-            #             X_obs = [
-            #                 check_array(x.reshape(1, -1)) for x in X_obs
-            #             ]  # Check if it is a list of arrays
-            # else:  # If it is not a list
-            #     try:
-            #         X_obs = check_array(X_obs, allow_nd=True)  # Check if it is an array
-            #     except ValueError:
-            #         try:
-            #             X_obs = check_array(
-            #                 X_obs.to_numpy().reshape(1, -1)
-            #             )  # Check if it is a pd.Series
-            #         except AttributeError:
-            #             X_obs = check_array(
-            #                 X_obs.reshape(1, -1)
-            #             )  # Check if it is an array
-            # These checks are not pretty, but they are necessary to make sure that the dimensions of the arrays are
-            # consistent.
             X_obs_pc = self.X_pre_processing.transform(X_obs)
         else:
             X_obs_pc = self._x_obs_pre_processed
