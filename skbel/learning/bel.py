@@ -30,9 +30,8 @@ __all__ = ["BEL"]
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """Heart of the framework.
-
-    Inherits from scikit-learn base classes. ‘BEL’ stands for Bayesian
-    Evidential Learning.
+    Inherits from scikit-learn base classes.
+    ‘BEL’ stands for Bayesian Evidential Learning.
     """
 
     def __init__(
@@ -59,7 +58,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X_post_processing: sklearn pipeline for post-processing the predictor.
         :param X_post_processing: sklearn pipeline for post-processing the target.
         :param regression_model: The regression model to use. Default is Canonical Correlation Analysis.
-        :param n_comp_cca: Number of components to keep in CCA.
+        :param n_comp_cca: Number of components to keep in CCA (only if CCA is used).
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
         :param random_state: Seed to reproduce the same samples.
@@ -196,7 +195,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             _yt = self.y_pre_processed
 
-        # Canonical variates
+        # Regression
         try:
             if self.n_comp_cca is None:  # If not specified, use all components
                 self.regression_model.n_components = min(_xt.shape[1], _yt.shape[1])

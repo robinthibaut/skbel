@@ -159,8 +159,8 @@ class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return self.fit(X, y).transform(X)
 
     # it needs a 'inverse_transform' method that does nothing
-    def inverse_transform(self, X):
-        return X
+    def inverse_transform(self, y):
+        return y
 
 
 # extra models for later
