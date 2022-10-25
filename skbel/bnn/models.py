@@ -123,6 +123,7 @@ def probabilistic_variational_model(input_shape: int,
     return model
 
 
+# we need to wrap a class around the model to make it compatible with sklearn
 class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def __init__(self, input_shape, output_shape, n_hidden, kl_weight, n_layers=2, epochs=100, batch_size=32, verbose=0):
         self.input_shape = input_shape
@@ -162,10 +163,9 @@ class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
         return X
 
 
-
+# extra models for later
 def probabilistic_mcd_model(input_shape, output_shape, n_hidden, kl_weight, rate=0.25):
-    """
-    Define mcd model.
+    """Define mcd model.
 
     :param input_shape: shape of input
     :param output_shape: shape of output
@@ -212,8 +212,7 @@ def probabilistic_mcd_model(input_shape, output_shape, n_hidden, kl_weight, rate
 
 
 def epistemic_variational_model(input_shape, output_shape, n_hidden, kl_weight):
-    """
-    Define variational model with 2 hidden layers.
+    """Define variational model with 2 hidden layers.
 
     :param input_shape: shape of input
     :param output_shape: shape of output
@@ -259,8 +258,8 @@ def epistemic_variational_model(input_shape, output_shape, n_hidden, kl_weight):
 
 
 def epistemic_mcd_model(input_shape, output_shape, n_hidden, kl_weight, rate=0.25):
-    """
-    Define mcd model with 2 hidden layers.
+    """Define mcd model with 2 hidden layers.
+
     :param input_shape: shape of input
     :param output_shape: shape of output
     :param n_hidden: number of hidden units
