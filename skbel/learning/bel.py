@@ -84,7 +84,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.Y_pre_processing = Y_pre_processing
         self.X_post_processing = X_post_processing
         self.Y_post_processing = Y_post_processing
-        self.cca = regression_model
+        self.regression_model = regression_model
         self.n_comp_cca = n_comp_cca
         # Parameters for sampling
         self._seed = random_state
@@ -199,10 +199,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Canonical variates
         try:
             if self.n_comp_cca is None:  # If not specified, use all components
-                self.cca.n_components = min(_xt.shape[1], _yt.shape[1])
+                self.regression_model.n_components = min(_xt.shape[1], _yt.shape[1])
             else:
-                self.cca.n_components = self.n_comp_cca
-            _xc, _yc = self.cca.fit_transform(X=_xt, y=_yt)  # Learning
+                self.regression_model.n_components = self.n_comp_cca
+            _xc, _yc = self.regression_model.fit_transform(X=_xt, y=_yt)  # Learning
         except ValueError:  # If no CCA
             _xc, _yc = _xt, _yt
 
@@ -226,15 +226,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if X is not None and Y is None:  # If only X is provided
             _xt = self.X_pre_processing.transform(X)  # Pre-processing
-            _xc = self.cca.transform(X=_xt)  # CCA
+            _xc = self.regression_model.transform(X=_xt)  # CCA
             _xp = self.X_post_processing.transform(_xc)  # Post-processing
 
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy used for CCA
-            _, _yc = self.cca.transform(
+            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
+            _, _yc = self.regression_model.transform(
                 X=dummy, Y=_yt
             )  # CCA. We only need the Y-loadings, so we pass dummy X
             _yp = self.Y_post_processing.transform(_yc)
@@ -245,7 +245,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             _xt = self.X_pre_processing.transform(X)  # Pre-processing
             _yt = self.Y_pre_processing.transform(Y)
 
-            _xc, _yc = self.cca.transform(X=_xt, Y=_yt)
+            _xc, _yc = self.regression_model.transform(X=_xt, Y=_yt)
 
             _xp, _yp = (
                 self.X_post_processing.transform(_xc),
@@ -306,14 +306,14 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             X_obs_pc = self._x_obs_pre_processed
 
-        X_obs_c = self.cca.transform(
+        X_obs_c = self.regression_model.transform(
             X_obs_pc
         )  # Project observed data into Canonical space.
         X_obs_f = self.X_post_processing.transform(X_obs_c)
 
         # Estimate the posterior mean and covariance
         n_obs = X_obs_f.shape[0]  # Number of observations
-        n_cca = self.cca.n_components  # Number of canonical variables
+        n_cca = self.regression_model.n_components  # Number of canonical variables
 
         if self.mode == "mvn":  # If mode is mvn
             self.posterior_mean, self.posterior_covariance = (
@@ -332,7 +332,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )  # Noise level. We assume that the data is noisy with a given level of noise.
                 # (n_comp_CCA, n_comp_CCA)
                 # Get the rotation matrices
-                x_rotations = self.cca.x_rotations_
+                x_rotations = self.regression_model.x_rotations_
                 x_cov = x_rotations.T @ x_cov @ x_rotations
                 dict_args = {"x_cov": x_cov}
 
@@ -495,7 +495,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if self.seed is None:
             self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
 
-        check_is_fitted(self.cca)
+        check_is_fitted(self.regression_model)
         if n_posts is None:
             n_posts = self.n_posts
         else:
@@ -668,7 +668,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param dtype: The dtype of the output array
         :return: The back-transformed samples
         """
-        check_is_fitted(self.cca)
+        check_is_fitted(self.regression_model)
 
         Y_post = []
 
@@ -683,7 +683,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 yp
             )  # Posterior CCA scores
 
-            n_comp = self.cca.n_components  # Number of components
+            n_comp = self.regression_model.n_components  # Number of components
 
             if (
                 y_post.shape[1] > n_comp
@@ -696,13 +696,13 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             # x_dummy to be used in the inverse_transform of CCA:
             x_dummy = np.zeros((y_post.shape[0], n_comp))
             try:
-                x_post_dummy, y_post = self.cca.inverse_transform(
+                x_post_dummy, y_post = self.regression_model.inverse_transform(
                     x_dummy, y_post
                 )  # Inverse transform the posterior samples
             except TypeError:
                 y_post = (
-                    np.matmul(y_post, self.cca.y_loadings_.T) * self.cca._y_std  # noqa
-                    + self.cca._y_mean  # noqa
+                        np.matmul(y_post, self.regression_model.y_loadings_.T) * self.regression_model._y_std  # noqa
+                        + self.regression_model._y_mean  # noqa
                 )  # Posterior PC scores
 
             if get_PC:  # return the CV
@@ -733,15 +733,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: CVs
         """
         if X is not None and Y is None:  # If only X is provided
-            _xc = self.cca.transform(X=X)  # CCA
+            _xc = self.regression_model.transform(X=X)  # CCA
             return _xc
 
         elif Y is not None and X is None:  # If only Y is provided
-            dummy = np.zeros((1, self.cca.x_loadings_.shape[0]))  # Dummy used for CCA
-            _, _yc = self.cca.transform(
+            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
+            _, _yc = self.regression_model.transform(
                 X=dummy, Y=Y
             )  # CCA. We only need the Y-loadings, so we pass dummy X
             return _yc
         else:
-            _xc, _yc = self.cca.transform(X=X, Y=Y)  # CCA
+            _xc, _yc = self.regression_model.transform(X=X, Y=Y)  # CCA
             return _xc, _yc

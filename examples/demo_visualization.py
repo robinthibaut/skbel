@@ -723,7 +723,7 @@ def plot_results(
         plt.close()
 
         # WHPs
-        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
+        ff = jp(md, "uq", f"{root}_cca_{bel.regression_model.n_components}.png")
         forecast_posterior = y_predicted.reshape(
             (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
         )
