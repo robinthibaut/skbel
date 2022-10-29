@@ -137,13 +137,20 @@ BibTeX::
 Peer-reviewed publications using SKBEL
 --------------------------------------
 
-Thibaut, Robin, Nicolas Compaire, Nolwenn Lesparre, Maximilian Ramgraber, Eric Laloy, and Thomas Hermans (Oct. 2022). “Comparing Well and Geophysical Data for Temperature Monitoring within a Bayesian Experi-mental Design Framework”. In: Water Resources Research. issn: 0043-1397. doi:10.1029/2022WR033045. url: https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2022WR033045
+Thibaut, Robin, Nicolas Compaire, Nolwenn Lesparre, Maximilian Ramgraber, Eric Laloy, and Thomas Hermans (Nov. 2022). “Comparing Well and Geophysical Data for Temperature Monitoring Within a Bayesian Experimental Design Framework”. In:Water Resources Research 58 (11). issn: 0043-1397. doi: 10.1029/2022WR033045. url: https://onlinelibrary.wiley.com/doi/10.1029/2022WR033045.
 
-Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). "A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area". In: Journal of Hydrology 603, p.126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537
+Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). “A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area”. In: Journal of Hydrology 603, p. 126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537.
 
 Notebooks and tutorials
 ----------------------
 
-Thibaut, Robin (2021). WHPA Prediction. [Dataset]. doi:10.34740/kaggle/dsv/2648718. url: https://www.kaggle.com/dsv/2648718
+Nolwenn Lesparre, Nicolas Compaire, Thomas Hermans and Robin Thibaut. (2022). 4D Temperature Monitoring with BEL. [Dataset]. Kaggle. doi: 10.34740/kaggle/ds/2275519. url: https://doi.org/10.34740/KAGGLE/DS/2275519
+
+Thibaut, Robin (2021). WHPA Prediction. [Dataset]. Kaggle. doi:10.34740/kaggle/dsv/2648718. url: https://www.kaggle.com/dsv/2648718
+
+Research project
+----------------
+
+Logs and results of the research project are available on the `project page <https://www.researchgate.net/project/A-new-framework-for-Experimental-Design-in-Earth-Sciences-using-Bayesian-Evidential-Learning-BEL4ED>`_.
 
 
