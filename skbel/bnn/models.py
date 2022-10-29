@@ -25,7 +25,8 @@ def probabilistic_variational_model(input_shape: int,
                                     output_shape: int,
                                     n_hidden: int or list,
                                     kl_weight: float,
-                                    n_layers: int = 2):
+                                    n_layers: int = 2,
+                                    ):
     """Define variational model with 2 hidden layers.
 
     Example:
@@ -108,7 +109,7 @@ def probabilistic_variational_model(input_shape: int,
             tfp.layers.MultivariateNormalTriL(
                 output_shape,
                 # activity_regularizer=tfp.layers.KLDivergenceRegularizer(
-                #     prior, weight=1/train_size
+                #     prior, weight=kl_weight
                 # ),
                 name="output",
             ),

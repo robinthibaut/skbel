@@ -31,7 +31,7 @@ __all__ = ["BEL"]
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
     """Heart of the framework.
     Inherits from scikit-learn base classes.
-    ‘BEL’ stands for Bayesian Evidential Learning.
+    BEL stands for Bayesian Evidential Learning.
     """
 
     def __init__(
