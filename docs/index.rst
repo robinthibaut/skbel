@@ -9,7 +9,13 @@ SKBEL
 .. currentmodule:: SKBEL
 
 This package implements the Bayesian Evidential Learning (BEL) framework.
-BEL is a method that combines machine learning and Monte Carlo simulations to help improve the estimation of prediction uncertainty (Hermans et al., 2016, 2018; Michel et al., 2020; Thibaut et al., 2021). It uses a direct relationship between predictor (data) and target (prediction), learned from a training set sampled from the prior distribution, to perform the Bayesian inference (typically within a low-dimensional latent space). Its effectiveness has been shown through extensive synthetic validation, but also against rejection sampling (Scheidt et al., 2015), Markov chain Monte Carlo (McMC) algorithms (Michel et al., 2020, 2022), field data (Hermans et al., 2019), and experimental design (Thibaut et al., 2021; 2022). Previous studies have demonstrated that BEL can estimate the posterior distribution of parameters in a variety of contexts, including geothermal systems (Athens & Caers, 2019; Hermans et al., 2018, 2019), contaminant transport (Satija & Caers, 2015; Scheidt et al., 2015), and geophysical inversion (Hermans et al., 2016; Michel et al., 2020). Additionally, a variety of subsurface field cases, including groundwater, shallow and deep geothermal, and oil/gas predictions, have been successfully applied using the BEL framework (J. Park & Caers, 2020; Pradhan & Mukerji, 2020; Tadjer & Bratvold, 2021).
+BEL is a method that combines machine learning and Monte Carlo simulations to help improve the estimation of prediction uncertainty (Hermans et al., 2016, 2018; Michel et al., 2020; Thibaut et al., 2021).
+
+It uses a direct relationship between predictor (data) and target (prediction), learned from a training set sampled from the prior distribution, to perform the Bayesian inference (typically within a low-dimensional latent space).
+
+Its effectiveness has been shown through extensive synthetic validation, but also against rejection sampling (Scheidt et al., 2015), Markov chain Monte Carlo (McMC) algorithms (Michel et al., 2020, 2022), field data (Hermans et al., 2019), and experimental design (Thibaut et al., 2021; 2022).
+
+Previous studies have demonstrated that BEL can estimate the posterior distribution of parameters in a variety of contexts, including geothermal systems (Athens & Caers, 2019; Hermans et al., 2018, 2019), contaminant transport (Satija & Caers, 2015; Scheidt et al., 2015), and geophysical inversion (Hermans et al., 2016; Michel et al., 2020). Additionally, a variety of subsurface field cases, including groundwater, shallow and deep geothermal, and oil/gas predictions, have been successfully applied using the BEL framework (J. Park & Caers, 2020; Pradhan & Mukerji, 2020; Tadjer & Bratvold, 2021).
 
 Installation
 ------------
@@ -102,6 +108,7 @@ About the authors
 
 The first and main author is MSc. Ir. `Robin Thibaut <https://orcid.org/0000-0001-7556-2700>`_, who developed this package as part of his doctoral research project: `A new framework for Experimental Design in Earth Sciences using Bayesian Evidential Learning (BEL4ED) <https://www.researchgate.net/project/A-new-framework-for-Experimental-Design-in-Earth-Sciences-using-Bayesian-Evidential-Learning-BEL4ED>`_ at Ghent University, Department of Geology, `Laboratory for Applied Geology and Hydrogeology (LTGH) <https://www.ugent.be/we/geologie/en/research/organization/applied-geology-and-hydrogeology>`_.
 His advisors are Prof. Dr. Ir. `Thomas Hermans <https://orcid.org/0000-0001-9522-1540>`_ (Ghent University) and Dr. Ir. `Eric Laloy <https://scholar.google.com/citations?user=QrvhkvQAAAAJ&hl=en>`_ (SCK CEN: Belgian Nuclear Research Centre).
+
 The second author is Dr. `Maximilian Ramgraber <https://www.maxramgraber.com/>`_ (Massachusetts Institute of Technology), who has implemented the transport maps algorithm in this package.
 
 Note: information about the authors last updated on 2023-10-29
