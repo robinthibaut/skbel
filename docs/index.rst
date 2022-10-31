@@ -11,7 +11,9 @@ SKBEL - Bayesian Evidential Learning for Python
 Installation
 ------------
 
-SKBEL is available through `PyPI <https://pypi.org/project/skbel/>`_, and may be installed using ``pip``: ::
+SKBEL is available through `PyPI <https://pypi.org/project/skbel/>`_, and may be installed using ``pip``:
+
+.. code:: sh
 
    $ pip install skbel
 
@@ -96,7 +98,7 @@ SKBEL implementation
 
 Here is an example blueprint of the BEL workflow implemented in SKBEL:
 
-::
+.. code:: python
 
 def init_bel():
     """Set all BEL pipelines.
