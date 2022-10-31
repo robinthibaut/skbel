@@ -91,6 +91,54 @@ Sampling and back-transformation to the original space
 
 Figure 2: Typical BEL workflow. Taken from Thibaut et al. (2021).
 
+SKBEL implementation
++++++++++++++++++++++
+
+Here is an example blueprint of the BEL workflow implemented in SKBEL:
+
+::
+
+def init_bel():
+    """Set all BEL pipelines.
+
+    This is the blueprint of the framework.
+    """
+    # Pipeline before CCA
+    X_pre_processing = Pipeline(
+        [
+            ("pca", PCA(n_components=.99)),
+            ("scaler", StandardScaler()),
+        ]
+    )
+    Y_pre_processing = Pipeline(
+        [
+            ("pca", PCA(n_components=.99)),
+            ("scaler", StandardScaler()),
+        ]
+    )
+
+    # Canonical Correlation Analysis
+    cca = CCA(n_components=30)
+
+    # Pipeline after CCA
+    X_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+    Y_post_processing = Pipeline(
+        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+    )
+
+    # Initiate BEL object
+    bel_model = BEL(
+        X_pre_processing=X_pre_processing,
+        X_post_processing=X_post_processing,
+        Y_pre_processing=Y_pre_processing,
+        Y_post_processing=Y_post_processing,
+        regression_model=cca,
+    )
+
+    return bel_model
+
 Contributing
 ------------
 
