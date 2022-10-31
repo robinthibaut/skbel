@@ -2936,7 +2936,7 @@ class TransportMap:
              Is calculated by the integration scheme, if not specified.
         :param full_output: Flag for whether the positions and weights of the integration points should be returned
              along with the integration results. If True, returns a tuple with (results,order,xis,Ws). If False, only
-            returns results.
+             returns results.
         :param adaptive: flag which determines whether the numerical scheme should adjust the order of the Legendre
              polynomial adaptively (True) or use the integer provided by 'order' (False).
         :param threshold: threshold for the difference in the adaptive integration, adaptation stops after difference in

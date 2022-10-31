@@ -166,7 +166,7 @@ The posterior distribution of the target can also be sampled:
 .. code:: python
 
    # Sampling
-   bel_model.sample(X_test, n_samples=100)
+   bel_model.random_sample(X_test, n_samples=100)
 
 
 Note that the `X_train` and `Y_train` are the predictor and target, respectively, generated from the same set of prior models `m`. The `X_test` is the predictor for which the posterior distribution of the target is inferred.
