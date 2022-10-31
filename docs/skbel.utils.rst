@@ -1,8 +1,8 @@
 skbel.utils package
 ===================
 
-Submodules
-----------
+This package contains utility methods that are used by the
+other packages in the library.
 
 skbel.utils.utils module
 ------------------------
@@ -12,10 +12,3 @@ skbel.utils.utils module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

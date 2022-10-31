@@ -1,8 +1,8 @@
 skbel.learning package
 ======================
 
-Submodules
-----------
+This package contains the classes for the learning process of the
+SKBEL algorithm.
 
 skbel.learning.bel module
 -------------------------
@@ -12,10 +12,3 @@ skbel.learning.bel module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.learning
-   :members:
-   :undoc-members:
-   :show-inheritance:

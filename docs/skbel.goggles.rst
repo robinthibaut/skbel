@@ -1,21 +1,13 @@
 skbel.goggles package
 =====================
 
-Submodules
-----------
+This package contains the skbel.goggles module, which provides
+some useful visualizations for the skbel package.
 
 skbel.goggles.visualization module
 ----------------------------------
 
 .. automodule:: skbel.goggles.visualization
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: skbel.goggles
    :members:
    :undoc-members:
    :show-inheritance:

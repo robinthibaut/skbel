@@ -1,8 +1,7 @@
 skbel.testing package
 =====================
 
-Submodules
-----------
+This package contains classes for testing the skbel package.
 
 skbel.testing.test\_basic module
 --------------------------------
@@ -12,10 +11,3 @@ skbel.testing.test\_basic module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.testing
-   :members:
-   :undoc-members:
-   :show-inheritance:

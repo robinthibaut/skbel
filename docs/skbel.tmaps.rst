@@ -1,8 +1,7 @@
 skbel.tmaps package
 ===================
 
-Submodules
-----------
+This package contains the implementation of the transport map method.
 
 skbel.tmaps.transport\_map module
 ---------------------------------
@@ -12,10 +11,3 @@ skbel.tmaps.transport\_map module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: skbel.tmaps
-   :members:
-   :undoc-members:
-   :show-inheritance:

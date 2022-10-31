@@ -1,8 +1,7 @@
 skbel.algorithms package
 ========================
 
-Submodules
-----------
+This package contains some simple algorithms for the SKBEL project.
 
 skbel.algorithms.extmath module
 -------------------------------
@@ -16,14 +15,6 @@ skbel.algorithms.statistics module
 ----------------------------------
 
 .. automodule:: skbel.algorithms.statistics
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: skbel.algorithms
    :members:
    :undoc-members:
    :show-inheritance:

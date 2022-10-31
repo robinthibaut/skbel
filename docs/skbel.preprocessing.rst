@@ -1,8 +1,7 @@
 skbel.preprocessing package
 ===========================
 
-Submodules
-----------
+This package contains classes for preprocessing data.
 
 skbel.preprocessing.composite module
 ------------------------------------
@@ -24,14 +23,6 @@ skbel.preprocessing.kernel module
 ---------------------------------
 
 .. automodule:: skbel.preprocessing.kernel
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: skbel.preprocessing
    :members:
    :undoc-members:
    :show-inheritance:
