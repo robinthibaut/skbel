@@ -1,11 +1,11 @@
-skbel.learning package
-======================
+skbel.learning
+===============
 
 This package contains the classes for the learning process of the
 SKBEL algorithm.
 
-skbel.learning.bel module
--------------------------
+skbel.learning.bel
+------------------
 
 .. automodule:: skbel.learning.bel
    :members:

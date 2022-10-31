@@ -4,11 +4,12 @@ Contents
 .. toctree::
    :maxdepth:`
 
-   skbel.algorithms
-   skbel.goggles
-   skbel.learning
    skbel.preprocessing
-   skbel.spatial
-   skbel.testing
+   skbel.learning
+   skbel.algorithms
    skbel.tmaps
+   skbel.spatial
+   skbel.goggles
    skbel.utils
+   skbel.testing
+

@@ -1,18 +1,24 @@
-skbel.algorithms package
-========================
+skbel.algorithms
+=================
 
-This package contains some simple algorithms for the SKBEL project.
+This package contains some algorithms for the SKBEL project.
 
-skbel.algorithms.extmath module
--------------------------------
+skbel.algorithms.extmath
+-------------------------
+
+This module contains some functions for matrix operations.
 
 .. automodule:: skbel.algorithms.extmath
    :members:
    :undoc-members:
    :show-inheritance:
 
-skbel.algorithms.statistics module
-----------------------------------
+skbel.algorithms.statistics
+---------------------------
+
+This module contains some functions for statistics, such as the
+Kernel Density Estimation (KDE) inference and the Multivariate
+Normal inference (MVN).
 
 .. automodule:: skbel.algorithms.statistics
    :members:

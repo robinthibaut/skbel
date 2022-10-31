@@ -1,10 +1,10 @@
-skbel.tmaps package
-===================
+skbel.tmaps
+============
 
 This package contains the implementation of the transport map method.
 
-skbel.tmaps.transport\_map module
----------------------------------
+skbel.tmaps.transport
+----------------------
 
 .. automodule:: skbel.tmaps.transport_map
    :members:
