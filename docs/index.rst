@@ -8,15 +8,6 @@ SKBEL - Bayesian Evidential Learning for Python
 
 .. currentmodule:: SKBEL
 
-This package implements the Bayesian Evidential Learning (BEL) framework.
-BEL is a method that combines machine learning and Monte Carlo simulations to help improve the estimation of prediction uncertainty (Hermans et al., 2016, 2018; Michel et al., 2020; Thibaut et al., 2021).
-
-It uses a direct relationship between predictor (data) and target (prediction), learned from a training set sampled from the prior distribution, to perform the Bayesian inference (typically within a low-dimensional latent space).
-
-Its effectiveness has been shown through extensive synthetic validation, but also against rejection sampling (Scheidt et al., 2015), Markov chain Monte Carlo (McMC) algorithms (Michel et al., 2020, 2022), field data (Hermans et al., 2019), and experimental design (Thibaut et al., 2021; 2022).
-
-Previous studies have demonstrated that BEL can estimate the posterior distribution of parameters in a variety of contexts, including geothermal systems (Athens & Caers, 2019; Hermans et al., 2018, 2019), contaminant transport (Satija & Caers, 2015; Scheidt et al., 2015), and geophysical inversion (Hermans et al., 2016; Michel et al., 2020). Additionally, a variety of subsurface field cases, including groundwater, shallow and deep geothermal, and oil/gas predictions, have been successfully applied using the BEL framework (J. Park & Caers, 2020; Pradhan & Mukerji, 2020; Tadjer & Bratvold, 2021).
-
 Installation
 ------------
 
@@ -37,6 +28,15 @@ Bayesian Evidential Learning
 ----------------------------
 Introduction
 .............
+
+This package implements the Bayesian Evidential Learning (BEL) framework.
+BEL is a method that combines machine learning and Monte Carlo simulations to help improve the estimation of prediction uncertainty (Hermans et al., 2016, 2018; Michel et al., 2020; Thibaut et al., 2021).
+
+It uses a direct relationship between predictor (data) and target (prediction), learned from a training set sampled from the prior distribution, to perform the Bayesian inference (typically within a low-dimensional latent space).
+
+Its effectiveness has been shown through extensive synthetic validation, but also against rejection sampling (Scheidt et al., 2015), Markov chain Monte Carlo (McMC) algorithms (Michel et al., 2020, 2022), field data (Hermans et al., 2019), and experimental design (Thibaut et al., 2021; 2022).
+
+Previous studies have demonstrated that BEL can estimate the posterior distribution of parameters in a variety of contexts, including geothermal systems (Athens & Caers, 2019; Hermans et al., 2018, 2019), contaminant transport (Satija & Caers, 2015; Scheidt et al., 2015), and geophysical inversion (Hermans et al., 2016; Michel et al., 2020). Additionally, a variety of subsurface field cases, including groundwater, shallow and deep geothermal, and oil/gas predictions, have been successfully applied using the BEL framework (J. Park & Caers, 2020; Pradhan & Mukerji, 2020; Tadjer & Bratvold, 2021).
 
 .. image:: /img/evidential.png
    :width: 800
@@ -90,7 +90,7 @@ Sampling and back-transformation to the original space
 .. image:: /img/flow-01.png
    :width: 800
 
-Figure 2: Typical BEL workflow.
+Figure 2: Typical BEL workflow. Taken from Thibaut et al. (2021).
 
 Contributing
 ------------
