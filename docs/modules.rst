@@ -12,11 +12,3 @@ Contents
    source/skbel.testing
    source/skbel.tmaps
    source/skbel.utils
-
-Module contents
----------------
-
-.. automodule:: source/skbel
-   :members:
-   :undoc-members:
-   :show-inheritance:
