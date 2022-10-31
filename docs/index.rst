@@ -100,46 +100,78 @@ Here is an example blueprint of the BEL workflow implemented in SKBEL:
 
 .. code:: python
 
-def init_bel():
-    """Set all BEL pipelines.
+   import skbel
+   from sklearn.preprocessing import StandardScaler, PowerTransformer
+   from sklearn.decomposition import PCA
+   from sklearn.cross_decomposition import CCA
+   from sklearn.pipeline import Pipeline
 
-    This is the blueprint of the framework.
-    """
-    # Pipeline before CCA
-    X_pre_processing = Pipeline(
-        [
-            ("pca", PCA(n_components=.99)),
-            ("scaler", StandardScaler()),
-        ]
-    )
-    Y_pre_processing = Pipeline(
-        [
-            ("pca", PCA(n_components=.99)),
-            ("scaler", StandardScaler()),
-        ]
-    )
+   def init_bel():
+       """Set all BEL pipelines.
 
-    # Canonical Correlation Analysis
-    cca = CCA(n_components=30)
+       This is the blueprint of the framework.
+       """
+       # Pipeline before CCA
+       X_pre_processing = Pipeline(
+           [
+               ("pca", PCA(n_components=.99)),
+               ("scaler", StandardScaler()),
+           ]
+       )
+       Y_pre_processing = Pipeline(
+           [
+               ("pca", PCA(n_components=.99)),
+               ("scaler", StandardScaler()),
+           ]
+       )
 
-    # Pipeline after CCA
-    X_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
-    Y_post_processing = Pipeline(
-        [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
-    )
+       # Canonical Correlation Analysis
+       cca = CCA(n_components=30)
 
-    # Initiate BEL object
-    bel_model = BEL(
-        X_pre_processing=X_pre_processing,
-        X_post_processing=X_post_processing,
-        Y_pre_processing=Y_pre_processing,
-        Y_post_processing=Y_post_processing,
-        regression_model=cca,
-    )
+       # Pipeline after CCA
+       X_post_processing = Pipeline(
+           [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+       )
+       Y_post_processing = Pipeline(
+           [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
+       )
 
-    return bel_model
+       # Initiate BEL object
+       bel_model = BEL(
+           X_pre_processing=X_pre_processing,
+           X_post_processing=X_post_processing,
+           Y_pre_processing=Y_pre_processing,
+           Y_post_processing=Y_post_processing,
+           regression_model=cca,
+       )
+
+       return bel_model
+
+The BEL object is then fitted to the training data:
+
+.. code:: python
+
+   bel_model = init_bel()
+   bel_model.fit(X_train, Y_train)
+
+The posterior distribution of the target can then be inferred from the predictor:
+
+.. code:: python
+
+   # Inference
+   bel_model.predict(X_test)
+
+The posterior distribution of the target can also be sampled:
+
+.. code:: python
+
+   # Sampling
+   bel_model.sample(X_test, n_samples=100)
+
+
+Note that the `X_train` and `Y_train` are the predictor and target, respectively, generated from the same set of prior models `m`. The `X_test` is the predictor for which the posterior distribution of the target is inferred.
+
+The `predict` method in the SKBEL implementation differs slightly from the scikit-learn implementation. It determines the posterior distribution of the target given the predictor. The `random_sample` method returns the posterior realizations of the target given the predictor.
 
 Contributing
 ------------
