@@ -1,14 +1,14 @@
 .. _examples:
 
 Examples
-================
+=========
 
 .. toctree::
    :maxdepth: 1
 
-   ../examples/demo.ipynb
+   ./examples/demo.ipynb
 
 Download the examples as notebooks
 ----------------------------------
 
-* :download:`Demo <../examples/demo.ipynb>`
+* :download:`Demo <./examples/demo.ipynb>`
