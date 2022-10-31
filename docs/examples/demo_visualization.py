@@ -188,7 +188,7 @@ def whpa_plot(
     if whpa.ndim > 2:  # New approach is to plot filled contours
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
+        xys, nrow, ncol, _ = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
         vertices = contours_vertices(x=x, y=y, arrays=whpa)
         b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
         contour = plt.contourf(
@@ -722,7 +722,7 @@ def plot_results(
         plt.close()
 
         # WHPs
-        ff = jp(md, "uq", f"{root}_cca_{bel.cca.n_components}.png")
+        ff = jp(md, "uq", f"{root}_cca_{bel.n_comp_cca}.png")
         forecast_posterior = y_predicted.reshape(
             (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
         )

@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # Sample for the observation
     # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
-    y_predicted = model.predict(X_test)
+    y_predicted = model.predict(X_test.array.reshape(1, -1))
 
     # %% Visualization
 
