@@ -232,7 +232,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         elif Y is not None and X is None:  # If only Y is provided
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
+            dummy = np.zeros(
+                (1, self.regression_model.x_loadings_.shape[0])
+            )  # Dummy used for CCA
             _, _yc = self.regression_model.transform(
                 X=dummy, Y=_yt
             )  # CCA. We only need the Y-loadings, so we pass dummy X
@@ -700,8 +702,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )  # Inverse transform the posterior samples
             except TypeError:
                 y_post = (
-                        np.matmul(y_post, self.regression_model.y_loadings_.T) * self.regression_model._y_std  # noqa
-                        + self.regression_model._y_mean  # noqa
+                    np.matmul(y_post, self.regression_model.y_loadings_.T)
+                    * self.regression_model._y_std  # noqa
+                    + self.regression_model._y_mean  # noqa
                 )  # Posterior PC scores
 
             if get_PC:  # return the CV
@@ -736,7 +739,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             return _xc
 
         elif Y is not None and X is None:  # If only Y is provided
-            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
+            dummy = np.zeros(
+                (1, self.regression_model.x_loadings_.shape[0])
+            )  # Dummy used for CCA
             _, _yc = self.regression_model.transform(
                 X=dummy, Y=Y
             )  # CCA. We only need the Y-loadings, so we pass dummy X

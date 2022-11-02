@@ -100,7 +100,7 @@ Here is an example blueprint of the BEL workflow implemented in SKBEL:
 
 .. code:: python
 
-   import skbel
+   from skbel import BEL
    from sklearn.preprocessing import StandardScaler, PowerTransformer
    from sklearn.decomposition import PCA
    from sklearn.cross_decomposition import CCA

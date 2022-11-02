@@ -1,6 +1,8 @@
 Contents
 ========
 
+The package is structured as follows:
+
 .. toctree::
    :maxdepth:`
 

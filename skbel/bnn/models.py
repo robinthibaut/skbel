@@ -21,12 +21,13 @@ __all__ = [
 ]
 
 
-def probabilistic_variational_model(input_shape: int,
-                                    output_shape: int,
-                                    n_hidden: int or list,
-                                    kl_weight: float,
-                                    n_layers: int = 2,
-                                    ):
+def probabilistic_variational_model(
+    input_shape: int,
+    output_shape: int,
+    n_hidden: int or list,
+    kl_weight: float,
+    n_layers: int = 2,
+):
     """Define variational model with 2 hidden layers.
 
     Example:
@@ -90,12 +91,17 @@ def probabilistic_variational_model(input_shape: int,
         # if not a list, make it a list of length n_layers
         n_hidden = [n_hidden] * n_layers
 
-    variational_layers = [tfp.layers.DenseVariational(n_hidden[i],
-                                                      make_prior_fn=prior_trainable,
-                                                      make_posterior_fn=posterior_mean_field,
-                                                      kl_weight=kl_weight, activation="relu",
-                                                      name=f"dense{i + 1}")
-                          for i in range(n_layers)]
+    variational_layers = [
+        tfp.layers.DenseVariational(
+            n_hidden[i],
+            make_prior_fn=prior_trainable,
+            make_posterior_fn=posterior_mean_field,
+            kl_weight=kl_weight,
+            activation="relu",
+            name=f"dense{i + 1}",
+        )
+        for i in range(n_layers)
+    ]
 
     model = tfk.Sequential(
         [
@@ -126,7 +132,17 @@ def probabilistic_variational_model(input_shape: int,
 
 # we need to wrap a class around the model to make it compatible with sklearn
 class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
-    def __init__(self, input_shape, output_shape, n_hidden, kl_weight, n_layers=2, epochs=100, batch_size=32, verbose=0):
+    def __init__(
+        self,
+        input_shape,
+        output_shape,
+        n_hidden,
+        kl_weight,
+        n_layers=2,
+        epochs=100,
+        batch_size=32,
+        verbose=0,
+    ):
         self.input_shape = input_shape
         self.output_shape = output_shape
         self.n_hidden = n_hidden
@@ -136,10 +152,14 @@ class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
         self.batch_size = batch_size
         self.verbose = verbose
 
-        self.model = probabilistic_variational_model(input_shape, output_shape, n_hidden, kl_weight, n_layers)
+        self.model = probabilistic_variational_model(
+            input_shape, output_shape, n_hidden, kl_weight, n_layers
+        )
 
     def fit(self, X, y):
-        self.model.fit(X, y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose)
+        self.model.fit(
+            X, y, epochs=self.epochs, batch_size=self.batch_size, verbose=self.verbose
+        )
         return self
 
     def predict(self, X, n_samples=100):
