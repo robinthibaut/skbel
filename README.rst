@@ -119,7 +119,7 @@ Communication
 How to cite
 ----------------
 
-Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.6205242
+Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL - Bayesian Evidential Learning framework built on top of scikit-learn (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.6205242
 
 BibTeX::
 
@@ -134,19 +134,19 @@ BibTeX::
     url          = {https://doi.org/10.5281/zenodo.6205242},
     }
 
+Notebooks and tutorials
+----------------------
+
+Nolwenn Lesparre, Nicolas Compaire, Thomas Hermans and Robin Thibaut. (2022). 4D Temperature Monitoring with BEL. [Dataset]. Kaggle. doi: 10.34740/kaggle/ds/2275519. url: https://doi.org/10.34740/kaggle/ds/2275519
+
+Thibaut, Robin (2021). WHPA Prediction. [Dataset]. Kaggle. doi:10.34740/kaggle/dsv/2648718. url: https://www.kaggle.com/dsv/2648718
+
 Peer-reviewed publications using SKBEL
 --------------------------------------
 
 Thibaut, Robin, Nicolas Compaire, Nolwenn Lesparre, Maximilian Ramgraber, Eric Laloy, and Thomas Hermans (Nov. 2022). “Comparing Well and Geophysical Data for Temperature Monitoring Within a Bayesian Experimental Design Framework”. In: Water Resources Research 58 (11). issn: 0043-1397. doi: 10.1029/2022WR033045. url: https://onlinelibrary.wiley.com/doi/10.1029/2022WR033045.
 
 Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). “A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area”. In: Journal of Hydrology 603, p. 126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537.
-
-Notebooks and tutorials
-----------------------
-
-Nolwenn Lesparre, Nicolas Compaire, Thomas Hermans and Robin Thibaut. (2022). 4D Temperature Monitoring with BEL. [Dataset]. Kaggle. doi: 10.34740/kaggle/ds/2275519. url: https://doi.org/10.34740/KAGGLE/DS/2275519
-
-Thibaut, Robin (2021). WHPA Prediction. [Dataset]. Kaggle. doi:10.34740/kaggle/dsv/2648718. url: https://www.kaggle.com/dsv/2648718
 
 Research project
 ----------------
