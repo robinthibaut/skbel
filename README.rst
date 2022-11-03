@@ -66,7 +66,7 @@ User installation
 
 The easiest way to install skbel is using ``pip``   ::
 
-    pip install -U skbel
+    pip install skbel
 
 
 Development
