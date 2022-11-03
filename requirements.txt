@@ -6,3 +6,5 @@ joblib
 pandas
 pytest
 scikit-image
+tensorflow
+tensorflow_probability

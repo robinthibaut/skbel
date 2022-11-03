@@ -54,7 +54,7 @@ def init_bel():
         X_post_processing=X_post_processing,
         Y_pre_processing=Y_pre_processing,
         Y_post_processing=Y_post_processing,
-        cca=cca,
+        regression_model=cca,
     )
 
     return bel_model
