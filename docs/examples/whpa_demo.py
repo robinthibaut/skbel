@@ -1,4 +1,4 @@
-#  Copyright (c) 2021. Robin Thibaut, Ghent University
+#  Copyright (c) 2022. Robin Thibaut, Ghent University
 
 import os
 from os.path import join as jp
@@ -21,12 +21,16 @@ def init_bel():
     This is the blueprint of the framework.
     """
     # Pipeline before CCA
+
+    # Data preprocessing
     X_pre_processing = Pipeline(
         [
             ("pca", PCA(n_components=50)),
             ("scaler", StandardScaler(with_mean=False)),
         ]
     )
+
+    # Target preprocessing
     Y_pre_processing = Pipeline(
         [
             ("pca", PCA(n_components=30)),
@@ -38,9 +42,13 @@ def init_bel():
     cca = CCA(n_components=30)
 
     # Pipeline after CCA
+
+    # Data postprocessing
     X_post_processing = Pipeline(
         [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
     )
+
+    # Target postprocessing
     Y_post_processing = Pipeline(
         [("normalizer", PowerTransformer(method="yeo-johnson", standardize=True))]
     )

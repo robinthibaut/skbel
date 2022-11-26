@@ -1,5 +1,7 @@
 #  Copyright (c) 2022. Robin Thibaut, Ghent University
 
+# EXPERIMENTAL FUNCTIONALITY -- USE AT YOUR OWN RISK
+
 import tensorflow as tf
 from sklearn.base import TransformerMixin, MultiOutputMixin, BaseEstimator
 from tensorflow import keras as tfk
@@ -17,16 +19,16 @@ __all__ = [
     "probabilistic_variational_model",
     "PBNN",
     "probabilistic_mcd_model",
-    "epistemic_variational_model",
+    "variational_model",
 ]
 
 
 def probabilistic_variational_model(
-    input_shape: int,
-    output_shape: int,
-    n_hidden: int or list,
-    kl_weight: float,
-    n_layers: int = 2,
+        input_shape: int,
+        output_shape: int,
+        n_hidden: int or list,
+        kl_weight: float,
+        n_layers: int = 2,
 ):
     """Define variational model with 2 hidden layers.
 
@@ -81,16 +83,6 @@ def probabilistic_variational_model(
     :param n_layers: number of hidden layers
     :return: variational model
     """
-
-    if isinstance(n_hidden, list):
-        # check if list is of correct length
-        if len(n_hidden) != n_layers:
-            raise ValueError("n_hidden must be a list of length n_layers")
-
-    else:
-        # if not a list, make it a list of length n_layers
-        n_hidden = [n_hidden] * n_layers
-
     variational_layers = [
         tfp.layers.DenseVariational(
             n_hidden[i],
@@ -107,16 +99,19 @@ def probabilistic_variational_model(
         [
             tfk.layers.InputLayer(input_shape=(input_shape,), name="input"),
             *variational_layers,
-            tfk.layers.Dense(
+            tfp.layers.DenseVariational(
                 tfp.layers.MultivariateNormalTriL.params_size(output_shape),
+                make_prior_fn=prior_trainable,
+                make_posterior_fn=posterior_mean_field,
+                kl_weight=kl_weight,
                 activation="linear",
-                name="distribution_weights",
+                name=f"dense_output",
             ),
             tfp.layers.MultivariateNormalTriL(
                 output_shape,
-                # activity_regularizer=tfp.layers.KLDivergenceRegularizer(
-                #     prior, weight=kl_weight
-                # ),
+                activity_regularizer=tfp.layers.KLDivergenceRegularizer(
+                    prior_regularize((output_shape,)), weight=kl_weight
+                ),
                 name="output",
             ),
         ],
@@ -133,15 +128,15 @@ def probabilistic_variational_model(
 # we need to wrap a class around the model to make it compatible with sklearn
 class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def __init__(
-        self,
-        input_shape,
-        output_shape,
-        n_hidden,
-        kl_weight,
-        n_layers=2,
-        epochs=100,
-        batch_size=32,
-        verbose=0,
+            self,
+            input_shape,
+            output_shape,
+            n_hidden,
+            kl_weight,
+            n_layers=2,
+            epochs=100,
+            batch_size=32,
+            verbose=0,
     ):
         self.input_shape = input_shape
         self.output_shape = output_shape
@@ -182,6 +177,66 @@ class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
     # it needs a 'inverse_transform' method that does nothing
     def inverse_transform(self, y):
         return y
+
+
+def variational_model(
+        input_shape: int,
+        output_shape: int,
+        n_hidden: int or list,
+        kl_weight: float,
+        n_layers: int = 2,
+):
+    """Define variational model with 2 hidden layers.
+
+    :param input_shape: shape of input
+    :param output_shape: shape of output
+    :param n_hidden: number of hidden units
+    :param kl_weight: weight of KL term
+    :param n_layers: number of hidden layers
+    :return: variational model
+    """
+
+    if isinstance(n_hidden, list):
+        # check if list is of correct length
+        if len(n_hidden) != n_layers:
+            raise ValueError("n_hidden must be a list of length n_layers")
+
+    else:
+        # if not a list, make it a list of length n_layers
+        n_hidden = [n_hidden] * n_layers
+
+    variational_layers = [
+        tfp.layers.DenseVariational(
+            n_hidden[i],
+            make_prior_fn=prior_trainable,
+            make_posterior_fn=posterior_mean_field,
+            kl_weight=kl_weight,
+            activation="relu",
+            name=f"dense{i + 1}",
+        )
+        for i in range(n_layers)
+    ]
+
+    model = tfk.Sequential(
+        [
+            tfk.layers.InputLayer(input_shape=(input_shape,), name="input"),
+            *variational_layers,
+            tfk.layers.Dense(
+                output_shape,
+                activation="linear",
+                name="output",
+            ),
+        ],
+        name="model",
+    )
+
+    # Compile model
+    optimizer = tf.keras.optimizers.Adam()
+    # classic MSE loss:
+    loss = tf.keras.losses.MeanSquaredError()
+    model.compile(optimizer=optimizer, loss=loss)
+
+    return model
 
 
 # extra models for later
@@ -228,52 +283,6 @@ def probabilistic_mcd_model(input_shape, output_shape, n_hidden, kl_weight, rate
     # Compile model
     optimizer = tf.keras.optimizers.Adam()
     model.compile(optimizer=optimizer, loss=neg_log_likelihood)
-
-    return model
-
-
-def epistemic_variational_model(input_shape, output_shape, n_hidden, kl_weight):
-    """Define variational model with 2 hidden layers.
-
-    :param input_shape: shape of input
-    :param output_shape: shape of output
-    :param n_hidden: number of hidden units
-    :param kl_weight: weight of KL term
-    :return: variational model
-    """
-    model = tfk.Sequential(
-        [
-            tfk.layers.InputLayer(input_shape=(input_shape,), name="input"),
-            tfp.layers.DenseVariational(
-                n_hidden,
-                make_prior_fn=prior_trainable,
-                make_posterior_fn=posterior_mean_field,
-                kl_weight=kl_weight,
-                activation="relu",
-                name="dense_1",
-            ),
-            tfp.layers.DenseVariational(
-                n_hidden,
-                make_prior_fn=prior_trainable,
-                make_posterior_fn=posterior_mean_field,
-                kl_weight=kl_weight,
-                activation="relu",
-                name="dense_2",
-            ),
-            tfk.layers.Dense(
-                output_shape,
-                activation="linear",
-                name="output",
-            ),
-        ],
-        name="model",
-    )
-
-    # Compile model
-    optimizer = tf.keras.optimizers.Adam()
-    # classic MSE loss:
-    loss = tf.keras.losses.MeanSquaredError()
-    model.compile(optimizer=optimizer, loss=loss)
 
     return model
 

@@ -311,6 +311,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             X_obs_pc
         )  # Project observed data into Canonical space.
         X_obs_f = self.X_post_processing.transform(X_obs_c)
+        self.X_obs_f = X_obs_f
 
         # Estimate the posterior mean and covariance
         n_obs = X_obs_f.shape[0]  # Number of observations
@@ -472,7 +473,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     def random_sample(
         self,
-        X_obs_f: np.array,
+        X_obs_f: None,
         obs_n: int = None,
         n_posts: int = None,
         mode: str = None,
@@ -495,6 +496,9 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         # Set the seed for later use
         if self.seed is None:
             self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+
+        if X_obs_f is None:
+            X_obs_f = self.X_obs_f
 
         check_is_fitted(self.regression_model)
         if n_posts is None:
