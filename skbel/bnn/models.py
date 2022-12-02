@@ -24,11 +24,12 @@ __all__ = [
 
 
 def probabilistic_variational_model(
-        input_shape: int,
-        output_shape: int,
-        n_hidden: int or list,
-        kl_weight: float,
-        n_layers: int = 2,
+    input_shape: int,
+    output_shape: int,
+    n_hidden: int or list,
+    kl_weight: float,
+    n_layers: int = 2,
+    loss=None,
 ):
     """Define variational model with 2 hidden layers.
 
@@ -81,8 +82,11 @@ def probabilistic_variational_model(
     :param n_hidden: number of hidden units
     :param kl_weight: weight of KL term
     :param n_layers: number of hidden layers
+    :param loss: loss function
     :return: variational model
     """
+    if loss is None:
+        loss = neg_log_likelihood
     variational_layers = [
         tfp.layers.DenseVariational(
             n_hidden[i],
@@ -120,7 +124,7 @@ def probabilistic_variational_model(
 
     # Compile model
     optimizer = tf.keras.optimizers.Adam()
-    model.compile(optimizer=optimizer, loss=neg_log_likelihood)
+    model.compile(optimizer=optimizer, loss=loss)
 
     return model
 
@@ -128,15 +132,15 @@ def probabilistic_variational_model(
 # we need to wrap a class around the model to make it compatible with sklearn
 class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
     def __init__(
-            self,
-            input_shape,
-            output_shape,
-            n_hidden,
-            kl_weight,
-            n_layers=2,
-            epochs=100,
-            batch_size=32,
-            verbose=0,
+        self,
+        input_shape,
+        output_shape,
+        n_hidden,
+        kl_weight,
+        n_layers=2,
+        epochs=100,
+        batch_size=32,
+        verbose=0,
     ):
         self.input_shape = input_shape
         self.output_shape = output_shape
@@ -180,11 +184,11 @@ class PBNN(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
 
 def variational_model(
-        input_shape: int,
-        output_shape: int,
-        n_hidden: int or list,
-        kl_weight: float,
-        n_layers: int = 2,
+    input_shape: int,
+    output_shape: int,
+    n_hidden: int or list,
+    kl_weight: float,
+    n_layers: int = 2,
 ):
     """Define variational model with 2 hidden layers.
 

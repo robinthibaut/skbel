@@ -2773,8 +2773,8 @@ class TransportMap:
         from a multivariate standard Gaussian back to the target distribution.
         If X_precalc is specified, the map instead evaluates a conditional of
         the target distribution given X_precalc. The function assumes any
-        precalculated output are the FIRST dimensions of the total output. If
-        X_precalc is specified, its dimensions and the input dimensions must
+        precalculated output are the FIRST dimensions of the total output.
+        If X_precalc is specified, its dimensions and the input dimensions must
         sum to the full dimensionality of sample space.
 
         :param Y: N-by-D or N-by-(D-E) array of reference distribution samples to be mapped to the target distribution,
