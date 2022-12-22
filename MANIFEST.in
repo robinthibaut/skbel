@@ -6,6 +6,9 @@ include skbel/spatial/*
 include skbel/testing/*
 include skbel/tmaps/*
 include skbel/utils/*
+include skbel/nn_utilities/*
+include skbel/bnn/*
+include skbel/probabilities/*
 
 include docs/examples/*.py
 include docs/examples/dataset/*.pkl

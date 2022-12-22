@@ -135,7 +135,7 @@ BibTeX::
     }
 
 Notebooks and tutorials
-----------------------
+------------------------
 
 Nolwenn Lesparre, Nicolas Compaire, Thomas Hermans and Robin Thibaut. (2022). 4D Temperature Monitoring with BEL. [Dataset]. Kaggle. doi: 10.34740/kaggle/ds/2275519. url: https://doi.org/10.34740/kaggle/ds/2275519
 
