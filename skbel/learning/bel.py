@@ -519,7 +519,6 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             Y_samples = []  # Samples from the posterior
             for n, (mean, cov) in enumerate(zip(post_mn, post_cv)):
-                Y_samples.append(np.random.multivariate_normal(mean, cov, n_posts))
                 Y_samples.append(
                     np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )  # Draw n_posts samples from the multivariate normal distribution
