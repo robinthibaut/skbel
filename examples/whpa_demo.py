@@ -2,14 +2,14 @@
 
 import os
 from os.path import join as jp
+import joblib
 
-import pandas as pd
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, PowerTransformer
 
-import demo_visualization as myvis
+from demo_visualization import plot_results
 
 from skbel import utils
 from skbel import BEL
@@ -84,10 +84,10 @@ if __name__ == "__main__":
     ]
 
     # %% Load dataset
-    X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
-    X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
-    y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
-    y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
+    X_train = joblib.load(jp(data_dir, "X_train.pkl")).to_numpy()
+    X_test = joblib.load(jp(data_dir, "X_test.pkl")).to_numpy().reshape(1, -1)
+    y_train = joblib.load(jp(data_dir, "y_train.pkl")).to_numpy()
+    y_test = joblib.load(jp(data_dir, "y_test.pkl")).to_numpy().reshape(1, -1)
 
     # %% Initiate BEL model
     model = init_bel()
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     # %% Visualization
 
     # Plot raw data
-    myvis.plot_results(
+    plot_results(
         model,
         y_predicted=y_predicted,
         X=X_train,

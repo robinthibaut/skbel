@@ -6,5 +6,7 @@ joblib
 pandas
 pytest
 scikit-image
+seaborn
 tensorflow
+loguru
 tensorflow_probability

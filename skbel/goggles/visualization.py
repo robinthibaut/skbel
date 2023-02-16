@@ -17,6 +17,7 @@ from skbel.algorithms import KDE, kde_params
 
 __all__ = [
     "_my_alphabet",
+    "_yield_alphabet",
     "_proxy_legend",
     "_proxy_annotate",
     "explained_variance",

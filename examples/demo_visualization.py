@@ -8,7 +8,6 @@ import joblib
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from loguru import logger
 from matplotlib import pyplot as plt
 from matplotlib.patches import Polygon
 from sklearn.pipeline import Pipeline
@@ -17,7 +16,7 @@ from sklearn.utils import check_array, deprecated
 
 from examples.demo_config import Setup
 from skbel import utils
-from skbel.goggles import explained_variance, _proxy_annotate, _proxy_legend, pca_scores
+from skbel.goggles import _proxy_annotate, _proxy_legend
 from skbel.spatial import (
     contours_vertices,
     grid_parameters,
@@ -189,7 +188,7 @@ def whpa_plot(
     if whpa.ndim > 2:  # New approach is to plot filled contours
         new_grf = 1  # Refine grid
         _, _, new_x, new_y = refine_machine(xlim, ylim, new_grf=new_grf)
-        xys, nrow, ncol = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
+        xys, nrow, ncol, _ = grid_parameters(x_lim=xlim, y_lim=ylim, grf=new_grf)
         vertices = contours_vertices(x=x, y=y, arrays=whpa)
         b_low = binary_stack(xys=xys, nrow=nrow, ncol=ncol, vertices=vertices)
         contour = plt.contourf(
@@ -1045,53 +1044,6 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
         s += 1
 
 
-def plot_pc_ba(
-    bel,
-    base_dir: str = None,
-    root: str = None,
-    w: str = None,
-    data: bool = False,
-    target: bool = False,
-):
-    """Comparison between original variables and the same variables back-
-    transformed with n PCA components.
-
-    :param w:
-    :param base_dir:
-    :param bel:
-    :param root:
-    :param data:
-    :param target:
-    :return:
-    """
-
-    if isinstance(root, (list, tuple)):
-        if len(root) > 1:
-            logger.error("Input error")
-            return
-        else:
-            root = root[0]
-
-    subdir = os.path.join(base_dir, root)
-
-    if data:
-        # Plot parameters for predictor
-        xlabel = "Observation index number"
-        ylabel = "Concentration ($g/m^{3})$"
-        factor = 1000
-        labelsize = 11
-        d_pca_inverse_plot(
-            bel,
-            root=root,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            labelsize=labelsize,
-            factor=factor,
-            fig_dir=os.path.join(subdir, w, "pca"),
-        )
-    if target:
-        h_pca_inverse_plot(bel, fig_dir=os.path.join(subdir, w, "pca"))
-
 
 def plot_whpa(bel, base_dir):
     """
@@ -1125,137 +1077,3 @@ def plot_whpa(bel, base_dir):
         labels=labels,
         fig_file=os.path.join(base_dir, "whpa_training.png"),
     )
-
-
-def pca_vision(
-    bel,
-    base_dir: str,
-    root: str or list = None,
-    w: str = None,
-    d: bool = True,
-    h: bool = True,
-    scores: bool = True,
-    exvar: bool = True,
-    before_after: bool = True,
-    labels: bool = True,
-):
-    """Loads PCA pickles and plot scores for all folders.
-
-    :param before_after:
-    :param base_dir:
-    :param bel: BEL model
-    :param w:
-    :param labels:
-    :param root: str:
-    :param d: bool:
-    :param h: bool:
-    :param scores: bool:
-    :param exvar: bool:
-    :return:
-    """
-
-    if root is None:
-        root = ""
-    if w is None:
-        w = ""
-
-    subdir = jp(base_dir, root, w, "pca")
-
-    if d:
-        fig_file = os.path.join(subdir, "d_scores.png")
-        if scores:
-            pca_scores(training=bel.X_pc, prediction=bel.X_obs_pc, n_comp=bel.X_n_pc, fig_file=fig_file, labels=labels)
-        # Explained variance plots
-        if exvar:
-            fig_file = os.path.join(subdir, "d_exvar.png")
-            explained_variance(n_components, evr, n_cut=bel.X_n_pc, fig_file=fig_file)
-        if before_after:
-            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=True, target=False)
-    if h:
-        # Transform and split
-        h_pc_training = bel.Y_pc
-        try:
-            Y_obs = check_array(bel.Y_obs, allow_nd=True)
-        except ValueError:
-            Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
-        h_pc_prediction = bel.Y_pre_processing.transform(Y_obs)
-        # Plot
-        fig_file = os.path.join(subdir, "h_pca_scores.png")
-        if scores:
-            pca_scores(training=h_pc_training, prediction=h_pc_prediction, n_comp=bel.Y_n_pc, fig_file=fig_file,
-                       labels=labels)
-        # Explained variance plots
-        if exvar:
-            fig_file = os.path.join(subdir, "h_pca_exvar.png")
-            explained_variance(n_components, evr, n_cut=bel.Y_n_pc, fig_file=fig_file)
-        if before_after:
-            plot_pc_ba(bel, base_dir=base_dir, root=root, w=w, data=False, target=True)
-
-
-def d_pca_inverse_plot(
-    bel,
-    root,
-    factor: float = 1.0,
-    xlabel: str = None,
-    ylabel: str = None,
-    labelsize: float = 11.0,
-    fig_dir: str = None,
-    show: bool = False,
-):
-    """Plot used to compare the reproduction of the original physical space
-    after PCA transformation.
-
-    :param bel: BEL model
-    :param xlabel:
-    :param ylabel:
-    :param labelsize:
-    :param factor:
-    :param fig_dir: str:
-    :param show: bool:
-    :return:
-    """
-
-    shape = bel.X_shape
-    v_pc = bel.X_obs_pc
-
-    nc = bel.X_pre_processing["pca"].n_components_
-    dummy = np.zeros((1, nc))
-    dummy[:, : v_pc.shape[1]] = v_pc
-
-    v_pred = bel.X_pre_processing.inverse_transform(dummy).reshape((-1,) + shape)
-    to_plot = np.copy(bel.X_obs).reshape((-1,) + shape)
-
-    cols = ["r" for _ in range(shape[1])]
-    highlights = [i for i in range(shape[1])]
-    curves(cols=cols, tc=to_plot, factor=factor, highlight=highlights, conc=True)
-
-    cols = ["b" for _ in range(shape[1])]
-    curves(cols=cols, tc=v_pred, factor=factor, highlight=highlights, conc=True)
-
-    # Add title inside the box
-    an = ["A"]
-    legend_a = _proxy_annotate(annotation=an, loc=2, fz=14)
-    _proxy_legend(
-        legend1=legend_a,
-        colors=["red", "blue"],
-        labels=["Physical", "Back transformed"],
-        marker=["-", "-"],
-        loc=1,
-    )
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.tick_params(labelsize=labelsize)
-
-    # Increase y axis by a small percentage for annotation in upper left corner
-    yrange = np.max(to_plot * factor) * 1.15
-    plt.ylim([0, yrange])
-
-    if fig_dir is not None:
-        utils.dirmaker(fig_dir)
-        plt.savefig(jp(fig_dir, f"{root}_d.png"), dpi=300, transparent=False)
-        if show:
-            plt.show()
-            plt.close()
-    elif show:
-        plt.show()
-        plt.close()

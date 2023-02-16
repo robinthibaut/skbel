@@ -618,7 +618,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     )  # Only necessary when heuristic is deactivated
                     Y_samples[i, :, j] = X_star.reshape(-1)  # noqa
 
-        return Y_samples  # noqa
+        return np.array(Y_samples)  # noqa
 
     def kde_init(self, X_obs_f: np.array, obs_n: int = None):
         """Initialize the KDEs, i.e. the functions that will be used to sample
