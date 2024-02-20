@@ -324,3 +324,76 @@ def epistemic_mcd_model(input_shape, output_shape, n_hidden, kl_weight, rate=0.2
     model.compile(optimizer=optimizer, loss=loss)
 
     return model
+
+
+def classic_pnn_model(input_shape, output_dim, n_hidden, num_components, learn_r=0.001):
+    """
+    Constructs a Probabilistic Neural Network (PNN) model using a Mixture Density Network (MDN) approach.
+    This model is designed to predict a distribution of possible outputs for a given input, making it suitable
+    for tasks with uncertain or inherently variable outputs.
+
+    Parameters: - input_shape (tuple): Shape of the input data, excluding the batch size. E.g., (32,
+    ) for 32-dimensional input. - output_dim (int): Dimensionality of the output space, representing the number of
+    independent variables for which distributions are predicted. - n_hidden (int): Number of units in the hidden
+    layer, controlling the model's capacity and complexity. - num_components (int): Number of components in the
+    mixture model, allowing for multi-modal distribution representation. - learn_r (float, optional): Learning rate
+    for the Adam optimizer. Defaults to 0.001.
+
+    Returns:
+    - model_ (tf.keras.Model): A compiled Keras model instance ready for training, predicting a mixture of
+      normal distributions for each output variable.
+
+    Model Architecture:
+    1. Input Layer: Accepts data of shape `input_shape`.
+    2. Hidden Layer: A dense layer with `n_hidden` units followed by a ReLU activation function.
+    3. Output Block: A dense layer to compute the mixture density network parameters, followed by a `MixtureNormal`
+       layer defining a mixture of normal distributions for each output variable.
+
+    Compilation Details:
+    - Optimizer: Adam with a learning rate of `learn_r`.
+    - Loss Function: Negative log-likelihood, suitable for training mixture density networks.
+
+    Example Usage:
+    ```python
+    input_shape = (10,)  # Example input shape
+    output_dim = 2       # Predicting distributions for 2 variables
+    n_hidden = 64        # Number of hidden units
+    num_components = 3   # Number of mixture components
+    learn_r = 0.001      # Learning rate
+
+    model = classic_pnn_model(input_shape, output_dim, n_hidden, num_components, learn_r)
+    model.summary()
+
+    # Prepare your data (X_train, Y_train)
+    # Train the model
+    # model.fit(X_train, Y_train, epochs=100, batch_size=32)
+
+    # Make predictions
+    # posterior_distribution = model.predict(X_test)
+    # n_samples = 100
+    # samples = posterior_distribution.sample(n_samples)
+    # ...
+    ```
+    """
+
+    # Input block
+    inputs = Input(shape=input_shape, name="input")  # Input layer
+    x = Dense(n_hidden)(inputs)  # Simple dense layer with n_hidden units
+    x = Activation("relu")(x)  # ReLU activation function for non-linearity
+
+    # Output block for Mixture Density Network
+    params_size = tfp.layers.MixtureNormal.params_size(num_components, output_dim)  # The number of parameters for
+    # the mixture model
+    output_params = Dense(params_size, activation=None, name="output")(x)  # Dense layer to compute the mixture
+    # density network parameters
+    outputs = tfp.layers.MixtureNormal(num_components, output_dim)(output_params)  # MixtureNormal layer defining a
+    # mixture of normal distributions for each output variable
+
+    # Create and compile the model
+    model_ = Model(inputs=inputs, outputs=outputs)  # Define the model
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learn_r)  # Adam optimizer with the specified learning rate
+    model_.compile(optimizer=optimizer, loss=neg_log_likelihood)  # Compile the model with the negative
+    # log-likelihood loss function
+
+    return model_
+
