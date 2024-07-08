@@ -3,9 +3,9 @@
 # EXPERIMENTAL FUNCTIONALITY -- USE AT YOUR OWN RISK
 
 import tensorflow as tf
+import tensorflow_probability as tfp
 from sklearn.base import TransformerMixin, MultiOutputMixin, BaseEstimator
 from tensorflow import keras as tfk
-import tensorflow_probability as tfp
 
 from skbel.nn_utilities import (
     prior_regularize,
@@ -377,23 +377,32 @@ def classic_pnn_model(input_shape, output_dim, n_hidden, num_components, learn_r
     """
 
     # Input block
-    inputs = Input(shape=input_shape, name="input")  # Input layer
-    x = Dense(n_hidden)(inputs)  # Simple dense layer with n_hidden units
-    x = Activation("relu")(x)  # ReLU activation function for non-linearity
+    inputs = tfk.layers.Input(shape=input_shape, name="input")  # Input layer
+    x = tfk.layers.Dense(n_hidden)(inputs)  # Simple dense layer with n_hidden units
+    x = tfk.layers.Activation("relu")(x)  # ReLU activation function for non-linearity
 
     # Output block for Mixture Density Network
-    params_size = tfp.layers.MixtureNormal.params_size(num_components, output_dim)  # The number of parameters for
+    params_size = tfp.layers.MixtureNormal.params_size(
+        num_components, output_dim
+    )  # The number of parameters for
     # the mixture model
-    output_params = Dense(params_size, activation=None, name="output")(x)  # Dense layer to compute the mixture
+    output_params = tfk.layers.Dense(params_size, activation=None, name="output")(
+        x
+    )  # Dense layer to compute the mixture
     # density network parameters
-    outputs = tfp.layers.MixtureNormal(num_components, output_dim)(output_params)  # MixtureNormal layer defining a
+    outputs = tfp.layers.MixtureNormal(num_components, output_dim)(
+        output_params
+    )  # MixtureNormal layer defining a
     # mixture of normal distributions for each output variable
 
     # Create and compile the model
-    model_ = Model(inputs=inputs, outputs=outputs)  # Define the model
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learn_r)  # Adam optimizer with the specified learning rate
-    model_.compile(optimizer=optimizer, loss=neg_log_likelihood)  # Compile the model with the negative
+    model_ = tfk.Model(inputs=inputs, outputs=outputs)  # Define the model
+    optimizer = tf.keras.optimizers.Adam(
+        learning_rate=learn_r
+    )  # Adam optimizer with the specified learning rate
+    model_.compile(
+        optimizer=optimizer, loss=neg_log_likelihood
+    )  # Compile the model with the negative
     # log-likelihood loss function
 
     return model_
-

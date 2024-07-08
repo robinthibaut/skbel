@@ -5,9 +5,9 @@ import copy
 import itertools
 
 import numpy as np
+from loguru import logger
 from scipy.optimize import minimize, root
 from sklearn.preprocessing import StandardScaler
-from loguru import logger
 
 __all__ = ["TransportMap"]
 
@@ -211,7 +211,6 @@ class TransportMap:
         self.precalculate()
 
     def check_inputs(self):
-
         """This function runs some preliminary checks on the input provided,
         alerting the user to any possible input errors."""
 
@@ -264,7 +263,6 @@ class TransportMap:
                     )
 
     def reset(self, X: np.array):
-
         """This function is used if the transport map has been initiated with a
         different set of samples. It resets the standardization variables and
         the map's coefficients, requiring new optimization.
@@ -298,7 +296,6 @@ class TransportMap:
         self.precalculate()
 
     def precalculate(self):
-
         """This function pre-calculates matrices of basis function evaluations
         for the samples provided.
 
@@ -321,7 +318,6 @@ class TransportMap:
     def write_basis_function(
         self, term: list or str, mode: str = "standard", k: int = None
     ):
-
         """This function assembles a string for a specific term of the map
         component functions. This can be a polynomial, a Hermite function, a
         radial basis function, or similar.
@@ -603,7 +599,7 @@ class TransportMap:
                     # Evaluate a naive Hermite function
                     hf_x = np.linspace(-100, 100, 100001)
                     hfeval = self.polyfunc(dummy_coefficients)(hf_x) * np.exp(
-                        -(hf_x ** 2) / 4
+                        -(hf_x**2) / 4
                     )
 
                     # Scale the polynomial coefficient to normalize its maximum value
@@ -760,7 +756,6 @@ class TransportMap:
         return string, modifier_log
 
     def function_constructor_alternative(self):
-
         """This function assembles the string for the monotone and non-monotone
         map components, then converts these strings into functions."""
 
@@ -1308,7 +1303,6 @@ class TransportMap:
         return
 
     def function_derivative_constructor_alternative(self):
-
         """This function is the complement to
         'function_constructor_alternative', but instead constructs the
         derivative of the map's component functions.
@@ -1563,7 +1557,6 @@ class TransportMap:
             exec("self.der_fun_mon.append(copy.deepcopy(" + funstring + "))")
 
     def check_for_special_terms(self):
-
         """This function scans through the user-provided map specifications and
         seeks if there are any special terms ('RBF', 'iRBF', 'LET', 'RET')
         among the terms of the map components.
@@ -1618,7 +1611,6 @@ class TransportMap:
                     self.RBF_counter_m[k, index] += 1
 
     def calculate_special_term_locations(self):
-
         """This function calculates the location and scale parameters for
         special terms in the transport map definition, specifically RBF (Radial
         Basis Functions), iRBF (Integrated Radial Basis Functions), and LET/RET
@@ -1865,7 +1857,6 @@ class TransportMap:
         return
 
     def map(self, X: np.array = None):
-
         """This function maps the samples X from the target distribution to the
         standard multivariate Gaussian reference distribution. If X has not
         been provided, the samples in storage will be used instead.
@@ -1900,7 +1891,6 @@ class TransportMap:
         coeffs_nonmon: np.array = None,
         coeffs_mon: np.array = None,
     ):
-
         """This function evaluates the k-th map component.
 
         :param x: N-by-D array of the training samples used to optimize the transport map, where N is the number of
@@ -1983,7 +1973,6 @@ class TransportMap:
         return result
 
     def optimize(self):
-
         """This function optimizes the map's component functions, seeking the
         coefficients which best map the samples to a standard multivariate
         Gaussian distribution."""
@@ -2134,7 +2123,6 @@ class TransportMap:
             p.close()
 
     def worker_task_monotone(self, k: int, task_supervisor: list):
-
         """This function provides the optimization task for the k-th map component function to a worker
         (if parallelization is used), or applies it in sequence (if no parallelization is used).
         This specific function only becomes active if monotonicity = 'separable monotonicity'.
@@ -2360,7 +2348,6 @@ class TransportMap:
         return coeffs_nonmon, coeffs_mon
 
     def worker_task(self, k: int, task_supervisor: list):
-
         """This function provides the optimization task for the k-th map component function to a worker
         (if parallelization is used), or applies it in sequence (if no parallelization is used).
         This specific function only becomes active if monotonicity = 'integrated rectifier'.
@@ -2467,7 +2454,6 @@ class TransportMap:
         return coeffs_nonmon, coeffs_mon
 
     def objective_function(self, coeffs: np.array, k: int, div: int = 0):
-
         """This function evaluates the objective function used in the
         optimization of the map's component functions.
 
@@ -2499,7 +2485,7 @@ class TransportMap:
         )
 
         # Check how close these samples are to the origin
-        objective = 1 / 2 * map_result ** 2
+        objective = 1 / 2 * map_result**2
 
         # Second part: How much is the ensemble inflated?
 
@@ -2561,21 +2547,19 @@ class TransportMap:
                     if np.isscalar(self.regularization_lambda):
 
                         # Add l2 regularization for all coefficients
+                        objective += self.regularization_lambda * np.sum(coeffs_mon**2)
                         objective += self.regularization_lambda * np.sum(
-                            coeffs_mon ** 2
-                        )
-                        objective += self.regularization_lambda * np.sum(
-                            coeffs_nonmon ** 2
+                            coeffs_nonmon**2
                         )
 
                     elif type(self.regularization_lambda) == list:
 
                         # Add l1 regularization for all coefficients
                         objective += np.sum(
-                            self.regularization_lambda[k][div:] * coeffs_mon ** 2
+                            self.regularization_lambda[k][div:] * coeffs_mon**2
                         )
                         objective += np.sum(
-                            self.regularization_lambda[k][:div] * coeffs_nonmon ** 2
+                            self.regularization_lambda[k][:div] * coeffs_nonmon**2
                         )
 
                     else:
@@ -2597,7 +2581,6 @@ class TransportMap:
         return objective
 
     def objective_function_jacobian(self, coeffs: np.array, k: int, div: int = 0):
-
         """This function evaluates the derivative of the objective function
         used in the optimization of the map's component functions.
 
@@ -2768,7 +2751,6 @@ class TransportMap:
         return objective
 
     def inverse_map(self, Y: np.array, X_precalc: np.array = None):
-
         """This function evaluates the inverse transport map, mapping samples
         from a multivariate standard Gaussian back to the target distribution.
         If X_precalc is specified, the map instead evaluates a conditional of
@@ -2883,7 +2865,6 @@ class TransportMap:
         Yk: np.array,
         k: int,
     ):
-
         """This function searches for the roots of the k-th map component
         through bisection. It is called in the inverse_map function.
 
@@ -2894,6 +2875,7 @@ class TransportMap:
         :param k: an integer variable defining what map component is being evaluated. Corresponds to a dimension of
             sample space.
         """
+
         # Function to optimize
         def f(x):
             # x is a multivariate vector
@@ -2919,7 +2901,6 @@ class TransportMap:
         verbose=False,
         full_output=False,
     ):
-
         """This function implements a Gaussian quadrature numerical integration
         scheme. It is used if the monotonicity = 'integrated rectifier', for
         which monotonicity is ensured by integrating a strictly positive
@@ -2978,7 +2959,7 @@ class TransportMap:
                 xis = np.polynomial.legendre.legroots(coefs)
 
                 # Calculate the weights of the integration points
-                Ws = 2.0 / ((1.0 - xis ** 2) * (LegendreDer(xis) ** 2))
+                Ws = 2.0 / ((1.0 - xis**2) * (LegendreDer(xis) ** 2))
 
             # If any of the boundaries is a vector, vectorize the operation
             if not np.isscalar(a) or not np.isscalar(b):
@@ -3134,7 +3115,6 @@ class TransportMap:
 
     class Rectifier:
         def __init__(self, mode: str = "softplus", delta: float = 1e-8):
-
             """This object specifies what function is used to rectify the monotone
             map component functions if monotonicity = 'integrated rectifier',
             before the rectifier's output is integrated to yield a monotone
@@ -3149,7 +3129,6 @@ class TransportMap:
             self.delta = delta
 
         def evaluate(self, X: np.array) -> np.array:
-
             """This function evaluates the specified rectifier.
 
             :param X: an array of function evaluates to be rectified.
@@ -3157,7 +3136,7 @@ class TransportMap:
 
             if self.mode == "squared":
 
-                res = X ** 2
+                res = X**2
 
             elif self.mode == "exponential":
 
@@ -3184,7 +3163,6 @@ class TransportMap:
             return res
 
         def inverse(self, X):
-
             """This function evaluates the inverse of the specified rectifier.
 
             :param X: an array of function evaluates to be rectified.
@@ -3233,7 +3211,6 @@ class TransportMap:
             return res
 
         def evaluate_dx(self, X: np.array) -> np.array:
-
             """This function evaluates the derivative of the specified
             rectifier.
 
@@ -3271,7 +3248,6 @@ class TransportMap:
             return res
 
         def evaluate_dfdc(self, f, dfdc):
-
             """This function evaluates terms used in the optimization of the
             map components if monotonicity = 'separable monotonicity'.
 
@@ -3314,7 +3290,6 @@ class TransportMap:
             return res
 
         def logevaluate(self, X: np.array) -> np.array:
-
             """This function evaluates the logarithm of the specified
             rectifier.
 
@@ -3324,7 +3299,7 @@ class TransportMap:
 
             if self.mode == "squared":
 
-                res = np.log(X ** 2)
+                res = np.log(X**2)
 
             elif self.mode == "exponential":
 

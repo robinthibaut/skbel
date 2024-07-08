@@ -2,8 +2,8 @@
 
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
 import tensorflow_probability as tfp
+from tensorflow import keras
 
 tfd = tfp.distributions
 

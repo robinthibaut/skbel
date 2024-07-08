@@ -390,7 +390,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 X_obs=dp.T[comp_n],
                                 dens=dens,
                                 support=support,
-                                k=2 ** 7 + 1,
+                                k=2**7 + 1,
                             )
                             hp[np.abs(hp) < 1e-8] = 0  # Set very small values to 0.
                             kind = "pdf"
@@ -495,7 +495,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         # Set the seed for later use
         if self.seed is None:
-            self.seed = np.random.randint(2 ** 32 - 1, dtype="uint32")
+            self.seed = np.random.randint(2**32 - 1, dtype="uint32")
 
         if X_obs_f is None:
             X_obs_f = self.X_obs_f
@@ -547,7 +547,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,
+                                k=2**7 + 1,
                             )
                         elif (
                             fun["kind"] == "linear"
@@ -571,7 +571,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 num_samples=self.n_posts,
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
-                                k=2 ** 7 + 1,
+                                k=2**7 + 1,
                                 cdf_y=pv,
                             )
                         elif fun["kind"] == "linear":
@@ -648,7 +648,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         pdf=pdf,
                         lower_bd=pdf.x.min(),
                         upper_bd=pdf.x.max(),
-                        k=2 ** 7
+                        k=2**7
                         + 1,  # Number of samples. It is a power of 2 + 1 because Romberg integration will be used
                         return_cdf=True,
                     )

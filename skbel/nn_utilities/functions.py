@@ -2,8 +2,8 @@
 
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras as tfk
 import tensorflow_probability as tfp
+from tensorflow import keras as tfk
 from tensorflow_probability import distributions as tfd
 
 __all__ = [
@@ -49,9 +49,13 @@ def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
                 lambda t: tfd.Independent(
                     tfd.Normal(
                         loc=t[..., :n],
-                        scale=1e-5 + 1e-2 * tf.nn.softplus(c + t[..., n:]),  # softplus ensures positivity and avoids numerical instability
+                        scale=1e-5
+                        + 1e-2
+                        * tf.nn.softplus(
+                            c + t[..., n:]
+                        ),  # softplus ensures positivity and avoids numerical instability
                     ),
-                    reinterpreted_batch_ndims=1, # each weight is independent
+                    reinterpreted_batch_ndims=1,  # each weight is independent
                 )  # reinterpreted_batch_ndims=1 means that the last dimension is the event dimension
             ),
         ]
