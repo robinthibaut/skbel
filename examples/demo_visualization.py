@@ -49,7 +49,7 @@ def binary_polygon(
     """
 
     # Creates a Polygon abject out of the polygon vertices in pzs
-    poly = Polygon(pzs, True)
+    poly = Polygon(pzs, closed=True)
     # Checks which points are enclosed by polygon.
     ind = np.nonzero(poly.contains_points(xys))[0]
     phi = np.ones((nrow, ncol)) * outside  # SD - create matrix of 'outside'
@@ -693,7 +693,7 @@ def plot_results(
 
     if Y is not None:
         # WHP - h test + training
-        fig_dir = jp(base_dir, root)
+        fig_dir = jp(base_dir, root, "uq")
         ff = jp(fig_dir, "whpa.png")  # figure name
         Y = check_array(Y, allow_nd=True)
         try:
@@ -717,8 +717,6 @@ def plot_results(
         labels = ["Training", "Test"]
         legend = _proxy_annotate(annotation=[], loc=2, fz=14)
         _proxy_legend(legend1=legend, colors=colors, labels=labels, fig_file=ff)
-        if show:
-            plt.show()
         plt.close()
 
         # WHPs
@@ -777,8 +775,6 @@ def plot_results(
             labels=labels,
             fig_file=ff,
         )
-        if show:
-            plt.show()
         plt.close()
 
 

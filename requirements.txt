@@ -1,12 +1,11 @@
 scikit-learn
 matplotlib
 scipy
-numpy
 joblib
-pandas
+pandas<2
 pytest
 scikit-image
 seaborn
-tensorflow
+tensorflow==2.14
 loguru
-tensorflow_probability
+tensorflow_probability==0.22
