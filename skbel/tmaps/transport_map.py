@@ -582,7 +582,7 @@ class TransportMap:
                 modifier_log = {"LIN": None}
 
             # Add a "variables" key to the modifier_log, if it does not already exist
-            if "variables" not in list(modifier_log.keys()):
+            if "variables" not in modifier_log.keys():
                 modifier_log["variables"] = {}
 
             # Create an empty string
@@ -643,7 +643,7 @@ class TransportMap:
                         var += "*np.exp(-__x__[...," + str(ui[i]) + "]**2/4)"
 
                     # Save the variable
-                    if key not in list(modifier_log["variables"].keys()):
+                    if key not in modifier_log["variables"].keys():
                         modifier_log["variables"][key] = var
 
                     # Add the variable to the string
@@ -688,7 +688,7 @@ class TransportMap:
                     varder += "(__x__[...," + str(ui[i]) + "])"
 
                     # Save the variable
-                    if keyder not in list(modifier_log["variables"].keys()):
+                    if keyder not in modifier_log["variables"].keys():
                         modifier_log["variables"][keyder] = varder
 
                     # Add the variable to the string
@@ -724,7 +724,7 @@ class TransportMap:
                         varbase += "(__x__[...," + str(ui[i]) + "])"
 
                         # Save the variable -
-                        if key not in list(modifier_log["variables"].keys()):
+                        if key not in modifier_log["variables"].keys():
                             modifier_log["variables"][key] = varbase
 
                         # Now we can construct the actual derivative
@@ -837,13 +837,13 @@ class TransportMap:
                 # Extract any precalculations, where applicable
 
                 # If this term includes and precalculations, extract them
-                if "variables" in list(modifier_log.keys()):
+                if "variables" in modifier_log.keys():
 
                     # There are precalculating variables. Go through each
-                    for key in list(modifier_log["variables"].keys()):
+                    for key in modifier_log["variables"].keys():
 
                         # Have we logged this one already?
-                        if key not in list(dict_precalc.keys()):
+                        if key not in dict_precalc.keys():
 
                             # No, we haven't. Add it.
                             dict_precalc[key] = modifier_log["variables"][key].replace(
@@ -875,7 +875,7 @@ class TransportMap:
                                 # Post-processing for special terms
 
                 # Is this term a special term?
-                if "ST" in list(modifier_log.keys()):
+                if "ST" in modifier_log.keys():
 
                     # Mark this term as a special one
                     ST_indices.append(i)
@@ -1031,7 +1031,7 @@ class TransportMap:
                 # Prepare precalculated variables
 
             # Add all precalculation terms
-            for key in list(dict_precalc.keys()):
+            for key in dict_precalc.keys():
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
                 # Assemble function output
@@ -1101,13 +1101,13 @@ class TransportMap:
                 # Extract any precalculations, where applicable
 
                 # If this term includes and precalculations, extract them
-                if "variables" in list(modifier_log.keys()):
+                if "variables" in modifier_log.keys():
 
                     # There are precalculating variables. Go through each
-                    for key in list(modifier_log["variables"].keys()):
+                    for key in modifier_log["variables"].keys():
 
                         # Have we logged this one already?
-                        if key not in list(dict_precalc.keys()):
+                        if key not in dict_precalc.keys():
 
                             # No, we haven't. Add it.
                             dict_precalc[key] = copy.copy(
@@ -1143,7 +1143,7 @@ class TransportMap:
                                 # Post-processing for special terms
 
                 # Is this term a special term?
-                if "ST" in list(modifier_log.keys()):
+                if "ST" in modifier_log.keys():
 
                     # Yes, it is. Add additional modules to load, if necessary
                     if "import scipy.special" not in modules:
@@ -1241,7 +1241,7 @@ class TransportMap:
                     # Prepare precalculated variables
 
                 # Add all precalculation terms
-                for key in list(dict_precalc.keys()):
+                for key in dict_precalc.keys():
                     string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
                     # Assemble function output
@@ -1357,7 +1357,7 @@ class TransportMap:
 
                 # If this is a constant term, undo the lower constraint
 
-                if "constant" in list(modifier_log.keys()):
+                if "constant" in modifier_log.keys():
                     # Assign linear constraints
                     self.optimization_constraints_lb[k][j] = -np.inf
                     self.optimization_constraints_ub[k][j] = +np.inf
@@ -1365,13 +1365,13 @@ class TransportMap:
                     # Extract any precalculations, where applicable
 
                 # If this term includes and precalculations, extract them
-                if "variables" in list(modifier_log.keys()):
+                if "variables" in modifier_log.keys():
 
                     # There are precalculating variables. Go through each
-                    for key in list(modifier_log["variables"].keys()):
+                    for key in modifier_log["variables"].keys():
 
                         # Have we logged this one already?
-                        if key not in list(dict_precalc.keys()):
+                        if key not in dict_precalc.keys():
                             # No, we haven't. Add it.
                             dict_precalc[key] = copy.copy(
                                 modifier_log["variables"][key]
@@ -1380,7 +1380,7 @@ class TransportMap:
                             # Post-processing for special terms
 
                 # Is this term a special term?
-                if "ST" in list(modifier_log.keys()):
+                if "ST" in modifier_log.keys():
 
                     # Mark this term as a special one
                     ST_indices.append(j)
@@ -1520,7 +1520,7 @@ class TransportMap:
                 # Prepare precalculated variables
 
             # Add all precalculation terms
-            for key in list(dict_precalc.keys()):
+            for key in dict_precalc.keys():
                 string += key + " = " + copy.copy(dict_precalc[key]) + ";\n\t"
 
                 # Assemble function output
