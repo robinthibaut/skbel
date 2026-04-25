@@ -4,7 +4,7 @@ Contents
 The package is structured as follows:
 
 .. toctree::
-   :maxdepth:`
+   :maxdepth: 4
 
    skbel.preprocessing
    skbel.learning

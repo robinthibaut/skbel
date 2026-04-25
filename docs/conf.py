@@ -56,6 +56,16 @@ extensions = [
 bibtex_bibfiles = ["export.bib"]
 bibtex_default_style = "unsrt"
 
+# Resolve cross-references to sklearn / numpy / scipy docs (silences ~70
+# warnings autodoc emits from inherited sklearn metadata-routing methods).
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "sklearn": ("https://scikit-learn.org/stable/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+}
+
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
