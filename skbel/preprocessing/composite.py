@@ -1,14 +1,14 @@
 import numpy as np
-from sklearn.base import TransformerMixin, BaseEstimator, MultiOutputMixin
+from sklearn.base import BaseEstimator, MultiOutputMixin, TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
 """
 Collection of classes to combine multiple-features transformation/dimension reduction.
-The classes below take a base scikit-learn object and sequentially apply the desired algorithm to each set of features 
+The classes below take a base scikit-learn object and sequentially apply the desired algorithm to each set of features
 part of the same dataset and concatenates the results.
-Scikit-Learn does implement its own "column_transformer", but it is not supported by pipelines, and does not have an 
+Scikit-Learn does implement its own "column_transformer", but it is not supported by pipelines, and does not have an
 "inverse_transform" method. The code here solves these shortcomings.
 """
 
@@ -27,9 +27,7 @@ class CompositePCA(TransformerMixin, BaseEstimator):
             n_components = [n_components]
         self.n_components = n_components
         self.scale = scale
-        self.pca_objects = [
-            PCA(n_components=n) for n in self.n_components
-        ]  # list of PCA objects
+        self.pca_objects = [PCA(n_components=n) for n in self.n_components]  # list of PCA objects
 
     def fit(self, Xc: list, yc=None, **fit_params):
         """Fit all PCA objects for the different datasets with their specified
@@ -54,9 +52,7 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         if type(Xc) is not list:
             Xc = [Xc]
         [check_is_fitted(p) for p in self.pca_objects]  # Check if fitted
-        scores = [
-            pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
-        ]  # Transform
+        scores = [pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]  # Transform
         if self.scale:  # Scale the data if specified
             scaler = StandardScaler()
             scores = [scaler.fit_transform(s) for s in scores]
@@ -82,9 +78,7 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         """
         if type(Xr) is not list:
             Xr = [Xr]
-        rm = np.cumsum(
-            np.concatenate([[0], self.n_components])
-        )  # Cumulative sum of n_components
+        rm = np.cumsum(np.concatenate([[0], self.n_components]))  # Cumulative sum of n_components
         Xr = Xr.reshape(-1)
         Xc = [
             Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
@@ -115,9 +109,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
         """
-        self.t_objects = [
-            self.base_function(**self.params) for _ in Xc
-        ]  # list of transformations
+        self.t_objects = [self.base_function(**self.params) for _ in Xc]  # list of transformations
         [obj.fit(Xc[i], yc) for i, obj in enumerate(self.t_objects)]  # Fit
         return self
 
@@ -149,8 +141,7 @@ class CompositeTransformer(TransformerMixin, BaseEstimator):
         :return: list of transformed datasets
         """
         Xit = [
-            obj.inverse_transform(Xr[i].reshape(1, -1))
-            for i, obj in enumerate(self.t_objects)
+            obj.inverse_transform(Xr[i].reshape(1, -1)) for i, obj in enumerate(self.t_objects)
         ]  # Successively inverse transform
         return Xit
 

@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from tensorflow import keras as tfk
+import tf_keras as tfk
 from tensorflow_probability import distributions as tfd
 
 __all__ = [
@@ -34,14 +34,12 @@ def neg_log_likelihood(x, rv_x):
 def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
     n = kernel_size + bias_size
     c = np.log(np.expm1(1.0))
-    return tf.keras.Sequential(
+    return tfk.Sequential(
         [
             tfp.layers.VariableLayer(
                 2 * n,
                 dtype=dtype,
-                initializer=lambda shape, dtype: random_gaussian_initializer(
-                    shape, dtype
-                ),
+                initializer=lambda shape, dtype: random_gaussian_initializer(shape, dtype),
                 trainable=True,
             ),
             # tfp.layers.VariableLayer(2 * n, dtype=dtype),
@@ -65,13 +63,11 @@ def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
 # Specify the prior over `keras.layers.Dense` `kernel` and `bias`.
 def prior_trainable(kernel_size, bias_size=0, dtype=None):
     n = kernel_size + bias_size
-    return tf.keras.Sequential(
+    return tfk.Sequential(
         [
             tfp.layers.VariableLayer(n, dtype=dtype),
             tfp.layers.DistributionLambda(
-                lambda t: tfd.Independent(
-                    tfd.Normal(loc=t, scale=1), reinterpreted_batch_ndims=1
-                )
+                lambda t: tfd.Independent(tfd.Normal(loc=t, scale=1), reinterpreted_batch_ndims=1)
             ),
         ]
     )
@@ -98,9 +94,7 @@ def posterior_fn(kernel_size, bias_size, dtype=None):
     n = kernel_size + bias_size
     posterior_model = tfk.Sequential(
         [
-            tfp.layers.VariableLayer(
-                tfp.layers.MultivariateNormalTriL.params_size(n), dtype=dtype
-            ),
+            tfp.layers.VariableLayer(tfp.layers.MultivariateNormalTriL.params_size(n), dtype=dtype),
             tfp.layers.MultivariateNormalTriL(n),
         ]
     )
@@ -108,7 +102,8 @@ def posterior_fn(kernel_size, bias_size, dtype=None):
 
 
 def random_gaussian_initializer(shape, dtype="float32"):
-    n = int(shape / 2)
+    # `shape` may be an int (legacy) or a TensorShape / tuple (TF >= 2.16)
+    n = int(np.prod(shape)) // 2
     loc_norm = tf.random_normal_initializer(mean=0.0, stddev=0.1)
     loc = tf.Variable(initial_value=loc_norm(shape=(n,), dtype=dtype))
     scale_norm = tf.random_normal_initializer(mean=-3.0, stddev=0.1)
@@ -124,13 +119,13 @@ def prior_regularize(output_shape):
     return prior
 
 
-class RBFKernelFn(tf.keras.layers.Layer):
+class RBFKernelFn(tfk.layers.Layer):
     """RBF kernel function.
     https://www.tensorflow.org/probability/examples/Probabilistic_Layers_Regression#case_5_functional_uncertainty
     """
 
     def __init__(self, **kwargs):
-        super(RBFKernelFn, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         dtype = kwargs.get("dtype", None)
 
         self._amplitude = self.add_variable(

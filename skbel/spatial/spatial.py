@@ -1,12 +1,9 @@
 #  Copyright (c) 2021. Robin Thibaut, Ghent University
-from typing import List
 
 import numpy as np
 from matplotlib import pyplot as plt
 
-plt.rcParams.update(
-    {"figure.max_open_warning": 0}
-)  # ignore warning for too many open figures
+plt.rcParams.update({"figure.max_open_warning": 0})  # ignore warning for too many open figures
 
 __all__ = [
     "grid_parameters",
@@ -47,9 +44,9 @@ def grid_parameters(
         z_lim = z_lim
 
     grf = grf  # Cell dimension
-    nrow = int(np.diff(y_lim) / grf)  # Number of rows
-    ncol = int(np.diff(x_lim) / grf)  # Number of columns
-    nlay = int(np.diff(z_lim) / grf)  # Number of layers
+    nrow = int(np.diff(y_lim).item() / grf)  # Number of rows
+    ncol = int(np.diff(x_lim).item() / grf)  # Number of columns
+    nlay = int(np.diff(z_lim).item() / grf)  # Number of layers
 
     if nlay == 1:
         array = np.ones((nrow, ncol))  # Dummy array
@@ -79,17 +76,13 @@ def block_shaped(arr: np.array, nrows: int, ncols: int, nlay: int = 1) -> np.arr
     else:
         h, w, l = arr.shape
 
-    assert h % nrows == 0, "{} rows is not evenly divisible by {}".format(h, nrows)
-    assert w % ncols == 0, "{} cols is not evenly divisible by {}".format(w, ncols)
+    assert h % nrows == 0, f"{h} rows is not evenly divisible by {nrows}"
+    assert w % ncols == 0, f"{w} cols is not evenly divisible by {ncols}"
     if nlay != 1:
-        assert l % nlay == 0, "{} cols is not evenly divisible by {}".format(l, nlay)
+        assert l % nlay == 0, f"{l} cols is not evenly divisible by {nlay}"
 
     if nlay == 1:
-        return (
-            arr.reshape(h // nrows, nrows, -1, ncols)
-            .swapaxes(1, 2)
-            .reshape(-1, nrows, ncols)
-        )
+        return arr.reshape(h // nrows, nrows, -1, ncols).swapaxes(1, 2).reshape(-1, nrows, ncols)
     else:
         return (
             arr.reshape(h // nrows, nrows, -1, ncols, -1, nlay)
@@ -99,7 +92,7 @@ def block_shaped(arr: np.array, nrows: int, ncols: int, nlay: int = 1) -> np.arr
 
 
 def refine_axis(
-    widths: List[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
+    widths: list[float], r_pt: float, ext: float, cnd: float, d_dim: float, a_lim: float
 ) -> np.array:
     """Refines one 1D axis around a point belonging to it.
 
@@ -127,9 +120,7 @@ def refine_axis(
     xrp = [pt - extx, pt + extx]
 
     # Where to refine
-    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[
-        0
-    ]  # Indexes of the cells to refine
+    wherex = np.where((xrp[0] < x0s) & (x0s <= xrp[1]))[0]  # Indexes of the cells to refine
 
     # The algorithm must choose a 'flexible parameter', either the cell grid size, the dimensions of the grid or the
     # refined cells themselves... We choose to adapt the dimensions of the grid.
@@ -154,23 +145,19 @@ def refine_axis(
         where_left = where_default[np.where(where_default < wherex[0])]
         # the left
         where_right = where_default[
-            np.where((where_default >= wherex[0] + len(nwxs)))
+            np.where(where_default >= wherex[0] + len(nwxs))
         ]  # And on the right
         lwl = len(where_left)  # Length of the left
         lwr = len(where_right)  # Length of the right
 
         if lwl > lwr:  # If the left is longer than the right
-            rl = (
-                lwl / lwr
-            )  # Weights how many cells are on either sides of the refinement zone
+            rl = lwl / lwr  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dal = difx / ((lwl + lwr) / lwl)
             dal = dal + (difx - dal) / rl
             dar = difx - dal
         elif lwr > lwl:  # If the right is longer than the left
-            rl = (
-                lwr / lwl
-            )  # Weights how many cells are on either sides of the refinement zone
+            rl = lwr / lwl  # Weights how many cells are on either sides of the refinement zone
             # Splitting the extra widths on the left and right of the cells
             dar = difx / ((lwl + lwr) / lwr)
             dar = dar + (difx - dar) / rl
@@ -334,9 +321,7 @@ def get_centroids(array: np.array, grf: float) -> np.array:
     :param grf: float: Cell dimension
     :return: (m, n, 2) array
     """
-    xys = np.dstack(
-        (np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2)
-    )  # Getting centroids
+    xys = np.dstack(np.flip((np.indices(array.shape) + 1), 0) * grf - grf / 2)  # Getting centroids
     return xys.reshape((array.shape[0] * array.shape[1], 2))
 
 
@@ -390,9 +375,7 @@ def contours_vertices(
     return v
 
 
-def refine_machine(
-    xlim: list, ylim: list, new_grf: int or float
-) -> (int, int, np.array, np.array):
+def refine_machine(xlim: list, ylim: list, new_grf: int or float) -> (int, int, np.array, np.array):
     """Refines the grid to a new resolution.
 
     :param xlim: x limits of the grid
@@ -400,8 +383,8 @@ def refine_machine(
     :param new_grf: new grid resolution
     :return: new grid resolution (nrow, ncol, x, y)
     """
-    nrow = int(np.diff(ylim) / new_grf)  # Number of rows
-    ncol = int(np.diff(xlim) / new_grf)  # Number of columns
+    nrow = int(np.diff(ylim).item() / new_grf)  # Number of rows
+    ncol = int(np.diff(xlim).item() / new_grf)  # Number of columns
     new_x, new_y = np.meshgrid(
         np.linspace(xlim[0], xlim[1], ncol), np.linspace(ylim[0], ylim[1], nrow)
     )

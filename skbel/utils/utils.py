@@ -5,7 +5,6 @@ import os
 import shutil
 import types
 import warnings
-from typing import List
 
 import numpy as np
 
@@ -21,7 +20,7 @@ __all__ = [
 ]
 
 FLOAT_DTYPES = (np.float64, np.float32, np.float16)
-Combination = List[List[int]]
+Combination = list[list[int]]
 Function = types.FunctionType
 
 
@@ -56,7 +55,7 @@ def data_read(
     if step is None:
         step = 1
 
-    with open(file, "r") as fr:  # Open file
+    with open(file) as fr:  # Open file
         lines = fr.readlines()[
             start:end:step
         ]  # Read lines. The content is sliced according to the parameters.
@@ -86,7 +85,7 @@ def folder_reset(folder: str, exceptions: list = None):
                     if os.path.isfile(file_path):
                         os.unlink(file_path)
                 except Exception as e:
-                    warnings.warn("Failed to delete %s. Reason: %s" % (file_path, e))
+                    warnings.warn(f"Failed to delete {file_path}. Reason: {e}", stacklevel=2)
     except FileNotFoundError:
         pass
 
@@ -107,7 +106,7 @@ def dirmaker(dird: str, erase: bool = False):
                 os.makedirs(dird)
             return 1
     except Exception as e:
-        warnings.warn(e)
+        warnings.warn(e, stacklevel=2)
         return 0
 
 

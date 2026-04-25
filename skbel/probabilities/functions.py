@@ -3,7 +3,7 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from tensorflow import keras
+import tf_keras as tfk
 
 tfd = tfp.distributions
 
@@ -12,7 +12,7 @@ __all__ = ["prior_fn", "posterior_fn", "prior_trainable", "posterior_mean_field"
 
 def prior_fn(kernel_size, bias_size, dummy_input):
     n = kernel_size + bias_size  # number of weights
-    prior_model = keras.Sequential(
+    prior_model = tfk.Sequential(
         [
             tfp.layers.DistributionLambda(
                 lambda t: tfp.distributions.MultivariateNormalDiag(
@@ -29,7 +29,7 @@ def prior_fn(kernel_size, bias_size, dummy_input):
 # variances, and covariances.
 def posterior_fn(kernel_size, bias_size, dtype=None):
     n = kernel_size + bias_size
-    posterior_model = keras.Sequential(
+    posterior_model = tfk.Sequential(
         [
             tfp.layers.VariableLayer(
                 tfp.layers.MultivariateNormalTriL.params_size(n),
@@ -44,14 +44,12 @@ def posterior_fn(kernel_size, bias_size, dtype=None):
 def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
     n = kernel_size + bias_size
     c = np.log(np.expm1(1.0))
-    return tf.keras.Sequential(
+    return tfk.Sequential(
         [
             tfp.layers.VariableLayer(2 * n, dtype=dtype),
             tfp.layers.DistributionLambda(
                 lambda t: tfd.Independent(
-                    tfd.Normal(
-                        loc=t[..., :n], scale=1e-5 + tf.nn.softplus(c + t[..., n:])
-                    ),
+                    tfd.Normal(loc=t[..., :n], scale=1e-5 + tf.nn.softplus(c + t[..., n:])),
                     reinterpreted_batch_ndims=1,
                 )
             ),
@@ -61,13 +59,11 @@ def posterior_mean_field(kernel_size, bias_size=0, dtype=None):
 
 def prior_trainable(kernel_size, bias_size=0, dtype=None):
     n = kernel_size + bias_size
-    return tf.keras.Sequential(
+    return tfk.Sequential(
         [
             tfp.layers.VariableLayer(n, dtype=dtype),
             tfp.layers.DistributionLambda(
-                lambda t: tfd.Independent(
-                    tfd.Normal(loc=t, scale=1), reinterpreted_batch_ndims=1
-                )
+                lambda t: tfd.Independent(tfd.Normal(loc=t, scale=1), reinterpreted_batch_ndims=1)
             ),
         ]
     )

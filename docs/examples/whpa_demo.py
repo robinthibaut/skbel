@@ -3,16 +3,14 @@
 import os
 from os.path import join as jp
 
-import pandas as pd
+import demo_visualization as myvis
+import numpy as np
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 
-import demo_visualization as myvis
-
-from skbel import utils
-from skbel import BEL
+from skbel import BEL, utils
 
 
 def init_bel():
@@ -66,7 +64,6 @@ def init_bel():
 
 
 if __name__ == "__main__":
-
     # %% Set directories
     data_dir = jp(os.getcwd(), "dataset")
     # Directory in which to unload forecasts
@@ -92,10 +89,10 @@ if __name__ == "__main__":
     ]
 
     # %% Load dataset
-    X_train = pd.read_pickle(jp(data_dir, "X_train.pkl"))
-    X_test = pd.read_pickle(jp(data_dir, "X_test.pkl"))
-    y_train = pd.read_pickle(jp(data_dir, "y_train.pkl"))
-    y_test = pd.read_pickle(jp(data_dir, "y_test.pkl"))
+    X_train = np.load(jp(data_dir, "X_train.npy"))
+    X_test = np.load(jp(data_dir, "X_test.npy"))
+    y_train = np.load(jp(data_dir, "y_train.npy"))
+    y_test = np.load(jp(data_dir, "y_test.npy"))
 
     # %% Initiate BEL model
     model = init_bel()
@@ -115,7 +112,7 @@ if __name__ == "__main__":
     # Sample for the observation
     # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
-    y_predicted = model.predict(X_test.array.reshape(1, -1))
+    y_predicted = model.predict(X_test.reshape(1, -1))
 
     # %% Visualization
 

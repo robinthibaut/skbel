@@ -53,7 +53,7 @@ def binary_polygon(
     # Checks which points are enclosed by polygon.
     ind = np.nonzero(poly.contains_points(xys))[0]
     phi = np.ones((nrow, ncol)) * outside  # SD - create matrix of 'outside'
-    phi = phi.reshape((nrow * ncol))  # Flatten to have same dimension as 'ind'
+    phi = phi.reshape(nrow * ncol)  # Flatten to have same dimension as 'ind'
     phi[ind] = inside  # Points inside the WHPA are assigned a value of 'inside'
     phi = phi.reshape((nrow, ncol))  # Reshape
 
@@ -64,9 +64,7 @@ def binary_stack(xys: np.array, nrow: int, ncol: int, vertices: np.array) -> np.
     """Takes WHPA vertices and 'binarizes' the image (e.g. 1 inside, 0 outside
     WHPA)."""
     # Create binary images of WHPA stored in bin_whpa
-    bin_whpa = [
-        binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices
-    ]
+    bin_whpa = [binary_polygon(xys, nrow, ncol, pzs=p, inside=1, outside=-1) for p in vertices]
     big_sum = np.sum(bin_whpa, axis=0)  # Stack them
     # Scale from 0 to 1
     big_sum -= np.min(big_sum)
@@ -266,9 +264,7 @@ def whpa_plot(
 
 
 @deprecated()
-def post_examination(
-    root: str, xlim: list = None, ylim: list = None, show: bool = False
-):
+def post_examination(root: str, xlim: list = None, ylim: list = None, show: bool = False):
     focus = Setup.Focus()
     if xlim is None:
         xlim = focus.x_range
@@ -296,9 +292,7 @@ def post_examination(
     # legend = proxy_annotate(annotation=['B'], loc=2, fz=14)
     # plt.gca().add_artist(legend)
 
-    plt.savefig(
-        jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=False
-    )
+    plt.savefig(jp(sdir, f"{root}_SD.png"), dpi=300, bbox_inches="tight", transparent=False)
     if show:
         plt.show()
     plt.close()
@@ -324,9 +318,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
         except ValueError:
             Y_obs = check_array(bel.Y_obs.to_numpy().reshape(1, -1))
 
-        v_pc = bel.Y_pre_processing.transform(Y_obs)[
-            :, : Setup.HyperParameters.n_pc_target
-        ]
+        v_pc = bel.Y_pre_processing.transform(Y_obs)[:, : Setup.HyperParameters.n_pc_target]
 
     nc = bel.Y_pre_processing["pca"].n_components_
     dummy = np.zeros((1, nc))
@@ -363,9 +355,7 @@ def h_pca_inverse_plot(bel, fig_dir: str = None, show: bool = False):
 
     if fig_dir is not None:
         utils.dirmaker(fig_dir)
-        plt.savefig(
-            jp(fig_dir, f"h_pca_inverse_transform.png"), dpi=300, transparent=False
-        )
+        plt.savefig(jp(fig_dir, "h_pca_inverse_transform.png"), dpi=300, transparent=False)
         if show:
             plt.show()
             plt.close()
@@ -527,12 +517,8 @@ def plot_posterior(
     well_ids = [0, 1, 2, 3, 4, 5, 6]
     labels = ["Training", "Samples", "True test"]
     colors = ["darkblue", "darkred", "k"]
-    Y_obs = Y_obs.to_numpy().reshape(
-        (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2])
-    )
-    Y = Y.to_numpy().reshape(
-        (-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2])
-    )
+    Y_obs = Y_obs.to_numpy().reshape((Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
+    Y = Y.to_numpy().reshape((-1,) + (Setup.DataSet.Y_shape[1], Setup.DataSet.Y_shape[2]))
     # Training
     _, well_legend = whpa_plot(
         whpa=Y,
@@ -723,9 +709,7 @@ def plot_results(
 
         # WHPs
         ff = jp(md, "uq", f"{root}_cca_{bel.n_comp_cca}.png")
-        forecast_posterior = y_predicted.reshape(
-            (-1,) + (bel.Y_shape[0], bel.Y_shape[1])
-        )
+        forecast_posterior = y_predicted.reshape((-1,) + (bel.Y_shape[0], bel.Y_shape[1]))
 
         # I display here the prior h behind the forecasts sampled from the posterior.
         well_ids = [0] + list(map(int, list(folder)))
@@ -813,7 +797,7 @@ def mode_histo(
     wm = pipeline.fit_transform(wm)
 
     modes = []  # Get MHD corresponding to each well's mode
-    for i, m in enumerate(wm):  # For each well, look up its MHD distribution
+    for m in wm:  # For each well, look up its MHD distribution
         count, values = np.histogram(m, bins="fd")
         # (Freedman Diaconis Estimator)
         # Robust (resilient to outliers) estimator that takes into account data variability and data size.
@@ -1035,7 +1019,7 @@ def plot_wells(wells: Setup.Wells, well_ids: list = None, markersize: float = 4.
             plt.plot(
                 wbd[i]["coordinates"][0],
                 wbd[i]["coordinates"][1],
-                f'{wbd[i]["color"]}o',
+                f"{wbd[i]['color']}o",
                 markersize=markersize,
                 markeredgecolor="k",
                 markeredgewidth=0.5,
@@ -1052,9 +1036,7 @@ def plot_whpa(bel, base_dir):
 
     h_training = bel.Y.reshape(bel.Y_shape)
 
-    whpa_plot(
-        whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5
-    )
+    whpa_plot(whpa=h_training, highlight=True, halpha=0.5, lw=0.1, color="darkblue", alpha=0.5)
 
     h_pred = bel.Y_obs.reshape(bel.Y_shape)
     whpa_plot(

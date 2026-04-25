@@ -18,11 +18,3 @@ skbel.preprocessing.dct
    :members:
    :undoc-members:
    :show-inheritance:
-
-skbel.preprocessing.kernel
----------------------------
-
-.. automodule:: skbel.preprocessing.kernel
-   :members:
-   :undoc-members:
-   :show-inheritance:

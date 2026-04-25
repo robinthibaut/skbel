@@ -1,0 +1,126 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "skbel"
+version = "2.2.0"
+description = "Bayesian Evidential Learning framework built on top of scikit-learn"
+readme = "README.rst"
+license = { text = "BSD-3-Clause" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Robin Thibaut", email = "robin.thibaut@UGent.be" },
+]
+maintainers = [
+    { name = "Robin Thibaut", email = "robin.thibaut@UGent.be" },
+]
+keywords = ["bayesian", "machine-learning", "scikit-learn", "uncertainty-quantification", "geosciences"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "joblib",
+    "loguru",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "scikit-image",
+    "scikit-learn",
+    "scipy",
+    "seaborn",
+]
+
+[project.optional-dependencies]
+bnn = [
+    "tensorflow>=2.14",
+    "tensorflow-probability>=0.22",
+    "tf-keras",  # required by tensorflow-probability >= 0.24 (Keras 2 API)
+]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "ruff",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "nbsphinx",
+    "sphinxcontrib-bibtex",
+    "ipython",
+]
+
+[project.urls]
+Homepage = "https://github.com/robinthibaut/skbel"
+Documentation = "https://skbel.readthedocs.io/"
+Repository = "https://github.com/robinthibaut/skbel"
+Issues = "https://github.com/robinthibaut/skbel/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["skbel"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "skbel/",
+    "README.rst",
+    "LICENSE",
+    "CITATION.cff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["skbel/testing"]
+addopts = "-v -ra"
+
+[tool.coverage.run]
+source = ["skbel"]
+omit = [
+    "skbel/goggles/*",
+    "skbel/spatial/*",
+    "skbel/testing/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "NPY", # numpy-specific
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "E741",   # ambiguous variable name
+    "B008",   # function call in default argument
+    "NPY002", # legacy np.random — locked for reproducibility of regression tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"skbel/**/__init__.py" = ["F401", "F403", "F405"]  # explicit re-exports via star
+"examples/*" = ["E402", "F401"]
+"docs/*" = ["E402", "F401"]
+"scripts/*" = ["E402"]

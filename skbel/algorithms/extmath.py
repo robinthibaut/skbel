@@ -39,7 +39,6 @@ def matrix_paste(c_big: np.array, c_small: np.array) -> list:
     # Compute distance matrix between refined and dummy grid.
     dm = distance_matrix(c_big, c_small)
     inds = [
-        np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0]
-        for i in range(dm.shape[0])
+        np.unravel_index(np.argmin(dm[i], axis=None), dm[i].shape)[0] for i in range(dm.shape[0])
     ]
     return inds

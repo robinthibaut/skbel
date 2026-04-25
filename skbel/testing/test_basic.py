@@ -10,7 +10,7 @@ import scipy
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 
 from skbel import BEL
 from skbel.tmaps import TransportMap
@@ -89,9 +89,7 @@ def test_mvn():
     np.testing.assert_array_almost_equal(bel.posterior_mean[0], ref_mean, err_msg=msg1)
 
     msg2 = "The posterior covariances are different"
-    np.testing.assert_allclose(
-        bel.posterior_covariance[0], ref_covariance, atol=1e-3, err_msg=msg2
-    )
+    np.testing.assert_allclose(bel.posterior_covariance[0], ref_covariance, atol=1e-3, err_msg=msg2)
 
 
 def test_kde():

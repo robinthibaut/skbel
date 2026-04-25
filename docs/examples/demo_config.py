@@ -14,7 +14,7 @@ from os.path import dirname, join
 import numpy as np
 
 
-class Machine(object):
+class Machine:
     computer: str = platform.node()
 
 

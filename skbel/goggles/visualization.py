@@ -56,8 +56,7 @@ def _yield_alphabet(start=0):
 
     alphaomega = [char for char in alphabet] + extended_alphabet
 
-    for sub in alphaomega[start:]:
-        yield sub
+    yield from alphaomega[start:]
 
 
 def _proxy_legend(
@@ -103,8 +102,7 @@ def _proxy_legend(
     # Proxy figures (empty plots)
     try:
         proxys = [
-            plt.plot([], marker[i], color=c, markeredgecolor=pec[i])
-            for i, c in enumerate(colors)
+            plt.plot([], marker[i], color=c, markeredgecolor=pec[i]) for i, c in enumerate(colors)
         ]
     except ValueError:
         # in case of 3D plot
@@ -331,7 +329,7 @@ def pca_scores(
                 markeredgewidth=0.0,
                 alpha=0.1,
             )
-        except:
+        except Exception:
             pass
 
     # if pc_post AND random_pcs, draw a vertical line at the end of pc_post
@@ -511,7 +509,6 @@ def _get_defaults_kde_plot():
     ax_marg_y = f.add_subplot(gs[1:, -1], sharey=ax_joint)
     ax_cb = f.add_subplot(gs[1:, 0])
 
-    fig = f
     ax_joint = ax_joint
     ax_marg_x = ax_marg_x
     ax_marg_y = ax_marg_y
@@ -689,13 +686,9 @@ def _cca_plot(
         #  - Line plot
         ax_marg_x.plot(sup_x, kde_x, color="black", linewidth=0.5, alpha=1)
         #  - Fill to axis
-        ax_marg_x.fill_between(
-            sup_x, 0, kde_x, color="royalblue", alpha=0.5, label="$p(d^{c})$"
-        )
+        ax_marg_x.fill_between(sup_x, 0, kde_x, color="royalblue", alpha=0.5, label="$p(d^{c})$")
         #  - Notch indicating true value
-        ax_marg_x.axvline(
-            x=X_obs.T[comp_n], ymax=0.25, color="blue", linewidth=1, alpha=0.5
-        )
+        ax_marg_x.axvline(x=X_obs.T[comp_n], ymax=0.25, color="blue", linewidth=1, alpha=0.5)
         ax_marg_x.legend(loc=2, fontsize=10)
 
         # Marginal y plot
@@ -705,9 +698,7 @@ def _cca_plot(
         # ax_marg_y.fill_betweenx(
         #     sup_y, 0, kde_y, alpha=0.5, color="darkred", label="$p(h^{c})$"
         # )
-        ax_marg_y.fill_betweenx(
-            sup_y, 0, kde_y, alpha=0.5, color="blue", label="$p(h^{c})$"
-        )
+        ax_marg_y.fill_betweenx(sup_y, 0, kde_y, alpha=0.5, color="blue", label="$p(h^{c})$")
         #  - Notch indicating true value
         try:
             ax_marg_y.axhline(
@@ -720,9 +711,7 @@ def _cca_plot(
         except UnboundLocalError:
             pass
 
-        kde_samples, sup_samples = marginal_eval_samples(
-            samples[:, :, comp_n].reshape(1, -1)
-        )  # noqa
+        kde_samples, sup_samples = marginal_eval_samples(samples[:, :, comp_n].reshape(1, -1))  # noqa
         ax_marg_y.plot(kde_samples, sup_samples, color="k", linewidth=0.5, alpha=1)
         #  - Fill to axis
         ax_marg_y.fill_betweenx(
@@ -865,9 +854,7 @@ def cca_vision(
         cb = plt.colorbar()
         cb.ax.set_title(r"$\it{" + "r" + "}$")
         plt.grid(alpha=0.4, linewidth=0.5, zorder=0)
-        plt.xticks(
-            np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1)
-        )
+        plt.xticks(np.arange(len(cca_coefficient)), np.arange(1, len(cca_coefficient) + 1))
         plt.tick_params(labelsize=5)
         plt.yticks([])
         # plt.title('Decrease of CCA correlation coefficient with component number')

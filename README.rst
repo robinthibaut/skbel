@@ -1,9 +1,9 @@
 .. -*- mode: rst -*-
 
-|Travis|_  |Doc|_ |Black|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
+|CI|_ |Doc|_ |Ruff|_ |PythonVersion|_ |PyPi|_ |DOI|_ |Downloads|_
 
-.. |Travis| image:: https://travis-ci.com/robinthibaut/skbel.svg?branch=master
-.. _Travis: https://travis-ci.com/robinthibaut/skbel
+.. |CI| image:: https://github.com/robinthibaut/skbel/actions/workflows/ci.yml/badge.svg?branch=main
+.. _CI: https://github.com/robinthibaut/skbel/actions/workflows/ci.yml
 
 .. |Doc| image:: https://readthedocs.org/projects/skbel/badge/?version=latest
 .. _Doc: https://skbel.readthedocs.io/en/latest/?badge=latest
@@ -17,8 +17,8 @@
 .. |PyPi| image:: https://badge.fury.io/py/skbel.svg
 .. _PyPi: https://badge.fury.io/py/skbel
 
-.. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-.. _Black: https://github.com/psf/black
+.. |Ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+.. _Ruff: https://github.com/astral-sh/ruff
 
 .. |DOI| image:: https://zenodo.org/badge/369214956.svg
 .. _DOI: https://zenodo.org/badge/latestdoi/369214956
@@ -26,15 +26,7 @@
 .. |Downloads| image:: https://pepy.tech/badge/skbel
 .. _Downloads: https://pepy.tech/project/skbel
 
-.. |PythonMinVersion| replace:: 3.7
-.. |NumPyMinVersion| replace:: 1.14.6
-.. |SciPyMinVersion| replace:: 1.1.0
-.. |JoblibMinVersion| replace:: 0.11
-.. |MatplotlibMinVersion| replace:: 2.2.2
-.. |Scikit-ImageMinVersion| replace:: 0.24.1
-.. |PandasMinVersion| replace:: 0.25.0
-.. |SeabornMinVersion| replace:: 0.9.0
-.. |PytestMinVersion| replace:: 5.0.1
+.. |PythonMinVersion| replace:: 3.10
 
 .. image:: https://raw.githubusercontent.com/robinthibaut/skbel/master/docs/img/illu-01.png
 
@@ -46,27 +38,25 @@ For more information, read the `documentation <https://skbel.readthedocs.io/en/l
 Installation
 ------------
 
-Dependencies
-~~~~~~~~~~~~
-
-skbel requires:
-
-- Python (>= |PythonMinVersion|)
-- Scikit-Learn (>= |Scikit-ImageMinVersion|)
-- NumPy (>= |NumPyMinVersion|)
-- SciPy (>= |SciPyMinVersion|)
-- joblib (>= |JoblibMinVersion|)
-
-=======
-
-Skbel plotting capabilities require Matplotlib (>= |MatplotlibMinVersion|).
+Requires Python ≥ |PythonMinVersion|. Core dependencies (``numpy``, ``scipy``,
+``scikit-learn``, ``scikit-image``, ``pandas``, ``matplotlib``, ``seaborn``,
+``joblib``, ``loguru``) are installed automatically.
 
 User installation
 ~~~~~~~~~~~~~~~~~
 
-The easiest way to install skbel is using ``pip``   ::
+With ``pip``::
 
     pip install skbel
+
+With ``uv``::
+
+    uv pip install skbel
+
+The optional Bayesian neural network module (``skbel.bnn``) requires TensorFlow
+and TensorFlow Probability — install with the ``bnn`` extra::
+
+    pip install "skbel[bnn]"
 
 
 Development
@@ -97,10 +87,23 @@ Contributors and feedback from users are welcome. Don't hesitate to submit an is
 Testing
 ~~~~~~~
 
-After installation, you can launch the test suite from outside the source
-directory (you will need to have ``pytest`` >= |PyTestMinVersion| installed)::
+Clone the repo and run the test suite with ``uv``::
 
-    pytest skbel
+    git clone https://github.com/robinthibaut/skbel.git
+    cd skbel
+    uv sync --extra dev
+    uv run pytest
+
+To run a single test::
+
+    uv run pytest skbel/testing/test_basic.py::test_mvn
+
+The reference arrays under ``skbel/testing/`` are deterministic outputs of the
+fixed BEL pipeline. If a future scikit-learn or scipy release shifts the
+canonical-correlation sign convention or numerical kernels enough to break the
+regression checks, regenerate them with::
+
+    uv run python scripts/regenerate_test_references.py
 
 
 Help and Support

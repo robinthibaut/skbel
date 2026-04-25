@@ -17,12 +17,10 @@ def kl_objective(model, y_true, x_test, std=1e-2, it=1):
     :return: KL loss
     """
     scale_tril = [[std] for _ in range(model.output_shape[1])]
-    det_dist = tfd.MultivariateNormalTriL(
-        loc=y_true.astype(np.float32), scale_tril=scale_tril
-    )
+    det_dist = tfd.MultivariateNormalTriL(loc=y_true.astype(np.float32), scale_tril=scale_tril)
     qdis = model(x_test.reshape(1, -1))
     diff = 0
-    for i in range(it):
+    for _i in range(it):
         diff += tfd.kl_divergence(det_dist, qdis).numpy()[
             0
         ]  # kl divergence between "true" and predicted

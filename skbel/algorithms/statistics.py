@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from numpy.random import uniform
-from scipy import ndimage, integrate
+from scipy import integrate, ndimage
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 from sklearn.utils import check_array
@@ -54,9 +54,7 @@ def romb(y: np.array, dx: float = 1.0) -> np.array:
         n <<= 1
         k += 1
     if n != Ninterv:
-        raise ValueError(
-            "Number of samples must be one plus a " "non-negative power of 2."
-        )
+        raise ValueError("Number of samples must be one plus a non-negative power of 2.")
 
     R = {}
     slice_all = (slice(None),) * nd
@@ -129,9 +127,7 @@ class KDE:
         self.support = None
 
     @staticmethod
-    def _define_support_grid(
-        x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int
-    ):
+    def _define_support_grid(x: np.array, bandwidth: float, cut: float, clip: list, gridsize: int):
         """Create the grid of evaluation points depending for vector x.
 
         :param x: vector of values
@@ -235,9 +231,7 @@ class KDE:
                 kde, {"bandwidth": self.bandwidth_space}
             )  # Grid search on bandwidth
             grid.fit(fit_data)  # Fit the grid search
-            self.bw = grid.best_params_[
-                "bandwidth"
-            ]  # Set the bandwidth to the best bandwidth
+            self.bw = grid.best_params_["bandwidth"]  # Set the bandwidth to the best bandwidth
             fit_kws["bandwidth"] = self.bw  # Update the bandwidth in the fit_kws
             kde.set_params(
                 **{"bandwidth": self.bw}
@@ -315,7 +309,7 @@ def _univariate_density(
     observation_variance = observations.var()
     if math.isclose(observation_variance, 0) or np.isnan(observation_variance):
         msg = "Dataset has 0 variance; skipping density estimate."
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # Estimate the density of observations at this level
     density, support = estimator(observations)
@@ -344,7 +338,7 @@ def _bivariate_density(
     variance = observations[["x", "y"]].var()
     if any(math.isclose(x, 0) for x in variance) or variance.isna().any():
         msg = "Dataset has 0 variance; skipping density estimate."
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, UserWarning, stacklevel=2)
 
     # Estimate the density of observations at this level
     observations = observations["x"], observations["y"]
@@ -388,9 +382,7 @@ def kde_params(
     if y is None:
         data = {"x": x}
         frame = pd.DataFrame(data=data)
-        density, support, bw = _univariate_density(
-            data_variable=frame, estimate_kws=estimate_kws
-        )
+        density, support, bw = _univariate_density(data_variable=frame, estimate_kws=estimate_kws)
 
     else:
         data = {"x": x, "y": y}
@@ -420,9 +412,9 @@ def _pixel_coordinate(line: list, x_1d: np.array, y_1d: np.array, k: int = None)
 
     # https://stackoverflow.com/questions/18920614/plot-cross-section-through-heat-map
     # Convert the line to pixel/index coordinates
-    x_world, y_world = np.array(list(zip(*line)))
-    col = y_1d.shape * (x_world - min(x_1d)) / x_1d.ptp()
-    row = x_1d.shape * (y_world - min(y_1d)) / y_1d.ptp()
+    x_world, y_world = np.array(list(zip(*line, strict=False)))
+    col = y_1d.shape * (x_world - min(x_1d)) / np.ptp(x_1d)
+    row = x_1d.shape * (y_world - min(y_1d)) / np.ptp(y_1d)
 
     # Interpolate the line at "num" points...
     row, col = [np.linspace(item[0], item[1], num) for item in [row, col]]
@@ -458,7 +450,7 @@ def _conditional_distribution(
         line = [(min(x_array), y), (max(x_array), y)]
     else:
         msg = "No observation point included."
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, UserWarning, stacklevel=2)
         return 0
 
     # Convert line to row/column
@@ -486,7 +478,7 @@ def _scale_distribution(post: np.array, support: np.array) -> np.array:
     post[np.abs(post) < 1e-8] = 0  # Rule of thumb
 
     if post.any():  # If there is any value
-        a = integrate.simps(y=np.abs(post), x=support)  # Integrate the absolute values
+        a = integrate.simpson(y=np.abs(post), x=support)  # Integrate the absolute values
         post *= 1 / a  # Scale the distribution
 
     return post
@@ -516,19 +508,15 @@ def posterior_conditional(
         # Extract the density values along the line, using cubic interpolation
         if isinstance(X_obs, list) or isinstance(X_obs, np.ndarray):
             X_obs = X_obs[0]
-        post, line = _conditional_distribution(
-            x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
-        )
+        post, line = _conditional_distribution(x=X_obs, x_array=xg, y_array=yg, kde_array=dens, k=k)
     elif Y_obs is not None:
         # Extract the density values along the line, using cubic interpolation
         if isinstance(Y_obs, list) or isinstance(Y_obs, np.ndarray):
             Y_obs = Y_obs[0]
-        post, line = _conditional_distribution(
-            y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k
-        )
+        post, line = _conditional_distribution(y=Y_obs, x_array=xg, y_array=yg, kde_array=dens, k=k)
     else:
         msg = "No observation point included."
-        warnings.warn(msg, UserWarning)
+        warnings.warn(msg, UserWarning, stacklevel=2)
         return 0
 
     post = _scale_distribution(post, line)
@@ -536,9 +524,7 @@ def posterior_conditional(
     return post, line
 
 
-def mvn_inference(
-    X: np.array, Y: np.array, X_obs: np.array, **kwargs
-) -> (np.array, np.array):
+def mvn_inference(X: np.array, Y: np.array, X_obs: np.array, **kwargs) -> (np.array, np.array):
     """Estimates the posterior mean and covariance of the target.
        Note that in this implementation, n_samples must be = 1.
 
@@ -584,9 +570,7 @@ def mvn_inference(
     # (n_components_CCA, n_training)
     x_ls_predicted = np.matmul(Y, g.T)  # noqa
     x_modeling_mean_error = np.mean(X - x_ls_predicted, axis=0)  # (n_comp_CCA, 1)
-    x_modeling_error = (
-        X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
-    )
+    x_modeling_error = X - x_ls_predicted - np.tile(x_modeling_mean_error, (n_training, 1))
     # (n_comp_CCA, n_training)
 
     # Information about the covariance of the posterior distribution in Canonical space.

@@ -1,17 +1,20 @@
 #  Copyright (c) 2022. Robin Thibaut, Ghent University
 
+from importlib.metadata import PackageNotFoundError, version
+
 from .learning import *
 
-__version__ = "2.1.x"
-
-source = __name__.split(".")[-1]
+try:
+    __version__ = version("skbel")
+except PackageNotFoundError:
+    __version__ = "0.0.0+unknown"
 
 __all__ = [
-    "utils",
-    "goggles",
-    "algorithms",
     "BEL",
+    "algorithms",
+    "goggles",
     "preprocessing",
     "spatial",
     "tmaps",
+    "utils",
 ]

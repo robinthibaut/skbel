@@ -4,7 +4,7 @@
 
 import numpy as np
 from scipy.fftpack import dct, idct
-from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 
 __all__ = ["DiscreteCosineTransform2D"]

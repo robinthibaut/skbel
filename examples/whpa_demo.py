@@ -2,17 +2,15 @@
 
 import os
 from os.path import join as jp
-import joblib
 
+import numpy as np
+from demo_visualization import plot_results
 from sklearn.cross_decomposition import CCA
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, PowerTransformer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
 
-from demo_visualization import plot_results
-
-from skbel import utils
-from skbel import BEL
+from skbel import BEL, utils
 
 
 def init_bel():
@@ -58,7 +56,6 @@ def init_bel():
 
 
 if __name__ == "__main__":
-
     # %% Set directories
     data_dir = jp(os.getcwd(), "dataset")
     # Directory in which to unload forecasts
@@ -78,10 +75,10 @@ if __name__ == "__main__":
     ]
 
     # %% Load dataset
-    X_train = joblib.load(jp(data_dir, "X_train.pkl")).to_numpy()
-    X_test = joblib.load(jp(data_dir, "X_test.pkl")).to_numpy().reshape(1, -1)
-    y_train = joblib.load(jp(data_dir, "y_train.pkl")).to_numpy()
-    y_test = joblib.load(jp(data_dir, "y_test.pkl")).to_numpy().reshape(1, -1)
+    X_train = np.load(jp(data_dir, "X_train.npy"))
+    X_test = np.load(jp(data_dir, "X_test.npy")).reshape(1, -1)
+    y_train = np.load(jp(data_dir, "y_train.npy"))
+    y_test = np.load(jp(data_dir, "y_test.npy")).reshape(1, -1)
 
     # %% Initiate BEL model
     model = init_bel()
@@ -117,4 +114,3 @@ if __name__ == "__main__":
         Y_obs=y_test,
         base_dir=sub_dir,
     )
-

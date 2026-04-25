@@ -188,12 +188,8 @@ bins = [
 ]
 
 # Count entries in each bin for the prior and posterior
-bincounts_prior = [
-    np.sum(np.logical_and(X[:, 1] > bn[0], X[:, 1] <= bn[1])) for bn in bins
-]
-bincounts_posterior = [
-    np.sum(np.logical_and(X_star > bn[0], X_star <= bn[1])) for bn in bins
-]
+bincounts_prior = [np.sum(np.logical_and(X[:, 1] > bn[0], X[:, 1] <= bn[1])) for bn in bins]
+bincounts_posterior = [np.sum(np.logical_and(X_star > bn[0], X_star <= bn[1])) for bn in bins]
 
 # Plot prior and posterior in a horizontal bar plot
 plt.barh(
