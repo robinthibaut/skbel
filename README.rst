@@ -126,16 +126,19 @@ Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL - Bayesian Evidential Lear
 
 BibTeX::
 
-    @software{thibaut_skbel_2021,
+    @software{thibaut_skbel,
     author       = {Thibaut, Robin and Maximilian Ramgraber},
     title        = {{SKBEL} - Bayesian Evidential Learning framework built on top of scikit-learn},
-    month        = {9},
-    year         = 2021,
+    month        = {4},
+    year         = 2026,
     publisher    = {Zenodo},
-    version      = {v2.0.0},
+    version      = {v2.2.0},
     doi          = {10.5281/zenodo.6205242},
     url          = {https://doi.org/10.5281/zenodo.6205242},
     }
+
+The DOI above is the *concept* DOI that always resolves to the latest Zenodo
+release. For per-version DOIs, see https://zenodo.org/record/6205242 .
 
 Notebooks and tutorials
 ------------------------

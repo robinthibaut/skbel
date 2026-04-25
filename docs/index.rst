@@ -192,8 +192,6 @@ His advisors are Prof. Dr. Ir. `Thomas Hermans <https://orcid.org/0000-0001-9522
 
 The second author is Dr. `Maximilian Ramgraber <https://www.maxramgraber.com/>`_ (Massachusetts Institute of Technology), who has implemented the transport maps algorithm in this package.
 
-Note: information about the authors last updated on 2022-10-29
-
 References
 =============
 
