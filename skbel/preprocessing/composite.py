@@ -29,6 +29,13 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         self.scale = scale
         self.pca_objects = [PCA(n_components=n) for n in self.n_components]  # list of PCA objects
 
+    def _as_blocks(self, Xc):
+        """Normalize one-block input and validate the configured block count."""
+        blocks = Xc if isinstance(Xc, list) else [Xc]
+        if len(blocks) != len(self.pca_objects):
+            raise ValueError(f"Expected {len(self.pca_objects)} input block(s), got {len(blocks)}.")
+        return blocks
+
     def fit(self, Xc: list, yc=None, **fit_params):
         """Fit all PCA objects for the different datasets with their specified
         n_components.
@@ -37,9 +44,12 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: self
         """
-        if type(Xc) is not list:
-            Xc = [Xc]
+        Xc = self._as_blocks(Xc)
         [pca.fit(Xc[i], yc) for i, pca in enumerate(self.pca_objects)]
+        if self.scale:
+            self.scalers_ = [
+                StandardScaler().fit(pca.transform(Xc[i])) for i, pca in enumerate(self.pca_objects)
+            ]
         return self
 
     def transform(self, Xc: list, yc=None, **fit_params) -> np.array:
@@ -49,13 +59,12 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
         """
-        if type(Xc) is not list:
-            Xc = [Xc]
+        Xc = self._as_blocks(Xc)
         [check_is_fitted(p) for p in self.pca_objects]  # Check if fitted
         scores = [pca.transform(Xc[i]) for i, pca in enumerate(self.pca_objects)]  # Transform
-        if self.scale:  # Scale the data if specified
-            scaler = StandardScaler()
-            scores = [scaler.fit_transform(s) for s in scores]
+        if self.scale:  # Use scalers fitted on training PCA scores only.
+            check_is_fitted(self, "scalers_")
+            scores = [scaler.transform(scores[i]) for i, scaler in enumerate(self.scalers_)]
         return np.concatenate(scores, axis=1)
 
     def fit_transform(self, Xc: list, yc=None, **fit_params):
@@ -65,24 +74,40 @@ class CompositePCA(TransformerMixin, BaseEstimator):
         :param yc: Only here to satisfy the scikit-learn API
         :return: concatenated output
         """
-        if type(Xc) is not list:
-            Xc = [Xc]
+        Xc = self._as_blocks(Xc)
         return self.fit(Xc, yc).transform(Xc, yc)
 
     def inverse_transform(self, Xr: np.array, yc=None, **fit_params) -> list:
         """Inverse transform the data back to the original space.
 
-        :param Xr: transformed data
+        :param Xr: concatenated transformed scores. A two-dimensional array has
+            shape ``(n_samples, sum(fitted PCA component widths))``. A
+            one-dimensional array of that length is treated as one sample.
         :param yc: Only here to satisfy the scikit-learn API
         :return: list of transformed datasets
         """
-        if type(Xr) is not list:
-            Xr = [Xr]
-        rm = np.cumsum(np.concatenate([[0], self.n_components]))  # Cumulative sum of n_components
-        Xr = Xr.reshape(-1)
-        Xc = [
-            Xr[rm[i] : rm[i + 1]] for i in range(len(rm) - 1)
-        ]  # Separates the concatenated features into the different original datasets
+        [check_is_fitted(p) for p in self.pca_objects]
+        if self.scale:
+            check_is_fitted(self, "scalers_")
+        Xr = np.asarray(Xr)
+        component_widths = [pca.n_components_ for pca in self.pca_objects]
+        expected_width = sum(component_widths)
+        if Xr.ndim == 1:
+            if Xr.shape[0] != expected_width:
+                raise ValueError(
+                    f"Expected {expected_width} transformed features, got {Xr.shape[0]}."
+                )
+            Xr = Xr.reshape(1, -1)
+        elif Xr.ndim != 2:
+            raise ValueError("Xr must be a one- or two-dimensional array of transformed scores.")
+        if Xr.shape[1] != expected_width:
+            raise ValueError(f"Expected {expected_width} transformed features, got {Xr.shape[1]}.")
+        rm = np.cumsum(
+            np.concatenate([[0], component_widths])
+        )  # Cumulative fitted component widths
+        Xc = [Xr[:, rm[i] : rm[i + 1]] for i in range(len(rm) - 1)]
+        if self.scale:
+            Xc = [scaler.inverse_transform(Xc[i]) for i, scaler in enumerate(self.scalers_)]
         Xit = [
             pca.inverse_transform(Xc[i]) for i, pca in enumerate(self.pca_objects)
         ]  # Successively inverse transform

@@ -8,6 +8,8 @@ through PCA, and then apply CCA.
 Alternative blueprints could be written in the same style as the BEL class implementing the classic scheme.
 """
 
+from numbers import Real
+
 import numpy as np
 from scipy import interpolate, stats
 from sklearn.base import (
@@ -280,7 +282,11 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param X_obs: The observed data.
         :param n_posts: The number of posterior samples to draw.
         :param mode: The mode of inference to use. Default is "tm".
-        :param noise: The noise level of the model (only if mode == 'mvn').
+        :param noise: Non-negative scalar multiplier for the projected predictor
+            covariance used by ``mode='mvn'``.  This is the current canonical-
+            space covariance convention; it is not universally a physical-space
+            temperature standard deviation.  ``None`` resets the multiplier to
+            the historical default of 0.01.
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the
             original space is very high, this can be memory-consuming. It can be set to False to return the samples in the
@@ -295,6 +301,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if noise is None:
             self.noise = 0.01
+        else:
+            if isinstance(noise, (bool, np.bool_)) or not isinstance(noise, Real):
+                raise ValueError("noise must be a finite non-negative scalar")
+            try:
+                noise = float(noise)
+            except (TypeError, ValueError, OverflowError) as exc:
+                raise ValueError("noise must be a finite non-negative scalar") from exc
+            if not np.isfinite(noise) or noise < 0:
+                raise ValueError("noise must be a finite non-negative scalar")
+            self.noise = noise
 
         if n_posts is not None:  # If n_posts is provided
             self.n_posts = n_posts  # Set the number of posterior samples
