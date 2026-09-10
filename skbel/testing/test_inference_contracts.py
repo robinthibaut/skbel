@@ -129,7 +129,8 @@ class TestInferenceContracts(unittest.TestCase):
         restored = model.inverse_transform(one_row_scores)
         self.assertEqual([block.shape for block in restored], [(1, 2), (1, 2)])
         for original, reconstructed in zip(blocks, restored, strict=True):
-            np.testing.assert_allclose(reconstructed, original[:1])
+            # PCA/scaler inversion can leave machine-precision residuals at exact zero.
+            np.testing.assert_allclose(reconstructed, original[:1], rtol=0, atol=1e-12)
         with self.assertRaisesRegex(ValueError, "Expected 4 transformed features"):
             model.inverse_transform(np.zeros((2, 3)))
         with self.assertRaisesRegex(ValueError, "Expected 2 input block"):
