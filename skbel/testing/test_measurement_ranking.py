@@ -69,6 +69,38 @@ class TestRankingTies(unittest.TestCase):
             self.assertEqual(rank_prospective_measurements(candidates, scores), first)
 
 
+class TestRankingIntegerPrecision(unittest.TestCase):
+    def test_large_adjacent_int64_scores_do_not_collapse_via_float64(self):
+        # 2**53 and 2**53 + 1 are adjacent int64 values that collapse into a
+        # false tie if cast through float64 (53-bit mantissa).
+        scores = np.array([2**53 + 1, 2**53], dtype=np.int64)
+        result = rank_prospective_measurements(["higher", "lower"], scores)
+        self.assertEqual(result.best, ("lower",))
+        self.assertEqual(result.order, ("lower", "higher"))
+
+    def test_large_int64_scores_still_report_exact_ties(self):
+        scores = np.array([2**53, 2**53], dtype=np.int64)
+        result = rank_prospective_measurements(["a", "b"], scores)
+        self.assertEqual(result.best, ("a", "b"))
+        self.assertEqual(result.ranks, {"a": 1, "b": 1})
+
+    def test_signed_int_minimum_utility_ordering_does_not_overflow(self):
+        # Negating the minimum representable int64 value overflows/wraps in
+        # fixed-width arithmetic; utility ordering must not rely on that.
+        int64_min = -(2**63)
+        scores = np.array([int64_min, int64_min + 1], dtype=np.int64)
+        result = rank_prospective_measurements(["min", "next"], scores, criterion="utility")
+        self.assertEqual(result.best, ("next",))
+        self.assertEqual(result.order, ("next", "min"))
+
+    def test_signed_int_minimum_risk_ordering_does_not_overflow(self):
+        int64_min = -(2**63)
+        scores = np.array([int64_min, int64_min + 1], dtype=np.int64)
+        result = rank_prospective_measurements(["min", "next"], scores, criterion="risk")
+        self.assertEqual(result.best, ("min",))
+        self.assertEqual(result.order, ("min", "next"))
+
+
 class TestRankingSingleCandidate(unittest.TestCase):
     def test_single_candidate(self):
         result = rank_prospective_measurements(["only"], [7.0])

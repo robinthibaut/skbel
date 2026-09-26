@@ -114,7 +114,12 @@ def rank_prospective_measurements(
     scores_arr = np.asarray(scores)
     if scores_arr.dtype.kind not in "fiu":
         raise TypeError(f"scores must be a numeric array, got dtype {scores_arr.dtype}")
-    scores_arr = scores_arr.astype(np.float64, copy=False)
+    if scores_arr.dtype.kind == "f":
+        scores_arr = scores_arr.astype(np.float64, copy=False)
+    # Integer scores (dtype kind "i"/"u") are kept at their exact integer
+    # dtype rather than cast to float64: float64 has only a 53-bit mantissa,
+    # so adjacent large integers (e.g. 2**53 and 2**53 + 1) would collapse
+    # into a false tie.
 
     if scores_arr.ndim != 1:
         raise ValueError(f"scores must have shape (candidates,), got ndim={scores_arr.ndim}")
@@ -123,7 +128,16 @@ def rank_prospective_measurements(
     if not np.all(np.isfinite(scores_arr)):
         raise ValueError("scores contains non-finite values (NaN or inf)")
 
-    key = scores_arr if criterion == "risk" else -scores_arr
+    if criterion == "risk":
+        key = scores_arr
+    elif scores_arr.dtype.kind in "iu":
+        # Negate via arbitrary-precision Python ints rather than fixed-width
+        # numpy negation: negating the minimum representable signed integer
+        # (or any unsigned integer) in a fixed-width dtype overflows/wraps
+        # silently and would corrupt utility ordering.
+        key = np.array([-int(value) for value in scores_arr], dtype=object)
+    else:
+        key = -scores_arr
 
     # Stable sort: exact ties keep the original candidate order, so the
     # result depends only on (candidates order, scores), never on sort
