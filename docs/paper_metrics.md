@@ -49,3 +49,30 @@ draws = np.array([[[0.0], [2.0]]])
 print(marginal_crps(draws, np.array([[1.0]])))  # [[0.5]]
 print(bayes_action_set(np.array([[1.0, 3.0], [1.0, 3.0]])))  # (1.0, [0])
 ```
+
+## Ranking prospective measurements
+
+`rank_prospective_measurements` deterministically orders a caller-supplied,
+explicit set of prospective candidates (e.g. proposed sampling locations) by a
+single scalar risk or utility value the caller has already computed for each
+candidate, typically the posterior-expected loss from
+`expected_action_losses`/`bayes_action_set` applied to a hypothetical
+posterior update per candidate. It performs no simulation or posterior
+update itself, and it is not a sequential/greedy design optimizer: it orders
+a fixed candidate set once, from scores the caller already produced.
+
+The runnable example
+[`examples/prospective_risk_ranking.py`](../examples/prospective_risk_ranking.py)
+composes `expected_action_losses`, `bayes_action_set`, and
+`rank_prospective_measurements` into a small, fully finite, hand-checkable
+decision problem: finite latent states with a nonuniform prior, a
+caller-defined finite loss table, and both an uninformative and an
+informative prospective candidate, with expected future Bayes risk computed
+by exactly enumerating outcomes and posteriors via Bayes' rule. The loss
+table's values and units in that example are entirely the caller's choice;
+the example performs no calibrated inference, has no hydrological or other
+field-performance meaning, and demonstrates no methodological novelty.
+`expected_action_losses`, `bayes_action_set`, and
+`rank_prospective_measurements` themselves do not perform posterior updating
+or experimental design -- the example does that enumeration explicitly, by
+hand, over a fixed finite set.
