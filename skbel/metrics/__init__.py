@@ -11,10 +11,13 @@ from .posterior import (
     expected_action_losses,
     marginal_crps,
 )
+from .ranking import ProspectiveRanking, rank_prospective_measurements
 
 __all__ = [
+    "ProspectiveRanking",
     "bayes_action_set",
     "brier_score",
     "expected_action_losses",
     "marginal_crps",
+    "rank_prospective_measurements",
 ]
