@@ -84,6 +84,14 @@ def check_normalized(mass: np.ndarray, label: str) -> None:
         raise ValueError(f"{label} does not sum to 1 (got {total})")
 
 
+def check_probabilities(values: np.ndarray, label: str) -> None:
+    """Explicit validity check: raise unless every entry is finite and nonnegative."""
+    if not np.all(np.isfinite(values)):
+        raise ValueError(f"{label} contains nonfinite values")
+    if np.any(values < 0):
+        raise ValueError(f"{label} contains negative values")
+
+
 def predictive_outcome_probabilities(prior: np.ndarray, likelihood: np.ndarray) -> np.ndarray:
     """Exact enumeration: p(y) = sum_s prior[s] * p(y | state=s), for every y."""
     predictive = prior @ likelihood
@@ -94,7 +102,17 @@ def predictive_outcome_probabilities(prior: np.ndarray, likelihood: np.ndarray) 
 def posterior_given_outcome(
     prior: np.ndarray, likelihood: np.ndarray, outcome_index: int, predictive: np.ndarray
 ) -> np.ndarray:
-    """Bayes' rule: p(state=s | y) = prior[s] * p(y | state=s) / p(y)."""
+    """Bayes' rule: p(state=s | y) = prior[s] * p(y | state=s) / p(y).
+
+    Raises ``ValueError`` before any division if ``p(y)`` is exactly zero:
+    no posterior exists for an impossible outcome.
+    """
+    check_probabilities(predictive, "predictive outcome probabilities")
+    if predictive[outcome_index] == 0.0:
+        raise ValueError(
+            f"outcome index {outcome_index} has zero predictive probability; "
+            "no posterior is defined for an impossible outcome"
+        )
     posterior = prior * likelihood[:, outcome_index] / predictive[outcome_index]
     check_normalized(posterior, f"posterior for outcome index {outcome_index}")
     return posterior
@@ -118,20 +136,32 @@ def expected_future_bayes_risk(
     or conditioning on a single favorable outcome instead of enumerating all
     of them would both silently change the answer -- see the independent
     test module for hand-computed counterexamples.
+
+    Outcomes with exactly zero predictive probability (e.g. an all-zero
+    likelihood column, or one reachable only from states with zero prior mass)
+    can never be observed: no posterior exists for them. Their entry in the
+    returned ``per_outcome_min_risk`` is ``np.nan`` (undefined, not a risk),
+    and they are excluded from the weighted sum by a boolean mask rather than
+    by multiplying ``0 * nan``.
     """
+    check_probabilities(prior, "prior")
+    check_probabilities(likelihood, "likelihood")
+    if prior.ndim != 1 or likelihood.ndim != 2 or likelihood.shape[0] != prior.shape[0]:
+        raise ValueError(f"incompatible shapes: prior {prior.shape}, likelihood {likelihood.shape}")
     check_normalized(prior, "prior")
     for s in range(likelihood.shape[0]):
-        check_normalized(likelihood[s], f"likelihood row for state {STATES[s]}")
+        check_normalized(likelihood[s], f"likelihood row for state {s}")
 
     predictive = predictive_outcome_probabilities(prior, likelihood)
     n_outcomes = likelihood.shape[1]
-    per_outcome_min_risk = np.empty(n_outcomes)
-    for y in range(n_outcomes):
-        posterior = posterior_given_outcome(prior, likelihood, y, predictive)
+    per_outcome_min_risk = np.full(n_outcomes, np.nan)
+    possible = predictive > 0.0
+    for y in np.flatnonzero(possible):
+        posterior = posterior_given_outcome(prior, likelihood, int(y), predictive)
         min_risk, _ = bayes_action_set(loss_table, weights=posterior)
         per_outcome_min_risk[y] = min_risk
 
-    expected_future_risk = float(np.sum(predictive * per_outcome_min_risk))
+    expected_future_risk = float(np.sum(predictive[possible] * per_outcome_min_risk[possible]))
     return expected_future_risk, predictive, per_outcome_min_risk
 
 
