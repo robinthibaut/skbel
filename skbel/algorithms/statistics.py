@@ -651,9 +651,9 @@ def get_cdf(pdf):
         :return: The value of the cdf at x.
         """
         if x <= lower_bound:
-            return 0
+            return 0.0
         elif x >= upper_bound:
-            return 1
+            return 1.0
         else:
             d = np.abs(x - lower_bound)
             if d > 1e-4:  # Check that spacing isn't too small
@@ -662,7 +662,7 @@ def get_cdf(pdf):
                 y = np.array([pdf_norm(s) for s in samples])
                 return romb(y, dx)
             else:
-                return 0
+                return 0.0
 
     def cdf_vector(x):
         """Vectorized cdf.
@@ -670,10 +670,10 @@ def get_cdf(pdf):
         :param x: The values to evaluate the cdf at.
         :return: The values of the cdf at x.
         """
-        try:
-            return np.array([cdf_number(xi) for xi in x])
-        except AttributeError:
+        if np.isscalar(x):
             return cdf_number(x)
+        else:
+            return np.array([cdf_number(xi) for xi in x])
 
     return cdf_vector
 

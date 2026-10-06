@@ -29,7 +29,7 @@ class DiscreteCosineTransform2D(TransformerMixin, BaseEstimator):
         self.m_cut = m_cut
         self.n_cut = n_cut
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         return self
 
     def transform(self, X):

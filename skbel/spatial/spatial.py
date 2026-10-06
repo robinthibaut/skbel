@@ -28,7 +28,9 @@ def grid_parameters(
     :param y_lim: Y limits
     :param z_lim: Z limits
     :param grf: Cell dimension
-    :return: (cell centers, number of rows, number of columns)
+    :return: (cell centers, number of rows, number of columns, number of layers). Cell centers
+        are (x, y) pairs when there is one layer, and (x, y, z) triplets in layer-major,
+        row-major, column-major order when there are several.
     """
     if y_lim is None:
         y_lim = [0, 1000]
@@ -52,6 +54,11 @@ def grid_parameters(
         array = np.ones((nrow, ncol))  # Dummy array
         # Centroids of dummy array
         xys = get_centroids(array, grf) + np.min([x_lim, y_lim], axis=1)
+    elif nlay > 1:
+        # Index grids ordered (layer, row, column) -> coordinates ordered (x, y, z)
+        lrc = np.indices((nlay, nrow, ncol))
+        xyz = np.stack([lrc[2], lrc[1], lrc[0]], axis=-1).reshape(-1, 3)
+        xys = (xyz + 0.5) * grf + np.min([x_lim, y_lim, z_lim], axis=1)
     else:
         array = np.ones((nlay, nrow, ncol))
         xys = get_centroids(array, grf) + np.min([x_lim, y_lim, z_lim], axis=1)
