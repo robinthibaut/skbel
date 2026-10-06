@@ -197,13 +197,25 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         else:
             _yt = self.y_pre_processed
 
+        # Paired training rows must match, whether raw, cached or mixed.
+        n_x_rows, n_y_rows = np.shape(_xt)[0], np.shape(_yt)[0]
+        if n_x_rows != n_y_rows:
+            raise ValueError(
+                "Pre-processed X and Y must have the same number of rows, "
+                f"got {n_x_rows} and {n_y_rows}."
+            )
+
         # Regression
         try:
             if self.n_comp_cca is None:  # If not specified, use all components
                 self.regression_model.n_components = min(_xt.shape[1], _yt.shape[1])
             else:
                 self.regression_model.n_components = self.n_comp_cca
-            _xc, _yc = self.regression_model.fit_transform(X=_xt, y=_yt)  # Learning
+            _fitted = self.regression_model.fit_transform(X=_xt, y=_yt)  # Learning
+            if isinstance(_fitted, tuple) and len(_fitted) == 2:
+                _xc, _yc = _fitted
+            else:  # Passthrough returns a single array: keep the exact paired matrices
+                _xc, _yc = _xt, _yt
         except ValueError:  # If no CCA
             _xc, _yc = _xt, _yt
 
@@ -217,6 +229,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         return self
 
+    def _has_noop_regression(self) -> bool:
+        """Whether the regression model is the default no-op passthrough Pipeline."""
+        model = self.regression_model
+        return (
+            isinstance(model, Pipeline)
+            and len(model.steps) == 1
+            and isinstance(model.steps[0][1], str)
+            and model.steps[0][1] == "passthrough"
+        )
+
     def transform(self, X=None, Y=None) -> (np.array, np.array):
         """Transform data across all pipelines.
 
@@ -227,17 +249,20 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if X is not None and Y is None:  # If only X is provided
             _xt = self.X_pre_processing.transform(X)  # Pre-processing
-            _xc = self.regression_model.transform(X=_xt)  # CCA
+            _xc = self.regression_model.transform(_xt)  # CCA
             _xp = self.X_post_processing.transform(_xc)  # Post-processing
 
             return _xp
 
         elif Y is not None and X is None:  # If only Y is provided
             _yt = self.Y_pre_processing.transform(Y)
-            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
-            _, _yc = self.regression_model.transform(
-                X=dummy, Y=_yt
-            )  # CCA. We only need the Y-loadings, so we pass dummy X
+            if self._has_noop_regression():
+                _yc = _yt  # Default passthrough regression: no CCA scores to compute
+            else:
+                # Dummy predictor with one row per target row (batch or single sample)
+                dummy = np.zeros((np.shape(_yt)[0], self.regression_model.x_loadings_.shape[0]))
+                # CCA. We only need the Y-scores, so we pass dummy X (positional: Y vs y differs).
+                _, _yc = self.regression_model.transform(dummy, _yt)
             _yp = self.Y_post_processing.transform(_yc)
 
             return _yp
@@ -246,7 +271,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             _xt = self.X_pre_processing.transform(X)  # Pre-processing
             _yt = self.Y_pre_processing.transform(Y)
 
-            _xc, _yc = self.regression_model.transform(X=_xt, Y=_yt)
+            if self._has_noop_regression():
+                _xc, _yc = _xt, _yt  # Default passthrough regression keeps the paired matrices
+            else:
+                _xc, _yc = self.regression_model.transform(_xt, _yt)
 
             _xp, _yp = (
                 self.X_post_processing.transform(_xc),
@@ -338,15 +366,15 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             )
             for n, dp in enumerate(X_obs_f):  # For each observation point
                 # Evaluate the covariance in d (here we assume no data error, so C is identity times a given factor)
-                # Number of PCA components for the curves
-                x_dim = self.X_pre_processing["pca"].n_components  # Number of PCA components
-                # I matrix. (n_comp_PCA, n_comp_PCA)
+                # Get the rotation matrices
+                x_rotations = self.regression_model.x_rotations_
+                # Fitted predictor dimension (rows of the rotation), not the constructor value.
+                x_dim = x_rotations.shape[0]
+                # I matrix. (n_features_fitted, n_features_fitted)
                 x_cov = (
                     np.eye(x_dim) * self.noise
                 )  # Noise level. We assume that the data is noisy with a given level of noise.
                 # (n_comp_CCA, n_comp_CCA)
-                # Get the rotation matrices
-                x_rotations = self.regression_model.x_rotations_
                 x_cov = x_rotations.T @ x_cov @ x_rotations
                 dict_args = {"x_cov": x_cov}
 
@@ -475,6 +503,20 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             else:
                 return samples  # Return samples
 
+    @staticmethod
+    def _resolve_obs_index(obs_n, n_obs: int) -> int:
+        """Return the non-negative row index for a selected observation.
+
+        :param obs_n: Selected observation index; negative values count from the end.
+        :param n_obs: Number of available observations.
+        :return: Normalized index in ``[0, n_obs)``.
+        """
+        if isinstance(obs_n, (bool, np.bool_)) or not isinstance(obs_n, (int, np.integer)):
+            raise IndexError(f"obs_n must be an integer index, got {obs_n!r}")
+        if not -n_obs <= obs_n < n_obs:
+            raise IndexError(f"obs_n={obs_n} is out of range for {n_obs} observations")
+        return int(obs_n) % n_obs
+
     def random_sample(
         self,
         X_obs_f: None,
@@ -515,8 +557,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
         if self.mode == "mvn":  # Multivariate normal distribution
             if obs_n is not None:  # If we have a specific observation
-                post_mn = self.posterior_mean[obs_n].reshape(1, -1)
-                post_cv = self.posterior_covariance[obs_n].reshape(1, -1)
+                post_mn = np.asarray(self.posterior_mean[obs_n]).reshape(1, -1)
+                post_cv = np.asarray(self.posterior_covariance[obs_n])[np.newaxis]
             else:
                 post_mn = self.posterior_mean
                 post_cv = self.posterior_covariance
@@ -528,15 +570,24 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 )  # Draw n_posts samples from the multivariate normal distribution
 
         if self.mode == "kde":  # Kernel density estimation
-            n_obs = X_obs_f.shape[0]  # Number of observations
+            if obs_n is not None:  # If we have a specific observation
+                obs_idx = self._resolve_obs_index(obs_n, self.kde_functions.shape[0])
+                kde_fn = self.kde_functions[obs_idx].reshape(1, -1)  # Shape = (1, n_comp_CCA)
+                # Keep the observation, functions and cache on the same selected row.
+                X_obs_f = np.asarray(X_obs_f)[obs_idx : obs_idx + 1]
+                if init_kde is not None:
+                    init_kde = np.asarray(init_kde, dtype=object)
+                    # A cache from kde_init(obs_n=...) has one row; a full cache is indexed.
+                    init_kde = (
+                        init_kde if init_kde.shape[0] == 1 else init_kde[obs_idx : obs_idx + 1]
+                    )
+            else:
+                kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+
+            n_obs = kde_fn.shape[0]  # Number of observations
             Y_samples = np.zeros(
                 (n_obs, self.n_posts, self.kde_functions.shape[1])
             )  # Shape = (n_obs, n_posts, n_comp_CCA)
-
-            if obs_n is not None:  # If we have a specific observation
-                kde_fn = self.kde_functions[obs_n].reshape(1, -1)  # Shape = (1, n_comp_CCA)
-            else:
-                kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
 
             if init_kde is None:
                 # Parses the functions dict
@@ -578,15 +629,17 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         Y_samples[i, :, j] = uniform_samples  # noqa
 
         if self.mode == "tm":
-            n_obs = X_obs_f.shape[0]  # Number of observations
+            if obs_n is not None:  # If we have a specific observation
+                obs_idx = self._resolve_obs_index(obs_n, self.tm_functions.shape[0])
+                tm_fn = self.tm_functions[obs_idx].reshape(1, -1)  # Shape = (1, n_comp_CCA)
+                X_obs_f = np.asarray(X_obs_f)[obs_idx : obs_idx + 1]
+            else:
+                tm_fn = self.tm_functions  # Shape = (n_obs, n_comp_CCA)
+
+            n_obs = tm_fn.shape[0]  # Number of observations
             Y_samples = np.zeros(
                 (n_obs, self.n_posts, self.tm_functions.shape[1])
             )  # Shape = (n_obs, n_posts, n_comp_CCA)
-
-            if obs_n is not None:  # If we have a specific observation
-                tm_fn = self.tm_functions[obs_n].reshape(1, -1)  # Shape = (1, n_comp_CCA)
-            else:
-                tm_fn = self.tm_functions  # Shape = (n_obs, n_comp_CCA)
 
             # Parses the functions dict
             for i, fun_per_comp in enumerate(tm_fn):
@@ -624,14 +677,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param obs_n: Observation number
         :return: The initialized KDEs
         """
-        n_obs = X_obs_f.shape[0]  # Number of observations
-        n_comp = X_obs_f.shape[1]  # Number of components
-        init_samples = np.zeros((n_obs, n_comp), dtype="object")  # Shape = (n_obs, n_comp)
-
         if obs_n is not None:  # If we have a specific observation
-            kde_fn = self.kde_functions[obs_n].reshape(1, -1)  # Shape = (1, n_comp_CCA)
+            obs_idx = self._resolve_obs_index(obs_n, self.kde_functions.shape[0])
+            kde_fn = self.kde_functions[obs_idx].reshape(1, -1)  # Shape = (1, n_comp_CCA)
+            X_obs_f = np.asarray(X_obs_f)[obs_idx : obs_idx + 1]
         else:
             kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+
+        n_obs = kde_fn.shape[0]  # Number of observations
+        n_comp = X_obs_f.shape[1]  # Number of components
+        init_samples = np.zeros((n_obs, n_comp), dtype="object")  # Shape = (n_obs, n_comp)
 
         # Parses the functions dict
         for i, fun_per_comp in enumerate(kde_fn):
@@ -721,15 +776,16 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :return: CVs
         """
         if X is not None and Y is None:  # If only X is provided
-            _xc = self.regression_model.transform(X=X)  # CCA
+            _xc = self.regression_model.transform(X)  # CCA
             return _xc
 
         elif Y is not None and X is None:  # If only Y is provided
-            dummy = np.zeros((1, self.regression_model.x_loadings_.shape[0]))  # Dummy used for CCA
-            _, _yc = self.regression_model.transform(
-                X=dummy, Y=Y
-            )  # CCA. We only need the Y-loadings, so we pass dummy X
+            # Dummy predictor with one row per target row (batch or single sample)
+            dummy = np.zeros((np.shape(Y)[0], self.regression_model.x_loadings_.shape[0]))
+            # CCA. We only need the Y-scores, so we pass dummy X.
+            # Positional arguments: the target keyword differs across sklearn versions (Y vs y).
+            _, _yc = self.regression_model.transform(dummy, Y)
             return _yc
         else:
-            _xc, _yc = self.regression_model.transform(X=X, Y=Y)  # CCA
+            _xc, _yc = self.regression_model.transform(X, Y)  # CCA
             return _xc, _yc

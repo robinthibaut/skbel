@@ -52,6 +52,58 @@ def _two_training_blocks():
 
 
 class TestInferenceContracts(unittest.TestCase):
+    def _sample_with_recorder(self, means, covs, **kwargs):
+        bel_module = importlib.import_module("skbel.learning.bel")
+        bel = _tiny_mvn_bel()
+        bel.random_state = 11
+        bel.posterior_mean = np.asarray(means, dtype=float)
+        bel.posterior_covariance = np.asarray(covs, dtype=float)
+        calls = []
+
+        def _recording_sampler(mean, cov, size):
+            calls.append((np.array(mean), np.array(cov), size))
+            return np.tile(mean, (size, 1))
+
+        with (
+            mock.patch.object(bel_module, "check_is_fitted"),
+            mock.patch.object(bel_module.np.random, "multivariate_normal", _recording_sampler),
+        ):
+            samples = bel.random_sample(X_obs_f=np.zeros((len(means), len(means[0]))), **kwargs)
+        return samples, calls
+
+    def test_selected_mvn_observation_keeps_paired_square_covariance(self):
+        means = [[0.0, 0.0], [1.0, 2.0], [3.0, 4.0]]
+        covs = [
+            np.eye(2),
+            np.array([[2.0, 0.5], [0.5, 3.0]]),
+            np.array([[4.0, -1.0], [-1.0, 5.0]]),
+        ]
+        for obs_n, expected in ((0, 0), (1, 1), (2, 2), (-1, 2)):
+            samples, calls = self._sample_with_recorder(means, covs, obs_n=obs_n, n_posts=3)
+            self.assertEqual(samples.shape, (1, 3, 2))
+            self.assertEqual(len(calls), 1)
+            np.testing.assert_array_equal(calls[0][0], means[expected])
+            np.testing.assert_array_equal(calls[0][1], covs[expected])
+            self.assertEqual(calls[0][1].shape, (2, 2))
+
+    def test_selected_mvn_observation_one_dimension(self):
+        samples, calls = self._sample_with_recorder(
+            [[1.0], [5.0]], [[[2.0]], [[7.0]]], obs_n=1, n_posts=4
+        )
+        self.assertEqual(samples.shape, (1, 4, 1))
+        np.testing.assert_array_equal(calls[0][0], [5.0])
+        np.testing.assert_array_equal(calls[0][1], [[7.0]])
+
+    def test_all_observation_mvn_sampling_unchanged(self):
+        means = [[0.0, 0.0], [1.0, 2.0]]
+        covs = [np.eye(2), np.array([[2.0, 0.5], [0.5, 3.0]])]
+        samples, calls = self._sample_with_recorder(means, covs, n_posts=3)
+        self.assertEqual(samples.shape, (2, 3, 2))
+        self.assertEqual(len(calls), 2)
+        for (mean, cov, _), m, c in zip(calls, means, covs, strict=True):
+            np.testing.assert_array_equal(mean, m)
+            np.testing.assert_array_equal(cov, c)
+
     def test_explicit_mvn_noise_is_used_and_default_resets(self):
         """Capture actual covariance passed into inference across call sequences."""
         bel_module = importlib.import_module("skbel.learning.bel")
