@@ -100,6 +100,11 @@ def _weighted_pairwise_abs_diff_sum_sorted(x_1d: np.ndarray, w_1d: np.ndarray) -
     which follows from expanding S = 2 * sum_{i<j} w_i w_j (x_j - x_i) and
     using sum_{i<j} w_i = W_{i-1}, sum_{j>i} w_j = 1 - W_i, W_i = W_{i-1} + w_i.
     """
+    # Exactly-zero-weight support carries no mass: drop it so it cannot affect
+    # the centering shift or the score.
+    positive = w_1d > 0
+    x_1d = x_1d[positive]
+    w_1d = w_1d[positive]
     order = np.argsort(x_1d, kind="mergesort")
     x_sorted = x_1d[order]
     w_sorted = w_1d[order]
@@ -108,7 +113,7 @@ def _weighted_pairwise_abs_diff_sum_sorted(x_1d: np.ndarray, w_1d: np.ndarray) -
     # Center to reduce cancellation: CRPS pairwise-difference terms are
     # translation invariant, so shifting x by a constant before the
     # multiply-and-sum does not change S but keeps the summed magnitudes small.
-    shift = x_sorted.mean()
+    shift = np.sum(w_sorted * x_sorted)
     x_centered = x_sorted - shift
     terms = w_sorted * x_centered * (2.0 * w_prev + w_sorted - 1.0)
     return float(2.0 * terms.sum())
@@ -217,10 +222,11 @@ def marginal_crps(
     for t in range(targets):
         x_t = samples_arr[:, :, t]  # (cases, draws)
         y_t = truth_arr[:, t]  # (cases,)
-        weighted_abs_diff_to_y = np.sum(w_norm * np.abs(x_t - y_t[:, None]), axis=1)  # (cases,)
         for c in range(cases):
+            pos = w_norm[c] > 0
+            weighted_abs_diff = np.sum(w_norm[c][pos] * np.abs(x_t[c][pos] - y_t[c]))
             pair_sum = _weighted_pairwise_abs_diff_sum_sorted(x_t[c], w_norm[c])
-            result[c, t] = weighted_abs_diff_to_y[c] - 0.5 * pair_sum
+            result[c, t] = weighted_abs_diff - 0.5 * pair_sum
 
     _check_finite(result, "marginal_crps result")
     return result
