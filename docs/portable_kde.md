@@ -11,13 +11,13 @@ import numpy as np
 from skbel.learning.portable_kde import KDEPredictionCapsule, export_kde
 
 capsule = export_kde(fitted_bel, bandwidths=[0.5, 0.5])  # raises KDEPredictionError if unsupported
-data = capsule.to_bytes()                                # deterministic UTF-8 JSON
-digest = capsule.sha256()                                # keep this out of band
+data = capsule.to_bytes()  # deterministic UTF-8 JSON
+digest = capsule.sha256()  # keep this out of band
 
 restored = KDEPredictionCapsule.from_bytes(data, expected_sha256=digest)
 U = np.random.default_rng(0).random((len(X_obs), 100, 2))  # caller-owned uniforms
-draws = restored.sample(X_obs, U)                          # (n_cases, 100, R)
-first = restored.sample(X_obs, U, obs_n=0)                 # (1, 100, R), same row of X_obs and U
+draws = restored.sample(X_obs, U)  # (n_cases, 100, R)
+first = restored.sample(X_obs, U, obs_n=0)  # (1, 100, R), same row of X_obs and U
 ```
 
 The module is imported explicitly; it is not re-exported from `skbel` or
