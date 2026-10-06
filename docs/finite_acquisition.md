@@ -78,8 +78,8 @@ from skbel.metrics import finite_acquisition_policy
 policy = finite_acquisition_policy(
     losses=[[0, 1], [1, 0]], outcomes=[[0], [1]], costs=[0.25], horizon=1
 )
-policy.stop_risk        # 0.5
-policy.value            # 0.25
+policy.stop_risk  # 0.5
+policy.value  # 0.25
 policy.optimal_choices  # (0,)
 ```
 
