@@ -1,20 +1,7 @@
 skbel package
 =============
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   skbel.algorithms
-   skbel.goggles
-   skbel.learning
-   skbel.preprocessing
-   skbel.spatial
-   skbel.testing
-   skbel.tmaps
-   skbel.utils
+The subpackages are listed in :doc:`modules`.
 
 Module contents
 ---------------

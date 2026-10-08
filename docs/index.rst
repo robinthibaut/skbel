@@ -26,6 +26,29 @@ Contents
    modules
    examples
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Posterior metrics and decisions
+
+   paper_metrics
+   joint_posterior_scores
+   finite_acquisition
+   finite_model_robustness
+   inference_to_decision
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Prediction capsules
+
+   portable_linear_mvn
+   portable_kde
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Behaviour notes
+
+   inference_contract_fixes
+
 Bayesian Evidential Learning
 ----------------------------
 Introduction

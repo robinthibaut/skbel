@@ -2162,7 +2162,7 @@ class TransportMap:
             sample space.
         :param task_supervisor: a shared list which informs the main process how many optimization tasks have already
             been computed. This list should not be specified by the user, it only serves to provide information about the
-             optimization progress.
+            optimization progress.
         """
 
         # Prepare task
