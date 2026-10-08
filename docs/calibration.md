@@ -126,9 +126,14 @@ for name, samples in (("calibrated", calibrated), ("too narrow", too_narrow)):
 
     print(name)
     print("  rank counts", counts, f"expected {expected:.0f} +/- {binomial_sd:.1f}")
-    print("  coverage", summary.coverage[:, 0].round(3),
-          "reference", summary.exchangeable_coverage.round(3),
-          "+/-", summary.nominal_se.round(3))
+    print(
+        "  coverage",
+        summary.coverage[:, 0].round(3),
+        "reference",
+        summary.exchangeable_coverage.round(3),
+        "+/-",
+        summary.nominal_se.round(3),
+    )
     print(f"  mean CRPS {crps:.3f}, binary Brier for target > 0 {brier:.3f}")
 ```
 
