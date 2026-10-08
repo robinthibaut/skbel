@@ -36,6 +36,7 @@ Contents
    finite_acquisition
    finite_model_robustness
    inference_to_decision
+   evaluation
 
 .. toctree::
    :maxdepth: 1

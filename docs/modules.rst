@@ -11,6 +11,7 @@ The package is structured as follows:
    skbel.learning
    skbel.algorithms
    skbel.metrics
+   api/evaluation
    api/design
    skbel.tmaps
    skbel.spatial
