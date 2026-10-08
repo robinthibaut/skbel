@@ -57,7 +57,8 @@ dev = [
 docs = [
     "sphinx",
     "sphinx-rtd-theme",
-    "nbsphinx",
+    "myst-parser",
+    "myst-nb",  # renders the example notebook through MyST; no pandoc needed
     "sphinxcontrib-bibtex",
     "ipython",
 ]

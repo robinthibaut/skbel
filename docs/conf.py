@@ -39,14 +39,15 @@ author = "Robin Thibaut"
 #               ]
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
     "sphinx.ext.doctest",
     "sphinx_rtd_theme",
+    "myst_nb",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
-    "nbsphinx",
     "matplotlib.sphinxext.plot_directive",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
@@ -81,9 +82,22 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+# ``source/`` holds stale sphinx-apidoc output superseded by the pages in this
+# directory.
+exclude_patterns = ["_build", "source", "Thumbs.db", ".DS_Store"]
 
-source_suffix = [".rst", ".md"]
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "myst-nb",
+    ".ipynb": "myst-nb",
+}
+
+# Markdown pages: generate anchors for headings up to level 3 so that
+# ``page.md#section`` links resolve.
+myst_heading_anchors = 3
+
+# Notebooks are rendered as stored; the build never executes them.
+nb_execution_mode = "off"
 
 # add_function_parentheses = False
 # pygments_style = "sphinx"
