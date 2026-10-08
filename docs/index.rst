@@ -31,6 +31,7 @@ Contents
    :caption: Posterior metrics and decisions
 
    paper_metrics
+   calibration
    joint_posterior_scores
    finite_acquisition
    finite_model_robustness

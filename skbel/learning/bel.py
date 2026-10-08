@@ -11,7 +11,7 @@ Alternative blueprints could be written in the same style as the BEL class imple
 from numbers import Real
 
 import numpy as np
-from scipy import interpolate, stats
+from scipy import interpolate
 from sklearn.base import (
     BaseEstimator,
     MultiOutputMixin,
@@ -25,9 +25,13 @@ from sklearn.utils.validation import (
 )
 
 from ..algorithms import it_sampling, kde_params, mvn_inference, posterior_conditional
+from ..metrics.calibration import _check_seed, case_rng
 from ..tmaps import TransportMap
 
 __all__ = ["BEL"]
+
+# Stream label of the per-observation generators used by ``BEL.random_sample``.
+_SAMPLE_STREAM = "skbel.learning.BEL.random_sample"
 
 
 class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
@@ -63,7 +67,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param n_comp_cca: Number of components to keep in CCA (only if CCA is used).
         :param x_dim: Predictor original dimensions.
         :param y_dim: Target original dimensions.
-        :param random_state: Seed to reproduce the same samples.
+        :param random_state: Non-negative integer seed to reproduce the same samples, or None.
+            Sampling never reads or reseeds NumPy's global random state.
         """
         self.copy = copy
         # How to infer the posterior parameters
@@ -129,28 +134,25 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
     @property
     def seed(self):
-        """Seed a.k.a.
+        """Seed a.k.a. random state to reproduce the same samples.
 
-        random state to reproduce the same samples
+        A non-negative integer or None. Setting it does not touch NumPy's
+        global random state.
         """
         return self._seed
 
     @seed.setter
     def seed(self, s):
-        self._seed = s
-        np.random.seed(self._seed)
+        self._seed = None if s is None else _check_seed(s, "seed")
 
     @property
     def random_state(self):
-        """Seed a.k.a.
-
-        random state to reproduce the same samples
-        """
+        """Alias of :attr:`seed`."""
         return self._seed
 
     @random_state.setter
     def random_state(self, s):
-        self._seed = s
+        self._seed = None if s is None else _check_seed(s, "random_state")
 
     @property
     def x_pre_processed(self):
@@ -528,6 +530,19 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         """Random sample the inferred posterior distribution. It can be used to
         generate samples from the posterior.
 
+        Each observation row ``i`` draws from its own generator, derived from
+        ``(seed, i)`` only. Repeated calls with the same seed reproduce the same
+        samples, a row selected with ``obs_n`` receives the same samples as that
+        row of the full batch, and NumPy's global random state is neither read
+        nor modified. If the seed is None, a fresh seed is taken from operating
+        system entropy and stored, so later calls repeat the same samples.
+
+        Exception: in ``tm`` mode, when ``n_posts`` equals the number of
+        training rows of a component's map, that component maps the training
+        samples to the reference distribution instead of drawing random
+        reference values. Those samples use no random numbers: they do not
+        depend on the seed and are not independent across rows.
+
         :param X_obs_f: Observed data points in the feature space. Shape = (n_obs, n_comp_CCA)
         :param obs_n: If we want to generate samples from the posterior of a specific observation point, obs_n is the
             index of the observation point.
@@ -539,9 +554,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         if mode is not None:
             self.mode = mode
 
-        # Set the seed for later use
+        # Set the seed for later use, from fresh entropy rather than the global state
         if self.seed is None:
-            self.seed = np.random.randint(2**32 - 1, dtype="uint32")
+            self.seed = int(np.random.SeedSequence().entropy)
+        seed = _check_seed(self.seed, "seed")
 
         if X_obs_f is None:
             X_obs_f = self.X_obs_f
@@ -551,22 +567,26 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             n_posts = self.n_posts
         else:
             self.n_posts = n_posts
-        # Draw n_posts random samples from the multivariate normal distribution :
-        # Pay attention to the transpose operator
-        np.random.seed(self.seed)
+
+        def rng_for(i):
+            """Generator of the observation in row ``i`` of the full batch."""
+            return case_rng(seed, i, _SAMPLE_STREAM)
 
         if self.mode == "mvn":  # Multivariate normal distribution
             if obs_n is not None:  # If we have a specific observation
-                post_mn = np.asarray(self.posterior_mean[obs_n]).reshape(1, -1)
-                post_cv = np.asarray(self.posterior_covariance[obs_n])[np.newaxis]
+                obs_idx = self._resolve_obs_index(obs_n, len(self.posterior_mean))
+                post_mn = np.asarray(self.posterior_mean[obs_idx]).reshape(1, -1)
+                post_cv = np.asarray(self.posterior_covariance[obs_idx])[np.newaxis]
+                rows = [obs_idx]
             else:
                 post_mn = self.posterior_mean
                 post_cv = self.posterior_covariance
+                rows = range(len(post_mn))
 
             Y_samples = []  # Samples from the posterior
-            for _n, (mean, cov) in enumerate(zip(post_mn, post_cv, strict=False)):
+            for row, mean, cov in zip(rows, post_mn, post_cv, strict=False):
                 Y_samples.append(
-                    np.random.multivariate_normal(mean=mean, cov=cov, size=n_posts)
+                    rng_for(row).multivariate_normal(mean=mean, cov=cov, size=n_posts)
                 )  # Draw n_posts samples from the multivariate normal distribution
 
         if self.mode == "kde":  # Kernel density estimation
@@ -581,8 +601,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     init_kde = (
                         init_kde if init_kde.shape[0] == 1 else init_kde[obs_idx : obs_idx + 1]
                     )
+                rows = [obs_idx]
             else:
                 kde_fn = self.kde_functions  # Shape = (n_obs, n_comp_CCA)
+                rows = range(kde_fn.shape[0])
 
             n_obs = kde_fn.shape[0]  # Number of observations
             Y_samples = np.zeros(
@@ -592,6 +614,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
             if init_kde is None:
                 # Parses the functions dict
                 for i, fun_per_comp in enumerate(kde_fn):
+                    rng = rng_for(rows[i])
                     for j, fun in enumerate(fun_per_comp):
                         if fun["kind"] == "pdf":  # If the function is a pdf
                             pdf = fun["function"]
@@ -601,6 +624,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 lower_bd=pdf.x.min(),
                                 upper_bd=pdf.x.max(),
                                 k=2**7 + 1,
+                                rng=rng,
                             )
                         elif fun["kind"] == "linear":  # If the function is a linear interpolation
                             rel1d = fun["function"]
@@ -611,6 +635,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                         Y_samples[i, :, j] = uniform_samples  # noqa
             else:  # If the KDE is already initialized
                 for i, fun_per_comp in enumerate(kde_fn):  # Parses the function dict
+                    rng = rng_for(rows[i])
                     for j, fun in enumerate(fun_per_comp):
                         pv = init_kde[i, j]
                         if fun["kind"] == "pdf":
@@ -622,6 +647,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                                 upper_bd=pdf.x.max(),
                                 k=2**7 + 1,
                                 cdf_y=pv,
+                                rng=rng,
                             )
                         elif fun["kind"] == "linear":
                             uniform_samples = np.ones(self.n_posts) * pv
@@ -633,8 +659,10 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                 obs_idx = self._resolve_obs_index(obs_n, self.tm_functions.shape[0])
                 tm_fn = self.tm_functions[obs_idx].reshape(1, -1)  # Shape = (1, n_comp_CCA)
                 X_obs_f = np.asarray(X_obs_f)[obs_idx : obs_idx + 1]
+                rows = [obs_idx]
             else:
                 tm_fn = self.tm_functions  # Shape = (n_obs, n_comp_CCA)
+                rows = range(tm_fn.shape[0])
 
             n_obs = tm_fn.shape[0]  # Number of observations
             Y_samples = np.zeros(
@@ -643,6 +671,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
 
             # Parses the functions dict
             for i, fun_per_comp in enumerate(tm_fn):
+                rng = rng_for(rows[i])
                 for j, fun in enumerate(fun_per_comp):
                     tm = fun["function"]
                     X = fun["X"]
@@ -652,7 +681,7 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
                     if self.n_posts == N:
                         norm_samples = tm.map(X)
                     else:
-                        norm_samples = stats.norm.rvs(size=(self.n_posts, 1))
+                        norm_samples = rng.standard_normal(size=(self.n_posts, 1))
                         N = self.n_posts
                     # Now define the value we wish to condition on
                     x1_obs = X_obs_f[i][j].reshape(-1)[0]  # our 'observed' value

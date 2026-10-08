@@ -64,9 +64,10 @@ class TestInferenceContracts(unittest.TestCase):
             calls.append((np.array(mean), np.array(cov), size))
             return np.tile(mean, (size, 1))
 
+        stream = mock.Mock(multivariate_normal=_recording_sampler)
         with (
             mock.patch.object(bel_module, "check_is_fitted"),
-            mock.patch.object(bel_module.np.random, "multivariate_normal", _recording_sampler),
+            mock.patch.object(bel_module, "case_rng", return_value=stream),
         ):
             samples = bel.random_sample(X_obs_f=np.zeros((len(means), len(means[0]))), **kwargs)
         return samples, calls

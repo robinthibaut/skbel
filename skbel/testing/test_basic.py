@@ -4,6 +4,7 @@
 
 import os
 from os.path import join as jp
+from unittest import mock
 
 import numpy as np
 import scipy
@@ -65,8 +66,10 @@ def test_mvn():
 
     # Initiate BEL object
     bel = init_bel()
-    # Set seed
+    # Set seed. The reference arrays were produced with NumPy's global state seeded
+    # before fitting (randomized PCA); BEL itself no longer seeds the global state.
     seed = 123456
+    np.random.seed(seed)
     bel.seed = seed
     bel.mode = "mvn"
     bel.n_posts = 10
@@ -97,8 +100,10 @@ def test_kde():
     # %% Initiate BEL model
     # Initiate BEL object
     model = init_bel()
-    # Set seed
+    # Set seed. The reference arrays were produced with NumPy's global state seeded
+    # before fitting (randomized PCA); BEL itself no longer seeds the global state.
     seed = 123456
+    np.random.seed(seed)
     model.seed = seed
 
     X_train = np.load(jp(my_path, "X_train.npy"))
@@ -117,7 +122,11 @@ def test_kde():
     # Sample for the observation
     # Extract n random sample (target CV's).
     # The posterior distribution is computed within the method below.
-    y_samples = model.predict(X_test)
+    # The reference samples were drawn from a single legacy MT19937 stream seeded with
+    # `seed`; replay that stream so the comparison checks the KDE numerics, not the
+    # per-observation stream derivation (covered in test_bel_random_streams.py).
+    with mock.patch("skbel.learning.bel.case_rng", lambda s, i, stream: np.random.RandomState(s)):
+        y_samples = model.predict(X_test)
     # np.save(jp(my_path, "y_samples_kde.npy"), y_samples)
     y_samples_ref = np.load(jp(my_path, "y_samples_kde.npy"))
 

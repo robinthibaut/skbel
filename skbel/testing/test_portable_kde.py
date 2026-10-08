@@ -52,7 +52,7 @@ from skbel.learning import portable_kde
 from skbel.learning.portable_kde import KDEPredictionCapsule, KDEPredictionError
 from skbel.tmaps import TransportMap
 
-source_statistics = importlib.import_module("skbel.algorithms.statistics")
+source_bel = importlib.import_module("skbel.learning.bel")
 
 ATOL = 1e-10
 # Coarse a-priori tolerance of the analytic bimodal shape checks (not a parity tolerance).
@@ -349,13 +349,15 @@ def _baseline():
         requests.append((low, high, size))
         return queue.pop(0)
 
-    original_uniform = source_statistics.uniform
+    # Every per-observation stream of BEL.random_sample yields the frozen uniforms in order.
+    stream = SimpleNamespace(uniform=queued_uniform)
+    original_case_rng = source_bel.case_rng
     rng_state = np.random.get_state()
-    source_statistics.uniform = queued_uniform
+    source_bel.case_rng = lambda *args: stream
     try:
         canonical = bel.random_sample(X_obs_f=bel.X_obs_f, n_posts=N_SAMPLES)
     finally:
-        source_statistics.uniform = original_uniform
+        source_bel.case_rng = original_case_rng
         np.random.set_state(rng_state)
     return SimpleNamespace(
         kinds=kinds,
@@ -365,7 +367,7 @@ def _baseline():
         leftover=len(queue),
         reference_fits=reference_fits,
         rng_restored=_same_rng(rng_state, np.random.get_state()),
-        uniform_restored=source_statistics.uniform is original_uniform,
+        uniform_restored=source_bel.case_rng is original_case_rng,
     )
 
 

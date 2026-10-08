@@ -686,6 +686,7 @@ def it_sampling(
     k: int = None,
     cdf_y: np.array = None,
     return_cdf: bool = False,
+    rng: np.random.Generator = None,
 ):
     """Sample from an arbitrary, un-normalized PDF.
 
@@ -698,6 +699,8 @@ def it_sampling(
     :param k: Step number between lower_bd and upper_bd
     :param cdf_y: precomputed values of the CDF
     :param return_cdf: Option to return the computed CDF values
+    :param rng: Optional :class:`numpy.random.Generator` supplying the uniforms. If None, the
+     uniforms come from NumPy's global random state, as before.
     :return: samples: An array of samples from the provided PDF, with support between lower_bd and upper_bd.
     """
     if k is None:
@@ -712,7 +715,8 @@ def it_sampling(
 
     else:
         if cdf_y.any():
-            seeds = uniform(0, 1, num_samples)  # Uniformly distributed seeds
+            draw = uniform if rng is None else rng.uniform
+            seeds = draw(0, 1, num_samples)  # Uniformly distributed seeds
             simple_samples = np.interp(x=seeds, xp=cdf_y, fp=pdf.x)  # Samples
         else:
             simple_samples = np.zeros(num_samples)  # Samples
