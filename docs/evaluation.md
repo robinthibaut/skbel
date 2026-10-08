@@ -157,8 +157,9 @@ print("mean binary Brier", brier.mean())
 
 # 4. Two caller-defined actions: act (loss 1 if the first target is negative)
 #    or wait (loss 0.5 whatever happens). The truth is not used here.
-losses = np.stack([np.where(samples[:, :, 0] < 0, 1.0, 0.0),
-                   np.full(samples.shape[:2], 0.5)], axis=-1)
+losses = np.stack(
+    [np.where(samples[:, :, 0] < 0, 1.0, 0.0), np.full(samples.shape[:2], 0.5)], axis=-1
+)
 risks = decision_risks(losses)
 print("Bayes actions of the first cases", risks.bayes_actions[:3])
 ```
