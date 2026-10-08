@@ -39,6 +39,12 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Design comparison
+
+   design
+
+.. toctree::
+   :maxdepth: 1
    :caption: Prediction capsules
 
    portable_linear_mvn
