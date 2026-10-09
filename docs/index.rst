@@ -46,6 +46,13 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Neural posterior (optional)
+
+   neural
+   api/neural
+
+.. toctree::
+   :maxdepth: 1
    :caption: Prediction capsules
 
    portable_linear_mvn

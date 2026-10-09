@@ -49,6 +49,9 @@ bnn = [
     "tensorflow-probability>=0.22",
     "tf-keras",  # required by tensorflow-probability >= 0.24 (Keras 2 API)
 ]
+neural = [
+    "torch>=2.0",  # optional neural posterior (skbel.neural); CPU float64 training
+]
 dev = [
     "pytest>=8",
     "pytest-cov",
