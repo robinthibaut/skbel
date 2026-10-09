@@ -73,8 +73,8 @@ need smaller values, as in the example below.
 - `sample` requires explicit `case_ids` and `seed`. Case `c` draws from
   `SeedSequence(seed, spawn_key=(c,))` alone, so its draws do not depend on
   which other cases are evaluated, their order or the batch size `chunk`
-  (up to floating-point rounding of batched network passes; member and
-  component labels are exact). This differs from
+  (up to floating-point rounding of batched network passes; member
+  labels are exact). This differs from
   {func}`~skbel.evaluation.sample_bel_posterior`, whose streams follow row
   positions.
 - `sample(..., return_labels=True)` also returns the `member` and `component`

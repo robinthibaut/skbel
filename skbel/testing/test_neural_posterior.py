@@ -557,6 +557,33 @@ def test_ensemble_directory_loading_refuses_unsafe_records(tmp_path):
             npost.EqualWeightEnsemble.load(d)
 
 
+def test_ensemble_load_scalar_file_is_one_member_and_missing_file_is_truthful(tmp_path):
+    torch = _torch_or_skip()
+    x, z = toy_rows()
+    est = npost.NeuralPosterior(1, random_state=2, **TINY).fit(x, z)
+    names = est.save(tmp_path / "ens")
+    member = tmp_path / "ens" / names[0]
+    for source in (member, str(member)):
+        back = npost.EqualWeightEnsemble.load(source)
+        assert len(back.members) == 1
+        assert npost.NeuralPosterior.load(source).n_members == 1
+    # an ordered one-shot iterable of real saved members loads in order
+    est2 = npost.NeuralPosterior(2, random_state=3, **TINY).fit(x, z)
+    names2 = est2.save(tmp_path / "ens2")
+    ordered = [tmp_path / "ens2" / f for f in names2[::-1]]
+    from_iter = npost.EqualWeightEnsemble.load(p for p in ordered)
+    from_list = npost.EqualWeightEnsemble.load(ordered)
+    assert len(from_iter.members) == 2
+    assert np.array_equal(from_iter.members[0].log_prob(x, z), from_list.members[0].log_prob(x, z))
+    assert np.array_equal(from_iter.members[0].log_prob(x, z), est2.members_[1].log_prob(x, z))
+    for missing in (tmp_path / "no_such_member.npz", str(tmp_path / "no_such_member.npz")):
+        with pytest.raises(FileNotFoundError, match="no_such_member.npz"):
+            npost.EqualWeightEnsemble.load(missing)
+        with pytest.raises(FileNotFoundError, match="no_such_member.npz"):
+            npost.NeuralPosterior.load(missing)
+    assert torch is not None
+
+
 def test_numpy_draws_feed_evaluation_metrics_and_decisions():
     rng = np.random.default_rng(9)
     n = 160
