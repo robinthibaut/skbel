@@ -762,6 +762,7 @@ class EqualWeightEnsemble:
     def load(cls, paths) -> EqualWeightEnsemble:
         """Members from ``paths`` in that order, or from an ``ensemble.json`` directory.
 
+        A single ``str`` or ``Path`` that is not a directory names one member file.
         A directory record must name equal weights and list member files that
         are plain ``.npz`` names inside that directory.
         """
@@ -782,6 +783,12 @@ class EqualWeightEnsemble:
                 ):
                     raise ValueError(f"{paths}: member {name!r} is not a plain .npz file name")
             paths = [Path(paths) / name for name in names]
+        elif isinstance(paths, (str, Path)):
+            paths = [Path(paths)]
+        paths = [Path(p) for p in paths]
+        for p in paths:
+            if not p.is_file():
+                raise FileNotFoundError(f"member file not found: {p}")
         return cls([MixturePosterior.load(p) for p in paths])
 
 

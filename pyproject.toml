@@ -56,6 +56,7 @@ dev = [
     "pytest>=8",
     "pytest-cov",
     "ruff",
+    "torch>=2.0",  # runs the skbel.neural tests; CPU wheels, see [tool.uv.sources]
 ]
 docs = [
     "sphinx",
@@ -71,6 +72,16 @@ Homepage = "https://github.com/robinthibaut/skbel"
 Documentation = "https://skbel.readthedocs.io/"
 Repository = "https://github.com/robinthibaut/skbel"
 Issues = "https://github.com/robinthibaut/skbel/issues"
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["skbel"]
