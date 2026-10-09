@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skbel"
-version = "2.2.0"
+version = "2.3.0"
 description = "Bayesian Evidential Learning framework built on top of scikit-learn"
 readme = "README.rst"
 license = { text = "BSD-3-Clause" }
@@ -92,6 +92,7 @@ include = [
     "README.rst",
     "LICENSE",
     "CITATION.cff",
+    "CHANGELOG.md",
 ]
 
 [tool.pytest.ini_options]
