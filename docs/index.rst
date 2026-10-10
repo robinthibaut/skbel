@@ -64,6 +64,12 @@ Contents
 
    inference_contract_fixes
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Citing
+
+   citation
+
 Bayesian Evidential Learning
 ----------------------------
 Introduction

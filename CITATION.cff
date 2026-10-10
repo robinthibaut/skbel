@@ -1,5 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 authors:
   - family-names: Thibaut
     given-names: Robin
@@ -7,6 +8,23 @@ authors:
   - family-names: Ramgraber
     given-names: Maximilian
     orcid: https://orcid.org/0000-0003-3508-6214
-title: SKBEL
-version: v2.3.0
+title: "SKBEL - Bayesian Evidential Learning framework built on top of scikit-learn"
+version: 2.3.0
 date-released: 2026-10-09
+doi: 10.5281/zenodo.4785144
+license: BSD-3-Clause
+repository-code: "https://github.com/robinthibaut/skbel"
+url: "https://skbel.readthedocs.io/"
+abstract: >-
+  SKBEL implements the Bayesian Evidential Learning (BEL) framework on top of
+  scikit-learn. BEL learns a direct relationship between predictor (data) and
+  target (prediction) variables, typically in a low-dimensional latent space,
+  from a training set sampled from the prior, and uses it to estimate posterior
+  uncertainty without an explicit inversion. The DOI given here is the Zenodo
+  concept DOI, which represents all versions of the software.
+keywords:
+  - bayesian
+  - machine-learning
+  - scikit-learn
+  - uncertainty-quantification
+  - geosciences

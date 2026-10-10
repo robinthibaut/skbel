@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Documentation
+
+- **Citation metadata.** The README and the new "Citing SKBEL" documentation
+  page cite SKBEL v2.3.0 (October 2026) through the Zenodo concept DOI
+  `10.5281/zenodo.4785144`, which represents all versions. The previous README
+  entry cited `10.5281/zenodo.6205242`, which is not the concept DOI, and
+  described it as such. `CITATION.cff` now
+  declares the software type, version, license, repository, documentation URL,
+  abstract, keywords and the concept DOI. A version-specific DOI for v2.3.0 is
+  not yet listed and will be added once available.
+
 ## 2.3.0 - 2026-10-09
 
 ### Changed behavior
