@@ -119,7 +119,9 @@ A small, deterministic fit and posterior sampling run on synthetic data::
     samples = bel.predict(X[180:181], n_posts=50)
     print(samples.shape)  # (1, 50, 6): observations, posterior draws, target size
 
-Repeated calls with the same ``random_state`` return the same samples.
+Repeated calls with the same ``random_state`` return the same samples. The
+``design``, ``evaluation``, ``learning`` and ``metrics`` subpackages are also
+available as ``skbel.design`` and so on, and through ``from skbel import *``.
 
 
 Development
@@ -161,7 +163,8 @@ To run a single test::
 
     uv run pytest skbel/testing/test_basic.py::test_mvn
 
-The reference arrays under ``skbel/testing/`` are deterministic outputs of the
+The reference arrays under ``skbel/testing/`` are kept in the source checkout and
+source distribution but are not installed with the wheel. They are deterministic outputs of the
 fixed BEL pipeline. If a future scikit-learn or scipy release shifts the
 canonical-correlation sign convention or numerical kernels enough to break the
 regression checks, regenerate them with::

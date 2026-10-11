@@ -10,10 +10,10 @@ readme = "README.rst"
 license = { text = "BSD-3-Clause" }
 requires-python = ">=3.10"
 authors = [
-    { name = "Robin Thibaut", email = "robin.thibaut@UGent.be" },
+    { name = "Robin Thibaut" },
 ]
 maintainers = [
-    { name = "Robin Thibaut", email = "robin.thibaut@UGent.be" },
+    { name = "Robin Thibaut" },
 ]
 keywords = ["bayesian", "machine-learning", "scikit-learn", "uncertainty-quantification", "geosciences"]
 classifiers = [
@@ -86,6 +86,7 @@ explicit = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["skbel"]
+exclude = ["skbel/testing/*.npy"]
 
 [tool.hatch.build.targets.sdist]
 include = [
