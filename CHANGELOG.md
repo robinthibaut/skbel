@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Citation metadata.** The README and the new "Citing SKBEL" documentation
+  page cite SKBEL v2.3.0 (October 2026) through its Zenodo version DOI
+  `10.5281/zenodo.23290084`, and list the Zenodo concept DOI
+  `10.5281/zenodo.4785144`, which represents all versions, separately. The
+  previous README entry cited `10.5281/zenodo.6205242`, which is not the
+  concept DOI, and described it as such. `CITATION.cff` now declares the
+  software type, version, license, repository, documentation URL, abstract,
+  keywords, the version DOI as its primary DOI and the concept DOI as an
+  additional identifier.
 - Documentation: README quickstart and installation (Python 3.10 or later,
   `neural` and `bnn` extras), a docs quickstart that uses
   `predict(..., n_posts=...)`, API pages for the portable prediction capsules

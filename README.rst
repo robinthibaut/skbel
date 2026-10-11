@@ -199,23 +199,25 @@ Communication
 How to cite
 ----------------
 
-Thibaut, Robin, & Maximilian Ramgraber. (2021). SKBEL - Bayesian Evidential Learning framework built on top of scikit-learn (v2.0.0). Zenodo. https://doi.org/10.5281/zenodo.6205242
+Thibaut, Robin, & Maximilian Ramgraber. (2026). SKBEL - Bayesian Evidential Learning framework built on top of scikit-learn (v2.3.0). Zenodo. https://doi.org/10.5281/zenodo.23290084
 
 BibTeX::
 
     @software{thibaut_skbel,
-    author       = {Thibaut, Robin and Maximilian Ramgraber},
+    author       = {Thibaut, Robin and Ramgraber, Maximilian},
     title        = {{SKBEL} - Bayesian Evidential Learning framework built on top of scikit-learn},
-    month        = {4},
+    month        = oct,
     year         = 2026,
     publisher    = {Zenodo},
-    version      = {v2.2.0},
-    doi          = {10.5281/zenodo.6205242},
-    url          = {https://doi.org/10.5281/zenodo.6205242},
+    version      = {2.3.0},
+    doi          = {10.5281/zenodo.23290084},
+    url          = {https://doi.org/10.5281/zenodo.23290084},
     }
 
-The DOI above is the *concept* DOI that always resolves to the latest Zenodo
-release. For per-version DOIs, see https://zenodo.org/record/6205242 .
+The DOI above, 10.5281/zenodo.23290084, is the Zenodo version DOI of v2.3.0. The
+Zenodo *concept* DOI, 10.5281/zenodo.4785144, represents all versions of SKBEL
+and always resolves to the latest one. See also the
+`citation page <https://skbel.readthedocs.io/en/latest/citation.html>`_.
 
 Notebooks and tutorials
 ------------------------
