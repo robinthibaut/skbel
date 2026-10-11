@@ -11,7 +11,7 @@ finite, non-negative scalar `value` for that call. `noise=None` retains and
 resets the historical default multiplier of `0.01`. The value multiplies the
 identity covariance in the PCA-score space before its projection through the
 CCA rotations. It is therefore a projected-covariance multiplier in this
-implementation, not a universal physical-space temperature standard deviation.
+implementation, not a noise standard deviation in the original target units.
 
 ## CompositePCA scaling
 

@@ -314,8 +314,8 @@ class BEL(TransformerMixin, MultiOutputMixin, BaseEstimator):
         :param mode: The mode of inference to use. Default is "tm".
         :param noise: Non-negative scalar multiplier for the projected predictor
             covariance used by ``mode='mvn'``.  This is the current canonical-
-            space covariance convention; it is not universally a physical-space
-            temperature standard deviation.  ``None`` resets the multiplier to
+            space covariance convention; it is not a noise standard deviation
+            in the original target units.  ``None`` resets the multiplier to
             the historical default of 0.01.
         :param return_samples: Option to return samples or not. Default=True.
         :param inverse_transform: Option to return the samples in the original space. If the dimensionality of the

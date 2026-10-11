@@ -2,7 +2,7 @@ skbel.metrics
 =============
 
 This package contains NumPy-only scores for posterior draws and finite-action
-decision and acquisition tools. See :doc:`paper_metrics`, :doc:`calibration`,
+decision and acquisition tools. See :doc:`posterior_metrics`, :doc:`calibration`,
 :doc:`joint_posterior_scores`, :doc:`finite_acquisition` and
 :doc:`finite_model_robustness` for usage notes.
 

@@ -12,8 +12,9 @@ from skbel.metrics.robust import robust_acquisition_policy
 
 It is NumPy-only, simulates and fits nothing, and is independent of the BEL
 estimators. It complements `finite_acquisition_policy` (one law, one Bayes
-optimum). It is a software capability with hand-checkable oracles, not a
-calibrated posterior and not evidence about any real monitoring network.
+optimum). It is exact for the models the caller supplies, and the tests check it against
+hand-computed oracles. It does not produce a posterior; the result applies to a
+real monitoring network only as far as the supplied models do.
 
 ## Model
 

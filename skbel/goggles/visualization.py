@@ -342,18 +342,6 @@ def pca_scores(
         # For each sample used for prediction:
         # Select observation
         pc_obs = prediction.reshape(1, -1)
-        # Create beautiful spline to follow prediction scores
-        # xnew = np.linspace(1, n_comp, 200)  # New points for plotting curve
-        # try:
-        #     spl = make_interp_spline(
-        #         np.arange(1, n_comp + 1), pc_obs.T[:n_comp], k=3
-        #     )  # type: BSpline
-        #     power_smooth = spl(xnew)
-        #     # I forgot why I had to put '-1'
-        #     plt.plot(xnew - 1, power_smooth, "red", linewidth=1.2, alpha=0.4)
-        # except ValueError:
-        #     pass
-
         plt.plot(
             pc_obs.T[:n_comp],  # Plot observations scores
             "ro",
