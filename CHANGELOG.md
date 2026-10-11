@@ -6,6 +6,12 @@
   `neural` and `bnn` extras), a docs quickstart that uses
   `predict(..., n_posts=...)`, API pages for the portable prediction capsules
   and the full metrics package, and this changelog in the documentation.
+- `skbel.design`, `skbel.evaluation`, `skbel.learning` and `skbel.metrics` are
+  listed in `skbel.__all__`, so `from skbel import *` provides them. Importing
+  `skbel` still does not import PyTorch.
+- Packaging: the wheel no longer contains the `.npy` reference arrays under
+  `skbel/testing/`; the source distribution keeps them. The author and
+  maintainer metadata no longer lists an email address.
 
 ## 2.3.0 - 2026-10-09
 

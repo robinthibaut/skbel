@@ -248,6 +248,10 @@ A small, deterministic example on synthetic data:
    samples = bel.predict(X[180:181], n_posts=50)
    print(samples.shape)  # (1, 50, 6)
 
+The ``design``, ``evaluation``, ``learning`` and ``metrics`` subpackages are
+available as ``skbel.design`` and so on, and through ``from skbel import *``.
+Importing ``skbel`` does not import PyTorch.
+
 Contributing
 ------------
 
