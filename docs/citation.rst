@@ -9,7 +9,7 @@ Recommended citation
 
 Thibaut, Robin, & Maximilian Ramgraber. (2026). SKBEL - Bayesian Evidential
 Learning framework built on top of scikit-learn (v2.3.0). Zenodo.
-https://doi.org/10.5281/zenodo.4785144
+https://doi.org/10.5281/zenodo.23290084
 
 BibTeX::
 
@@ -20,8 +20,8 @@ BibTeX::
     year         = 2026,
     publisher    = {Zenodo},
     version      = {2.3.0},
-    doi          = {10.5281/zenodo.4785144},
-    url          = {https://doi.org/10.5281/zenodo.4785144},
+    doi          = {10.5281/zenodo.23290084},
+    url          = {https://doi.org/10.5281/zenodo.23290084},
     }
 
 Concept DOI and version-specific DOI
@@ -29,14 +29,11 @@ Concept DOI and version-specific DOI
 
 Zenodo issues two kinds of DOI for a software project:
 
+- The *version-specific* DOI, ``10.5281/zenodo.23290084``, identifies the
+  archive of SKBEL v2.3.0 only. It is the DOI given above.
 - The *concept* DOI, ``10.5281/zenodo.4785144``, represents all versions of
-  SKBEL together and always resolves to the latest one. It is the DOI given
-  above.
-- A *version-specific* DOI identifies the archive of one release only.
-
-A version-specific DOI for v2.3.0 is not yet listed in this documentation. It
-will be added here and in the project README once available. Until then, cite
-the concept DOI together with the version number, as above.
+  SKBEL together and always resolves to the latest one. Use it to refer to the
+  software in general rather than to a specific release.
 
 Machine-readable metadata is provided in the ``CITATION.cff`` file at the root
 of the `repository <https://github.com/robinthibaut/skbel>`_.

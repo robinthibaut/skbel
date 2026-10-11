@@ -2,16 +2,29 @@
 
 ## Unreleased
 
-### Documentation
-
 - **Citation metadata.** The README and the new "Citing SKBEL" documentation
-  page cite SKBEL v2.3.0 (October 2026) through the Zenodo concept DOI
-  `10.5281/zenodo.4785144`, which represents all versions. The previous README
-  entry cited `10.5281/zenodo.6205242`, which is not the concept DOI, and
-  described it as such. `CITATION.cff` now
-  declares the software type, version, license, repository, documentation URL,
-  abstract, keywords and the concept DOI. A version-specific DOI for v2.3.0 is
-  not yet listed and will be added once available.
+  page cite SKBEL v2.3.0 (October 2026) through its Zenodo version DOI
+  `10.5281/zenodo.23290084`, and list the Zenodo concept DOI
+  `10.5281/zenodo.4785144`, which represents all versions, separately. The
+  previous README entry cited `10.5281/zenodo.6205242`, which is not the
+  concept DOI, and described it as such. `CITATION.cff` now declares the
+  software type, version, license, repository, documentation URL, abstract,
+  keywords, the version DOI as its primary DOI and the concept DOI as an
+  additional identifier.
+- Documentation: README quickstart and installation (Python 3.10 or later,
+  `neural` and `bnn` extras), a docs quickstart that uses
+  `predict(..., n_posts=...)`, API pages for the portable prediction capsules
+  and the full metrics package, and this changelog in the documentation.
+- `skbel.design`, `skbel.evaluation`, `skbel.learning` and `skbel.metrics` are
+  listed in `skbel.__all__`, so `from skbel import *` provides them. Importing
+  `skbel` still does not import PyTorch.
+- Packaging: the wheel no longer contains the `.npy` reference arrays under
+  `skbel/testing/`; the source distribution keeps them. The author and
+  maintainer metadata no longer lists an email address.
+- Release guardrails: a pull request template with a documentation-sync
+  checklist, and a release checklist (`RELEASING.md`, also in the documentation)
+  that includes the text of a trusted-publishing workflow for the repository
+  owner to review. The workflow is not installed by this change.
 
 ## 2.3.0 - 2026-10-09
 
@@ -125,3 +138,16 @@
 ### Packaging
 
 - The source distribution now includes `CHANGELOG.md`.
+
+## 2.2.0 - 2026-04-25
+
+Published as a GitHub release on 2026-04-25; it was not published to PyPI, whose
+latest release remains 2.1.14. This entry was added retroactively.
+
+### Changed
+
+- Modernized packaging and tooling: PEP 621 metadata, the hatchling build
+  backend, `uv` for environments, and Python 3.10 or later.
+- Fixes for NumPy 2 and SciPy compatibility.
+- Keras compatibility for the Bayesian neural network (`bnn`) code.
+- No changes to the scientific API.

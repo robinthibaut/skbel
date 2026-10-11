@@ -2,6 +2,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from . import design, evaluation, learning, metrics
 from .learning import *
 
 try:
@@ -12,7 +13,11 @@ except PackageNotFoundError:
 __all__ = [
     "BEL",
     "algorithms",
+    "design",
+    "evaluation",
     "goggles",
+    "learning",
+    "metrics",
     "preprocessing",
     "spatial",
     "tmaps",

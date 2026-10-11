@@ -9,10 +9,11 @@ Nothing in the module knows about the physics or the coordinates of the
 targets: draws come back in the coordinates of `Y`, and any transform to or
 from those coordinates is the caller's.
 
-Training needs PyTorch, which is an optional extra:
+Training needs PyTorch, which is an optional extra. `skbel.neural` is not in
+the PyPI release (2.1.14), so request the extra from the 2.3 tag source:
 
 ```sh
-pip install 'skbel[neural]'
+pip install "skbel[neural] @ git+https://github.com/robinthibaut/skbel.git@v2.3.0"
 ```
 
 Importing `skbel` or `skbel.neural`, the recalibrator and the NumPy sampler of
