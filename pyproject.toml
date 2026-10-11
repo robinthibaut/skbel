@@ -72,6 +72,7 @@ Homepage = "https://github.com/robinthibaut/skbel"
 Documentation = "https://skbel.readthedocs.io/"
 Repository = "https://github.com/robinthibaut/skbel"
 Issues = "https://github.com/robinthibaut/skbel/issues"
+Changelog = "https://github.com/robinthibaut/skbel/blob/main/CHANGELOG.md"
 
 [tool.uv.sources]
 torch = [

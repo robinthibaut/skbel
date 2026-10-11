@@ -13,6 +13,7 @@ The package is structured as follows:
    skbel.metrics
    api/evaluation
    api/design
+   api/neural
    skbel.tmaps
    skbel.spatial
    skbel.goggles
