@@ -147,7 +147,7 @@ reference. The mean CRPS is worse for the narrow draws (0.582 against
 overconfident posterior in a finite sample. These scores mix calibration with
 sharpness, so the rank and coverage checks are the ones that identify the
 miscalibration. The binary Brier value divides
-`brier_score` by 2, as described in [Posterior metrics](paper_metrics.md).
+`brier_score` by 2, as described in [Posterior metrics](posterior_metrics.md).
 
 ## Sampling with BEL
 

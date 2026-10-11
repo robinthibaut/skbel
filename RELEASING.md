@@ -1,23 +1,20 @@
 # Releasing
 
-This page is the checklist for cutting a release of skbel. It also holds the
-text of a publishing workflow that the repository owner can adopt; the file is
-not part of the repository until the owner adds it.
+This page is the maintainer checklist for cutting a release of skbel. It also
+holds the text of a publishing workflow, which is added to the repository as a
+separate step.
 
 ## When a release is complete
 
-A release is complete only when all three of the following are true:
+A release is complete when all three of the following are true:
 
 1. The version is on PyPI.
 2. The exact Zenodo version DOI for that release is recorded in the README
    citation and in `CITATION.cff`.
 3. The Read the Docs `stable` build shows that version.
 
-A Git tag or a GitHub release alone is not a complete release. Each step may be
-described accurately as done once it can be checked (for example, "the version
-is on PyPI"), but do not call a release complete until all three items above
-can be checked. While any item is outstanding, state which ones are done and
-which are pending.
+A Git tag or a GitHub release alone is not a complete release. State which of
+the three items are done and which are pending until all can be checked.
 
 ## Versioning
 
@@ -74,13 +71,16 @@ checklist.
      citation file, the sources and the seven source test fixtures that the test
      suite needs.
    - Confirm that neither artifact includes local paths, credentials, private
-     notes, unpublished data or personal addresses.
+     notes, unpublished data or personal addresses, and no `.DS_Store` files.
    - Confirm that the metadata (version, Python requirement, extras, URLs) is
      correct.
 
-6. Review commit messages, the pull request text and the changelog for public
-   hygiene: no process or tooling chatter, no internal identifiers, and no
-   personal contact details.
+6. If a release archive (tarball) is built or uploaded by hand, create it with
+   numeric owner and group set to 0 (`--owner=0 --group=0 --numeric-owner` for
+   GNU tar, `--uid 0 --gid 0` for bsdtar) and without `.DS_Store` files.
+7. Check that the package metadata, commit messages, pull request text and the
+   changelog are accurate release notes and carry no personal contact details.
+   Commits use the GitHub `users.noreply.github.com` address.
 
 ## Publishing to PyPI with a trusted publisher
 
@@ -89,20 +89,18 @@ OpenID Connect. See the PyPI documentation on
 [adding a trusted publisher](https://docs.pypi.org/trusted-publishers/adding-a-publisher/)
 and [using a trusted publisher](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
 
-Owner-only setup. The repository owner alone:
+Setup:
 
-- registers the trusted publisher for the project on PyPI, using the repository,
+- register the trusted publisher for the project on PyPI, using the repository,
   the workflow file name and the environment name that appear in the workflow
   below;
-- creates the matching `pypi` environment in the GitHub repository settings;
-- commits the workflow file.
+- create the matching `pypi` environment in the GitHub repository settings;
+- save the workflow below as `.github/workflows/publish.yml`.
 
-Nothing in the repository configures the publisher, and contributors do not
-need any credentials for this process.
+The repository itself holds no publisher configuration, and no credentials are
+needed.
 
-The workflow below is provided as text for the owner to review and, if
-accepted, to save as `.github/workflows/publish.yml`. It is deliberately not
-stored under `.github/workflows/` in this repository.
+The workflow text is kept here rather than under `.github/workflows/`:
 
 ```yaml
 name: Publish to PyPI
@@ -150,14 +148,13 @@ jobs:
 
 The build job has read-only access and no publishing permission. Only the
 publish job can request the identity token, and it runs in the `pypi`
-environment, where the owner can require a manual approval.
+environment, where a manual approval can be required.
 
 ## After publishing
 
 1. Wait for the archive of the release on Zenodo and copy its exact version DOI
    into both the README citation and `CITATION.cff`. If a citation pull request
-   is already open and waiting for the DOI, add it there; otherwise open a pull
-   request for it. Do not invent or guess a DOI.
+   is already open, add it there; otherwise open a pull request for it.
 2. Confirm that the Read the Docs `stable` build shows the new version.
 3. Confirm that `pip install skbel==<version>` installs the published release
    in a clean environment.

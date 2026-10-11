@@ -108,8 +108,9 @@ transport and storage.
   guarantee beyond the parsing rules above.
 - **Not privacy.** The aggregate statistics are learned from the paired
   training data and remain sensitive; exporting is not a privacy guarantee.
-- **Not calibration.** Moments are computed under the existing MVN
-  convention; nothing here validates them against real data.
+- **Calibration.** Moments are computed under the existing MVN convention;
+  check calibration separately, for example with `skbel.metrics` calibration
+  checks.
 - **Narrower than joblib.** A trusted joblib checkpoint restores arbitrary
   Python objects; the capsule only transfers numeric prediction state and
   cannot retrain, sample or rebuild the full `BEL`.

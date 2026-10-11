@@ -14,17 +14,22 @@
 - Documentation: README quickstart and installation (Python 3.10 or later,
   `neural` and `bnn` extras), a docs quickstart that uses
   `predict(..., n_posts=...)`, API pages for the portable prediction capsules
-  and the full metrics package, and this changelog in the documentation.
+  and the full metrics package, and this changelog in the documentation. The
+  "Posterior metrics" page moved from `paper_metrics` to `posterior_metrics`;
+  the old address redirects to it. The `noise` description of
+  `BEL.predict(..., mode="mvn")` and the finite-planner, prediction-capsule and
+  example pages state their scope directly, and the README and documentation
+  no longer link to a discontinued project page.
 - `skbel.design`, `skbel.evaluation`, `skbel.learning` and `skbel.metrics` are
   listed in `skbel.__all__`, so `from skbel import *` provides them. Importing
   `skbel` still does not import PyTorch.
 - Packaging: the wheel no longer contains the `.npy` reference arrays under
   `skbel/testing/`; the source distribution keeps them. The author and
   maintainer metadata no longer lists an email address.
-- Release guardrails: a pull request template with a documentation-sync
+- Maintainer documentation: a pull request template with a documentation-sync
   checklist, and a release checklist (`RELEASING.md`, also in the documentation)
-  that includes the text of a trusted-publishing workflow for the repository
-  owner to review. The workflow is not installed by this change.
+  that includes the text of a trusted-publishing workflow and the requirements
+  for release archives (numeric owner and group 0, no `.DS_Store`).
 
 ## 2.3.0 - 2026-10-09
 

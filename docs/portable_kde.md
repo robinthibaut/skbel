@@ -150,10 +150,10 @@ transport and storage.
   security sandbox beyond the parsing rules above.
 - **Data sensitivity.** The density tables are derived from the paired training
   data and remain sensitive. They are smoothed, but they are not de-identified.
-- **Not probability calibration.** Draws follow the existing KDE convention.
-  Agreement with a same-profile BEL establishes implementation fidelity, not
-  independent validation of probabilities. These tests do not validate
-  probabilities against real observations.
+- **Calibration.** Draws follow the existing KDE convention. Agreement with a
+  same-profile BEL establishes implementation fidelity; probability calibration
+  must be checked separately, for example with `skbel.metrics` calibration
+  checks.
 - **Subset of joblib.** A trusted joblib checkpoint restores arbitrary
   Python objects, including default bandwidth search. The capsule only
   transfers numeric conditional-prediction state.

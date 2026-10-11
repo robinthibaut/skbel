@@ -7,9 +7,9 @@ measurement *conditional on the first outcome* and compares every choice with
 stopping, which `expected_action_losses` / `bayes_action_set` (one decision, no
 acquisition) do not do.
 
-It is a software capability with hand-checkable oracles. It is not a
-simulator, a calibrated posterior, or evidence about any real monitoring
-network.
+It is exact for the model the caller supplies, and the tests check it against
+hand-computed oracles. It does not simulate or fit a posterior; the result
+applies to a real monitoring network only as far as the supplied model does.
 
 ## Model
 

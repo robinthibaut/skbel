@@ -8,12 +8,10 @@ This composes three existing primitives -- :func:`skbel.metrics.expected_action_
 finite, hand-checkable decision problem. Everything here (the states, the
 prior, the loss table, and each candidate's outcomes/likelihoods) is made up
 for illustration: the loss table's numbers and units are entirely the
-caller's choice, this example performs no calibrated inference and no
-posterior update against real data, it has no hydrological or other
-field/domain performance meaning, and it demonstrates no methodological
-novelty. None of the composed functions run a simulator or an experimental
-design search themselves; this script is the one enumerating candidates,
-outcomes, and posteriors explicitly, by hand, over a fixed finite set.
+caller's choice, and no real data are used. None of the composed functions
+run a simulator or an experimental design search themselves; this script
+enumerates candidates, outcomes, and posteriors explicitly over a fixed
+finite set.
 
 Decision problem
 -----------------

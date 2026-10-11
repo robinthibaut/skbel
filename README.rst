@@ -55,8 +55,12 @@ Features
   document. Capsules and the exact acquisition planners are experimental and may
   change.
 
-None of these tools establishes that a posterior is calibrated or valid for a
-particular application.
+These tools score and diagnose posteriors; they are not a guarantee. Each check
+addresses a specific property, so choose diagnostics that match the scope of the
+claim. For example, the calibration checks are marginal: draws
+``[[-1, -1], [1, 1]]`` and ``[[-1, 1], [1, -1]]`` have identical target
+marginals and CRPS (``[[0.5, 0.5]]`` for truth ``[1, 1]``), but their joint
+energy scores differ (0.70710678 and 1.29289322).
 
 Installation
 ------------
@@ -232,10 +236,5 @@ Peer-reviewed publications using SKBEL
 Thibaut, Robin, Nicolas Compaire, Nolwenn Lesparre, Maximilian Ramgraber, Eric Laloy, and Thomas Hermans (Nov. 2022). “Comparing Well and Geophysical Data for Temperature Monitoring Within a Bayesian Experimental Design Framework”. In: Water Resources Research 58 (11). issn: 0043-1397. doi: 10.1029/2022WR033045. url: https://onlinelibrary.wiley.com/doi/10.1029/2022WR033045.
 
 Thibaut, Robin, Eric Laloy, and Thomas Hermans (Dec. 2021). “A new framework for experimental design using Bayesian Evidential Learning: The case of wellhead protection area”. In: Journal of Hydrology 603, p. 126903. issn: 00221694. doi: 10.1016/j.jhydrol.2021.126903. url: https://linkinghub.elsevier.com/retrieve/pii/S0022169421009537.
-
-Research project
-----------------
-
-Logs and results of the research project are available on the `project page <https://www.researchgate.net/project/A-new-framework-for-Experimental-Design-in-Earth-Sciences-using-Bayesian-Evidential-Learning-BEL4ED>`_.
 
 
