@@ -43,6 +43,7 @@ Contents
    modules
    examples
    changelog
+   releasing
 
 .. toctree::
    :maxdepth: 1
