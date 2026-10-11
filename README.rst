@@ -8,9 +8,6 @@
 .. |Doc| image:: https://readthedocs.org/projects/skbel/badge/?version=latest
 .. _Doc: https://skbel.readthedocs.io/en/latest/?badge=latest
 
-.. |CodeCov| image:: https://codecov.io/gh/robinthibaut/skbel/branch/main/graph/badge.svg?token=S0T9NW3VK6
-.. _CodeCov: https://codecov.io/gh/robinthibaut/skbel
-
 .. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/skbel
 .. _PythonVersion: https://img.shields.io/pypi/pyversions/skbel
 
@@ -28,12 +25,38 @@
 
 .. |PythonMinVersion| replace:: 3.10
 
-.. image:: https://raw.githubusercontent.com/robinthibaut/skbel/master/docs/img/illu-01.png
+.. image:: https://raw.githubusercontent.com/robinthibaut/skbel/main/docs/img/illu-01.png
 
 **skbel** is a Python module for implementing the Bayesian Evidential Learning framework built on top of
 scikit-learn and is distributed under the 3-Clause BSD license.
 
-For more information, read the `documentation <https://skbel.readthedocs.io/en/latest/>`_ and run the example `notebook <https://www.kaggle.com/dsv/2648718>`_.
+For more information, read the `documentation <https://skbel.readthedocs.io/en/latest/>`_
+(``latest`` follows the ``main`` branch) and run the example
+`notebook <https://www.kaggle.com/dsv/2648718>`_.
+
+Features
+--------
+
+- **BEL** (``skbel.BEL``): predictor and target reduction, canonical correlation
+  analysis and posterior inference in ``mvn``, ``kde`` or ``tm`` (transport map)
+  mode, with seeded, per-row reproducible posterior sampling.
+- **Calibration and scores** (``skbel.metrics``): simulation-based calibration,
+  PIT and interval coverage, plus CRPS, energy and Brier scores for posterior
+  samples.
+- **Ranking and acquisition** (``skbel.metrics``): expected action losses,
+  prospective measurement ranking and exact finite acquisition planners.
+- **Design and evaluation** (``skbel.design``, ``skbel.evaluation``): compare
+  measurement designs on one shared simulation bank, then score and turn
+  posteriors into event probabilities and decision risks.
+- **Optional neural posterior** (``skbel.neural``): a Gaussian-mixture network
+  ensemble with quantile recalibration (``neural`` extra).
+- **Experimental prediction capsules** (``skbel.learning.portable``,
+  ``skbel.learning.portable_kde``): export a fitted ``BEL`` to a data-only JSON
+  document. Capsules and the exact acquisition planners are experimental and may
+  change.
+
+None of these tools establishes that a posterior is calibrated or valid for a
+particular application.
 
 Installation
 ------------
@@ -53,10 +76,50 @@ With ``uv``::
 
     uv pip install skbel
 
-The optional Bayesian neural network module (``skbel.bnn``) requires TensorFlow
-and TensorFlow Probability — install with the ``bnn`` extra::
+Version 2.3 is not yet available on PyPI: ``pip install skbel`` currently
+installs the previous release (2.1.14), which does not include the 2.3
+features. To use them, install from the repository tag or from ``main``::
 
-    pip install "skbel[bnn]"
+    pip install "git+https://github.com/robinthibaut/skbel.git@v2.3.0"
+
+Optional extras. For 2.3, request them from the same tag source rather than from
+PyPI:
+
+- ``neural`` adds PyTorch for ``skbel.neural``::
+
+      pip install "skbel[neural] @ git+https://github.com/robinthibaut/skbel.git@v2.3.0"
+
+- ``bnn`` adds TensorFlow and TensorFlow Probability for ``skbel.bnn``::
+
+      pip install "skbel[bnn] @ git+https://github.com/robinthibaut/skbel.git@v2.3.0"
+
+Quickstart
+~~~~~~~~~~
+
+A small, deterministic fit and posterior sampling run on synthetic data::
+
+    import numpy as np
+    from sklearn.cross_decomposition import CCA
+    from sklearn.decomposition import PCA
+
+    from skbel import BEL
+
+    rng = np.random.default_rng(0)
+    Y = rng.normal(size=(200, 6))
+    X = Y @ rng.normal(size=(6, 10)) + 0.1 * rng.normal(size=(200, 10))
+
+    bel = BEL(
+        mode="mvn",
+        X_pre_processing=PCA(n_components=4),
+        Y_pre_processing=PCA(n_components=3),
+        regression_model=CCA(n_components=2),
+        random_state=0,
+    )
+    bel.fit(X[:180], Y[:180])
+    samples = bel.predict(X[180:181], n_posts=50)
+    print(samples.shape)  # (1, 50, 6): observations, posterior draws, target size
+
+Repeated calls with the same ``random_state`` return the same samples.
 
 
 Development
@@ -112,7 +175,9 @@ Help and Support
 Documentation
 ~~~~~~~~~~~~~
 
-- HTML documentation (latest release): https://skbel.readthedocs.io/en/latest/
+- HTML documentation (follows the ``main`` branch): https://skbel.readthedocs.io/en/latest/
+- HTML documentation (``stable`` build, may lag ``main``): https://skbel.readthedocs.io/en/stable/
+- Changelog: https://github.com/robinthibaut/skbel/blob/main/CHANGELOG.md
 
 Communication
 ~~~~~~~~~~~~~

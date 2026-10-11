@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Documentation: README quickstart and installation (Python 3.10 or later,
+  `neural` and `bnn` extras), a docs quickstart that uses
+  `predict(..., n_posts=...)`, API pages for the portable prediction capsules
+  and the full metrics package, and this changelog in the documentation.
+
 ## 2.3.0 - 2026-10-09
 
 ### Changed behavior
@@ -112,3 +119,16 @@
 ### Packaging
 
 - The source distribution now includes `CHANGELOG.md`.
+
+## 2.2.0 - 2026-04-25
+
+Published as a GitHub release on 2026-04-25; it was not published to PyPI, whose
+latest release remains 2.1.14. This entry was added retroactively.
+
+### Changed
+
+- Modernized packaging and tooling: PEP 621 metadata, the hatchling build
+  backend, `uv` for environments, and Python 3.10 or later.
+- Fixes for NumPy 2 and SciPy compatibility.
+- Keras compatibility for the Bayesian neural network (`bnn`) code.
+- No changes to the scientific API.

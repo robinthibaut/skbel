@@ -11,11 +11,28 @@ SKBEL - Bayesian Evidential Learning for Python
 Installation
 ------------
 
-SKBEL is available through `PyPI <https://pypi.org/project/skbel/>`_, and may be installed using ``pip``:
+The latest PyPI release (2.1.14) of `SKBEL <https://pypi.org/project/skbel/>`_ may be installed using ``pip``:
 
 .. code:: sh
 
    $ pip install skbel
+
+SKBEL requires Python 3.10 or later. Version 2.3 is not yet on PyPI, so the
+command above installs the previous release; to use the 2.3 features, install
+from the repository tag:
+
+.. code:: sh
+
+   $ pip install "git+https://github.com/robinthibaut/skbel.git@v2.3.0"
+
+Optional extras, requested from the same tag source because the PyPI release
+(2.1.14) does not provide the 2.3 extras: ``pip install "skbel[neural] @
+git+https://github.com/robinthibaut/skbel.git@v2.3.0"`` (PyTorch, for
+:doc:`neural`) and ``pip install "skbel[bnn] @
+git+https://github.com/robinthibaut/skbel.git@v2.3.0"`` (TensorFlow and
+TensorFlow Probability, for ``skbel.bnn``).
+
+The installed version is available as ``skbel.__version__``.
 
 Contents
 -----------------
@@ -25,6 +42,7 @@ Contents
 
    modules
    examples
+   changelog
 
 .. toctree::
    :maxdepth: 1
@@ -49,7 +67,6 @@ Contents
    :caption: Neural posterior (optional)
 
    neural
-   api/neural
 
 .. toctree::
    :maxdepth: 1
@@ -192,24 +209,44 @@ The BEL object is then fitted to the training data:
    bel_model = init_bel()
    bel_model.fit(X_train, Y_train)
 
-The posterior distribution of the target can then be inferred from the predictor:
+The posterior distribution of the target is then sampled for new predictor rows:
 
 .. code:: python
 
-   # Inference
-   bel_model.predict(X_test)
-
-The posterior distribution of the target can also be sampled:
-
-.. code:: python
-
-   # Sampling
-   bel_model.random_sample(X_test, n_samples=100)
-
+   # Inference and sampling: array of shape (n_observations, n_posts, target size)
+   samples = bel_model.predict(X_test, n_posts=100)
 
 Note that the `X_train` and `Y_train` are the predictor and target, respectively, generated from the same set of prior models `m`. The `X_test` is the predictor for which the posterior distribution of the target is inferred.
 
-The `predict` method in the SKBEL implementation differs slightly from the scikit-learn implementation. It determines the posterior distribution of the target given the predictor. The `random_sample` method returns the posterior realizations of the target given the predictor.
+The `predict` method in the SKBEL implementation differs slightly from the scikit-learn implementation: it returns `n_posts` posterior realizations of the target for each predictor row. Sampling is seeded by the `random_state` of the model, so repeated calls return the same samples.
+
+Quickstart
+..........
+
+A small, deterministic example on synthetic data:
+
+.. code:: python
+
+   import numpy as np
+   from sklearn.cross_decomposition import CCA
+   from sklearn.decomposition import PCA
+
+   from skbel import BEL
+
+   rng = np.random.default_rng(0)
+   Y = rng.normal(size=(200, 6))
+   X = Y @ rng.normal(size=(6, 10)) + 0.1 * rng.normal(size=(200, 10))
+
+   bel = BEL(
+       mode="mvn",
+       X_pre_processing=PCA(n_components=4),
+       Y_pre_processing=PCA(n_components=3),
+       regression_model=CCA(n_components=2),
+       random_state=0,
+   )
+   bel.fit(X[:180], Y[:180])
+   samples = bel.predict(X[180:181], n_posts=50)
+   print(samples.shape)  # (1, 50, 6)
 
 Contributing
 ------------

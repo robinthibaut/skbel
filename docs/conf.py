@@ -10,6 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import importlib.metadata
 import os
 import sys
 
@@ -26,6 +27,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # -- Project information -----------------------------------------------------
 
 project = "skbel"
+release = importlib.metadata.version("skbel")
+version = ".".join(release.split(".")[:2])
 copyright = f"2019 - {datetime.now().year} Robin Thibaut, Ghent University"
 author = "Robin Thibaut"
 
