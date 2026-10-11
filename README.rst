@@ -148,6 +148,15 @@ Contributing
 
 Contributors and feedback from users are welcome. Don't hesitate to submit an issue or a PR, or request a new feature.
 
+A pull request that changes user-facing behavior also updates the ``Unreleased``
+section of the changelog, this README and the linked documentation, as listed in
+the pull request template. The release checklist is in
+`RELEASING.md <https://github.com/robinthibaut/skbel/blob/main/RELEASING.md>`_
+(also in the `documentation <https://skbel.readthedocs.io/en/latest/releasing.html>`_).
+A release is complete only when it is on PyPI, its exact Zenodo version DOI is
+recorded in both the README citation and ``CITATION.cff``, and the ``stable``
+documentation build shows it.
+
 
 Testing
 ~~~~~~~

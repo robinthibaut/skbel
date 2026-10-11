@@ -12,6 +12,10 @@
 - Packaging: the wheel no longer contains the `.npy` reference arrays under
   `skbel/testing/`; the source distribution keeps them. The author and
   maintainer metadata no longer lists an email address.
+- Release guardrails: a pull request template with a documentation-sync
+  checklist, and a release checklist (`RELEASING.md`, also in the documentation)
+  that includes the text of a trusted-publishing workflow for the repository
+  owner to review. The workflow is not installed by this change.
 
 ## 2.3.0 - 2026-10-09
 
